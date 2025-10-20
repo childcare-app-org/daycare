@@ -101,4 +101,34 @@ export const patientRouter = createTRPCRouter({
 
       return child;
     }),
+
+  // Get parent's children (Parent only)
+  getMyChildren: parentProcedure.query(async ({ ctx }) => {
+    // Get the parent record for the current user
+    const [parent] = await ctx.db
+      .select()
+      .from(parents)
+      .where(eq(parents.userId, ctx.session.user.id))
+      .limit(1);
+
+    if (!parent) {
+      throw new Error("Parent profile not found");
+    }
+
+    // Get all children for this parent
+    return await ctx.db
+      .select({
+        id: children.id,
+        name: children.name,
+        age: children.age,
+        allergies: children.allergies,
+        preexistingConditions: children.preexistingConditions,
+        familyDoctorName: children.familyDoctorName,
+        familyDoctorPhone: children.familyDoctorPhone,
+        createdAt: children.createdAt,
+      })
+      .from(parentChildRelations)
+      .leftJoin(children, eq(parentChildRelations.childId, children.id))
+      .where(eq(parentChildRelations.parentId, parent.id));
+  }),
 });
