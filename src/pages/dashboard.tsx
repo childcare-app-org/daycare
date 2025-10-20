@@ -1,6 +1,7 @@
 import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { HospitalList } from '~/components/HospitalList';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { api } from '~/utils/api';
@@ -33,20 +34,6 @@ export default function Dashboard() {
         );
     }
 
-    // If user is admin (no role assigned yet), redirect to role selection
-    if (session.user.role === 'admin') {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-gray-600 mb-4">Please select your role to continue</p>
-                    <Link href="/select-role">
-                        <Button>Select Role</Button>
-                    </Link>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <>
             <Head>
@@ -68,19 +55,17 @@ export default function Dashboard() {
                     </div>
 
                     {/* Role-specific content */}
-                    {session.user.role === 'nurse' && <NurseDashboard hospitalId={session.user.hospitalId} />}
-                    {session.user.role === 'parent' && <ParentDashboard userId={session.user.id} />}
+                    {session.user.role === 'nurse' && <NurseDashboard />}
+                    {session.user.role === 'parent' && <ParentDashboard />}
+                    {session.user.role === 'admin' && <AdminDashboard />}
                 </div>
             </main>
         </>
     );
 }
 
-function NurseDashboard({ hospitalId }: { hospitalId?: string }) {
-    const { data: activeVisits, isLoading } = api.visit.getActiveByHospital.useQuery(
-        { hospitalId: hospitalId || '' },
-        { enabled: !!hospitalId }
-    );
+function NurseDashboard() {
+    const { data: activeVisits, isLoading } = api.visit.getMyHospitalActiveVisits.useQuery();
 
     if (isLoading) {
         return (
@@ -174,18 +159,14 @@ function NurseDashboard({ hospitalId }: { hospitalId?: string }) {
     );
 }
 
-function ParentDashboard({ userId }: { userId: string }) {
-    const { data: parent } = api.patient.getParentByUserId.useQuery({ userId });
-    const { data: children, isLoading } = api.patient.getChildrenByParent.useQuery(
-        { parentId: parent?.id || '' },
-        { enabled: !!parent?.id }
-    );
+function ParentDashboard() {
+    const { data: activeVisits, isLoading } = api.visit.getMyChildrenActiveVisits.useQuery();
 
     if (isLoading) {
         return (
             <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading your children...</p>
+                <p className="text-gray-600">Loading your visits...</p>
             </div>
         );
     }
@@ -195,13 +176,13 @@ function ParentDashboard({ userId }: { userId: string }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg">Your Children</CardTitle>
+                        <CardTitle className="text-lg">Active Visits</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-purple-600">
-                            {children?.length || 0}
+                            {activeVisits?.length || 0}
                         </div>
-                        <p className="text-sm text-gray-500">Registered children</p>
+                        <p className="text-sm text-gray-500">Children currently at daycare</p>
                     </CardContent>
                 </Card>
 
@@ -232,35 +213,33 @@ function ParentDashboard({ userId }: { userId: string }) {
                 </Card>
             </div>
 
-            {/* Children List */}
+            {/* Active Visits List */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Your Children</CardTitle>
+                    <CardTitle>Active Visits</CardTitle>
                     <CardDescription>
-                        Manage your children's profiles and view their activities
+                        Your children currently at daycare
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {children && children.length > 0 ? (
+                    {activeVisits && activeVisits.length > 0 ? (
                         <div className="space-y-4">
-                            {children.map((child) => (
-                                <div key={child.id} className="p-4 border rounded-lg">
+                            {activeVisits.map((visit) => (
+                                <div key={visit.id} className="p-4 border rounded-lg">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="font-semibold">{child.name}</h3>
+                                            <h3 className="font-semibold">{visit.child?.name}</h3>
                                             <p className="text-sm text-gray-600">
-                                                Age: {Math.floor(child.age / 12)} years, {child.age % 12} months
+                                                Hospital: {visit.hospital?.name}
                                             </p>
-                                            {child.allergies && (
-                                                <p className="text-sm text-red-600">
-                                                    Allergies: {child.allergies}
-                                                </p>
-                                            )}
+                                            <p className="text-sm text-gray-500">
+                                                Dropped off: {new Date(visit.dropOffTime).toLocaleString()}
+                                            </p>
                                         </div>
                                         <div className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                View History
-                                            </Button>
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Active
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -268,7 +247,7 @@ function ParentDashboard({ userId }: { userId: string }) {
                         </div>
                     ) : (
                         <div className="text-center py-8">
-                            <p className="text-gray-500 mb-4">No children registered yet</p>
+                            <p className="text-gray-500 mb-4">No active visits</p>
                             <Link href="/create-child">
                                 <Button>Add Your First Child</Button>
                             </Link>
@@ -276,6 +255,14 @@ function ParentDashboard({ userId }: { userId: string }) {
                     )}
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function AdminDashboard() {
+    return (
+        <div className="space-y-6">
+            <HospitalList />
         </div>
     );
 }

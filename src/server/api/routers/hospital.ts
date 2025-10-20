@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '~/server/api/trpc';
 import { hospitals } from '~/server/db/schema';
@@ -14,6 +15,7 @@ export const hospitalRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      console.log(input);
       const [hospital] = await ctx.db
         .insert(hospitals)
         .values({
@@ -23,6 +25,23 @@ export const hospitalRouter = createTRPCRouter({
           pricing: input.pricing.toString(), // Drizzle stores numeric as string
         })
         .returning();
+
+      return hospital;
+    }),
+
+  // Get all hospitals (Admin only)
+  getAll: adminProcedure.query(async ({ ctx }) => {
+    return await ctx.db.select().from(hospitals);
+  }),
+
+  // Get hospital by ID (Admin only)
+  getById: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const [hospital] = await ctx.db
+        .select()
+        .from(hospitals)
+        .where(eq(hospitals.id, input.id));
 
       return hospital;
     }),

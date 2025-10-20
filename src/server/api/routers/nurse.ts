@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '~/server/api/trpc';
-import { hospitals, nurses } from '~/server/db/schema';
+import { hospitals, nurses, users } from '~/server/db/schema';
 
 export const nurseRouter = createTRPCRouter({
   // Create a new nurse entry (Admin only)
@@ -56,5 +56,28 @@ export const nurseRouter = createTRPCRouter({
         email: nurse.email,
         hospitalId: nurse.hospitalId,
       };
+    }),
+
+  // Get nurses by hospital (Admin only)
+  getByHospital: adminProcedure
+    .input(z.object({ hospitalId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db
+        .select({
+          id: nurses.id,
+          name: nurses.name,
+          email: nurses.email,
+          hospitalId: nurses.hospitalId,
+          userId: nurses.userId,
+          createdAt: nurses.createdAt,
+          user: {
+            id: users.id,
+            name: users.name,
+            email: users.email,
+          },
+        })
+        .from(nurses)
+        .leftJoin(users, eq(nurses.userId, users.id))
+        .where(eq(nurses.hospitalId, input.hospitalId));
     }),
 });

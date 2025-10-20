@@ -8,6 +8,10 @@ import "./src/env.js";
 const config = {
   reactStrictMode: true,
 
+  // Workaround for next-auth@5.0.0-beta and next@15 module resolution issue
+  // @see https://github.com/nextauthjs/next-auth/discussions/10058
+  transpilePackages: ["next-auth"],
+
   /**
    * If you are using `appDir` then you must comment the below `i18n` config out.
    *

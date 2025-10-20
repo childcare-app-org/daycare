@@ -10,14 +10,11 @@ export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Redirect authenticated users to appropriate dashboard
+  // Redirect authenticated users to appropriate dashboard based on role
   useEffect(() => {
     if (session?.user) {
-      if (session.user.role === 'admin') {
-        router.push('/select-role');
-      } else {
-        router.push('/dashboard');
-      }
+      // All authenticated users go to dashboard (role-specific content shown there)
+      router.push('/dashboard');
     }
   }, [session, router]);
 

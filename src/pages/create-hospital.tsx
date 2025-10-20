@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -6,35 +7,51 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { api } from '~/utils/api';
 
 export default function CreateHospital() {
     const router = useRouter();
+    const { data: session, status } = useSession();
     const [formData, setFormData] = useState({
         name: "",
         address: "",
         capacity: "",
         pricing: "",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string>("");
+
+    const createHospitalMutation = api.hospital.create.useMutation({
+        onSuccess: () => {
+            router.push("/dashboard");
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
+        setError("");
 
-        try {
-            // TODO: Implement API call to create hospital
-            console.log("Creating hospital:", formData);
+        const capacity = parseInt(formData.capacity);
+        const pricing = parseFloat(formData.pricing);
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Redirect to dashboard
-            router.push("/");
-        } catch (error) {
-            console.error("Error creating hospital:", error);
-        } finally {
-            setIsSubmitting(false);
+        if (isNaN(capacity) || capacity < 1) {
+            setError("Capacity must be a valid number greater than 0");
+            return;
         }
+
+        if (isNaN(pricing) || pricing < 0) {
+            setError("Pricing must be a valid number");
+            return;
+        }
+
+        createHospitalMutation.mutate({
+            name: formData.name,
+            address: formData.address,
+            capacity,
+            pricing,
+        });
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,6 +61,31 @@ export default function CreateHospital() {
             [name]: value
         }));
     };
+
+    // Check authentication
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!session || session.user.role !== 'admin') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-gray-600 mb-4">You must be an admin to access this page</p>
+                    <Link href="/dashboard">
+                        <Button>Go to Dashboard</Button>
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -81,6 +123,11 @@ export default function CreateHospital() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
+                                {error && (
+                                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                                        {error}
+                                    </div>
+                                )}
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Hospital Name *</Label>
@@ -160,10 +207,10 @@ export default function CreateHospital() {
                                         </Button>
                                         <Button
                                             type="submit"
-                                            disabled={isSubmitting}
+                                            disabled={createHospitalMutation.isPending}
                                             className="flex-1"
                                         >
-                                            {isSubmitting ? "Creating..." : "Create Hospital"}
+                                            {createHospitalMutation.isPending ? "Creating..." : "Create Hospital"}
                                         </Button>
                                     </div>
                                 </form>
