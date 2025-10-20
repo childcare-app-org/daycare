@@ -1,4 +1,5 @@
 import { hospitalRouter } from '~/server/api/routers/hospital';
+import { logsRouter } from '~/server/api/routers/logs';
 import { nurseRouter } from '~/server/api/routers/nurse';
 import { patientRouter } from '~/server/api/routers/patient';
 import { postRouter } from '~/server/api/routers/post';
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   nurse: nurseRouter,
   patient: patientRouter,
   visit: visitRouter,
+  logs: logsRouter,
 });
 
 // export type definition of API

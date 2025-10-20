@@ -6,6 +6,7 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { api } from '~/utils/api';
 
 export default function CreateChild() {
     const router = useRouter();
@@ -18,33 +19,30 @@ export default function CreateChild() {
         familyDoctorPhone: "",
         parentId: "",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string>("");
 
-    // TODO: Replace with actual parents from API
-    const parents = [
-        { id: "1", name: "John Smith" },
-        { id: "2", name: "Sarah Johnson" },
-        { id: "3", name: "Mike Davis" },
-    ];
+    const createChildMutation = api.patient.createChild.useMutation({
+        onSuccess: () => {
+            router.push("/dashboard");
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
+        setError("");
 
-        try {
-            // TODO: Implement API call to create child
-            console.log("Creating child:", formData);
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Redirect to dashboard
-            router.push("/");
-        } catch (error) {
-            console.error("Error creating child:", error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        createChildMutation.mutate({
+            name: formData.name,
+            age: parseInt(formData.age),
+            allergies: formData.allergies || undefined,
+            preexistingConditions: formData.preexistingConditions || undefined,
+            familyDoctorName: formData.familyDoctorName || undefined,
+            familyDoctorPhone: formData.familyDoctorPhone || undefined,
+            relationshipType: "Parent",
+        });
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -91,6 +89,11 @@ export default function CreateChild() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
+                                {error && (
+                                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                                        {error}
+                                    </div>
+                                )}
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Child's Name *</Label>
@@ -106,44 +109,23 @@ export default function CreateChild() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="age">Age (in months) *</Label>
-                                            <Input
-                                                id="age"
-                                                name="age"
-                                                type="number"
-                                                placeholder="36"
-                                                value={formData.age}
-                                                onChange={handleInputChange}
-                                                required
-                                                min="3"
-                                                max="144"
-                                                className="w-full"
-                                            />
-                                            <p className="text-sm text-gray-500">
-                                                Age range: 3 months to 12 years
-                                            </p>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="parentId">Parent/Guardian *</Label>
-                                            <select
-                                                id="parentId"
-                                                name="parentId"
-                                                value={formData.parentId}
-                                                onChange={handleInputChange}
-                                                required
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                            >
-                                                <option value="">Select a parent</option>
-                                                {parents.map((parent) => (
-                                                    <option key={parent.id} value={parent.id}>
-                                                        {parent.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="age">Age (in months) *</Label>
+                                        <Input
+                                            id="age"
+                                            name="age"
+                                            type="number"
+                                            placeholder="36"
+                                            value={formData.age}
+                                            onChange={handleInputChange}
+                                            required
+                                            min="3"
+                                            max="144"
+                                            className="w-full"
+                                        />
+                                        <p className="text-sm text-gray-500">
+                                            Age range: 3 months to 12 years
+                                        </p>
                                     </div>
 
                                     <div className="space-y-2">
@@ -217,10 +199,10 @@ export default function CreateChild() {
                                         </Button>
                                         <Button
                                             type="submit"
-                                            disabled={isSubmitting}
+                                            disabled={createChildMutation.isPending}
                                             className="flex-1"
                                         >
-                                            {isSubmitting ? "Creating..." : "Create Child"}
+                                            {createChildMutation.isPending ? "Creating..." : "Create Child"}
                                         </Button>
                                     </div>
                                 </form>

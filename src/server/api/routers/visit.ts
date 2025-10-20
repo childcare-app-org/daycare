@@ -146,6 +146,70 @@ export const visitRouter = createTRPCRouter({
       );
   }),
 
+  // Get visit by ID (Nurse only - for visit detail page)
+  getById: nurseProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Get the nurse record for the current user
+      const [nurse] = await ctx.db
+        .select()
+        .from(nurses)
+        .where(eq(nurses.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!nurse) {
+        throw new Error("Nurse profile not found");
+      }
+
+      // Get visit details with related data
+      const [visit] = await ctx.db
+        .select({
+          id: visits.id,
+          parentId: visits.parentId,
+          childId: visits.childId,
+          hospitalId: visits.hospitalId,
+          dropOffTime: visits.dropOffTime,
+          pickupTime: visits.pickupTime,
+          status: visits.status,
+          notes: visits.notes,
+          createdAt: visits.createdAt,
+          updatedAt: visits.updatedAt,
+          parent: {
+            id: parents.id,
+            name: parents.name,
+            phoneNumber: parents.phoneNumber,
+          },
+          child: {
+            id: children.id,
+            name: children.name,
+            age: children.age,
+            allergies: children.allergies,
+            preexistingConditions: children.preexistingConditions,
+            familyDoctorName: children.familyDoctorName,
+            familyDoctorPhone: children.familyDoctorPhone,
+          },
+          hospital: {
+            id: hospitals.id,
+            name: hospitals.name,
+            address: hospitals.address,
+          },
+        })
+        .from(visits)
+        .leftJoin(parents, eq(visits.parentId, parents.id))
+        .leftJoin(children, eq(visits.childId, children.id))
+        .leftJoin(hospitals, eq(visits.hospitalId, hospitals.id))
+        .where(
+          and(eq(visits.id, input.id), eq(visits.hospitalId, nurse.hospitalId)),
+        )
+        .limit(1);
+
+      if (!visit) {
+        throw new Error("Visit not found or not in your hospital");
+      }
+
+      return visit;
+    }),
+
   // Get parent's children's active visits (Parent only)
   // Parents see active visits for their children
   getMyChildrenActiveVisits: parentProcedure.query(async ({ ctx }) => {

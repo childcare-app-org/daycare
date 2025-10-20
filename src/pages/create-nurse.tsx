@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -6,40 +7,38 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { api } from '~/utils/api';
 
 export default function CreateNurse() {
     const router = useRouter();
+    const { data: session, status } = useSession();
     const [formData, setFormData] = useState({
         name: "",
+        email: "",
         hospitalId: "",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string>("");
 
-    // TODO: Replace with actual hospitals from API
-    const hospitals = [
-        { id: "1", name: "City General Hospital" },
-        { id: "2", name: "Children's Medical Center" },
-        { id: "3", name: "Regional Hospital" },
-    ];
+    const { data: hospitals } = api.hospital.getAll.useQuery();
+
+    const createNurseMutation = api.nurse.create.useMutation({
+        onSuccess: () => {
+            router.push("/dashboard");
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
+        setError("");
 
-        try {
-            // TODO: Implement API call to create nurse
-            console.log("Creating nurse:", formData);
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Redirect to dashboard
-            router.push("/");
-        } catch (error) {
-            console.error("Error creating nurse:", error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        createNurseMutation.mutate({
+            name: formData.name,
+            email: formData.email,
+            hospitalId: formData.hospitalId,
+        });
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -49,6 +48,31 @@ export default function CreateNurse() {
             [name]: value
         }));
     };
+
+    // Check authentication
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!session || session.user.role !== 'admin') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-gray-600 mb-4">You must be an admin to access this page</p>
+                    <Link href="/dashboard">
+                        <Button>Go to Dashboard</Button>
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -86,6 +110,11 @@ export default function CreateNurse() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
+                                {error && (
+                                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                                        {error}
+                                    </div>
+                                )}
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Nurse Name *</Label>
@@ -102,6 +131,23 @@ export default function CreateNurse() {
                                     </div>
 
                                     <div className="space-y-2">
+                                        <Label htmlFor="email">Email Address *</Label>
+                                        <Input
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            placeholder="nurse@hospital.com"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            required
+                                            className="w-full"
+                                        />
+                                        <p className="text-sm text-gray-500">
+                                            The nurse will use this email to sign in
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2">
                                         <Label htmlFor="hospitalId">Hospital *</Label>
                                         <select
                                             id="hospitalId"
@@ -112,7 +158,7 @@ export default function CreateNurse() {
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                         >
                                             <option value="">Select a hospital</option>
-                                            {hospitals.map((hospital) => (
+                                            {hospitals?.map((hospital) => (
                                                 <option key={hospital.id} value={hospital.id}>
                                                     {hospital.name}
                                                 </option>
@@ -134,10 +180,10 @@ export default function CreateNurse() {
                                         </Button>
                                         <Button
                                             type="submit"
-                                            disabled={isSubmitting}
+                                            disabled={createNurseMutation.isPending}
                                             className="flex-1"
                                         >
-                                            {isSubmitting ? "Creating..." : "Create Nurse"}
+                                            {createNurseMutation.isPending ? "Creating..." : "Create Nurse"}
                                         </Button>
                                     </div>
                                 </form>

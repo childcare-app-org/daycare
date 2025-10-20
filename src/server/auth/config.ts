@@ -57,13 +57,23 @@ export const authConfig = {
   }) as any,
   callbacks: {
     // This runs when a user signs in (first time or returning)
-    signIn: async ({ user }) => {
-      const userEmail = user.email;
-      const userRole = (user as any).role;
+    signIn: async () => {
+      return true; // Allow sign in
+    },
 
-      // Only run on first sign-in when role is null
-      // This is the most efficient: only 1 DB query per user, ever
-      if (userEmail && user.id && !userRole) {
+    // This callback is called whenever a session is checked
+    // With database sessions, the user is fetched from DB, so it exists when this runs
+    session: async ({ session, user }) => {
+      console.log("session callback - user:", user);
+
+      const userEmail = user.email;
+      const userId = user.id;
+      let userRole = (user as any).role as UserRole | null;
+
+      // Only run linking logic if user doesn't have a role yet
+      if (!userRole && userEmail && userId) {
+        console.log("session callback - no role, checking for nurse/parent");
+
         // Check if there's a nurse entry for this email
         const [nurseEntry] = await db
           .select()
@@ -71,42 +81,53 @@ export const authConfig = {
           .where(eq(nurses.email, userEmail))
           .limit(1);
 
+        console.log("session callback - nurseEntry:", nurseEntry);
+
         if (nurseEntry && !nurseEntry.userId) {
           // User is a nurse - link them and set role
           await db
             .update(nurses)
-            .set({ userId: user.id })
+            .set({ userId: userId })
             .where(eq(nurses.id, nurseEntry.id));
 
           await db
             .update(users)
             .set({ role: "nurse" })
-            .where(eq(users.id, user.id));
+            .where(eq(users.id, userId));
+
+          userRole = "nurse";
+          console.log("session callback - linked as nurse");
         } else {
           // User is a parent - set role and create bare parent object
           await db
             .update(users)
             .set({ role: "parent" })
-            .where(eq(users.id, user.id));
+            .where(eq(users.id, userId));
 
-          // Create a basic parent record that they can fill out later
-          await db.insert(parents).values({
-            userId: user.id,
-            name: user.name || "",
-            phoneNumber: "", // Will be filled later
-            homeAddress: "", // Will be filled later
-          });
+          // Check if parent record already exists
+          const [existingParent] = await db
+            .select()
+            .from(parents)
+            .where(eq(parents.userId, userId))
+            .limit(1);
+
+          if (!existingParent) {
+            // Create a basic parent record that they can fill out later
+            await db.insert(parents).values({
+              userId: userId,
+              name: user.name || "",
+              phoneNumber: "", // Will be filled later
+              homeAddress: "", // Will be filled later
+            });
+          }
+
+          userRole = "parent";
+          console.log("session callback - set as parent");
         }
       }
 
-      return true; // Allow sign in
-    },
-
-    // This callback is called whenever a session is checked (much more frequent)
-    session: async ({ session, user }) => {
-      // Get role from user object (no DB queries here!)
       // Default to parent if somehow still null (shouldn't happen)
-      const role = ((user as any).role as UserRole) || "parent";
+      const role = userRole || "parent";
 
       return {
         ...session,

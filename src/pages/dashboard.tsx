@@ -128,10 +128,14 @@ function NurseDashboard() {
                     {activeVisits && activeVisits.length > 0 ? (
                         <div className="space-y-4">
                             {activeVisits.map((visit) => (
-                                <div key={visit.id} className="p-4 border rounded-lg">
+                                <div key={visit.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
                                     <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold">{visit.child?.name}</h3>
+                                        <div className="flex-1">
+                                            <Link href={`/visit/${visit.id}`}>
+                                                <h3 className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
+                                                    {visit.child?.name}
+                                                </h3>
+                                            </Link>
                                             <p className="text-sm text-gray-600">
                                                 Parent: {visit.parent?.name}
                                             </p>
@@ -139,10 +143,17 @@ function NurseDashboard() {
                                                 Dropped off: {new Date(visit.dropOffTime).toLocaleString()}
                                             </p>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-right ml-4">
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 Active
                                             </span>
+                                            <div className="mt-2">
+                                                <Link href={`/visit/${visit.id}`}>
+                                                    <Button size="sm" variant="outline">
+                                                        View Timeline
+                                                    </Button>
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

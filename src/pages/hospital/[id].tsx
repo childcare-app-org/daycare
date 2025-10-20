@@ -15,31 +15,6 @@ export default function HospitalDetail() {
     const { id } = router.query;
     const hospitalId = typeof id === 'string' ? id : '';
 
-    // Check authentication
-    if (authStatus === 'loading') {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!session || session.user.role !== 'admin') {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-gray-600 mb-4">You must be an admin to access this page</p>
-                    <Link href="/dashboard">
-                        <Button>Go to Dashboard</Button>
-                    </Link>
-                </div>
-            </div>
-        );
-    }
-
     const { data: hospital, isLoading: hospitalLoading } = api.hospital.getById.useQuery(
         { id: hospitalId },
         { enabled: !!hospitalId }
@@ -84,6 +59,31 @@ export default function HospitalDetail() {
             hospitalId,
         });
     };
+
+    // Check authentication
+    if (authStatus === 'loading') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!session || session.user.role !== 'admin') {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-gray-600 mb-4">You must be an admin to access this page</p>
+                    <Link href="/dashboard">
+                        <Button>Go to Dashboard</Button>
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     if (hospitalLoading) {
         return (
