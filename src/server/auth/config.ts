@@ -1,10 +1,13 @@
 import type { DefaultSession, NextAuthConfig } from "next-auth";
+import { eq } from 'drizzle-orm';
 import GoogleProvider from 'next-auth/providers/google';
 import { env } from '~/env';
 import { db } from '~/server/db';
-import { accounts, sessions, users, verificationTokens } from '~/server/db/schema';
+import { accounts, nurses, parents, sessions, users, verificationTokens } from '~/server/db/schema';
 
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
+
+export type UserRole = "admin" | "nurse" | "parent";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -16,15 +19,13 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
-      // role: UserRole;
+      role: UserRole;
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    role: UserRole;
+  }
 }
 
 /**
@@ -53,14 +54,68 @@ export const authConfig = {
     accountsTable: accounts,
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
-  }),
+  }) as any,
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    // This runs when a user signs in (first time or returning)
+    signIn: async ({ user }) => {
+      const userEmail = user.email;
+      const userRole = (user as any).role;
+
+      // Only run on first sign-in when role is null
+      // This is the most efficient: only 1 DB query per user, ever
+      if (userEmail && user.id && !userRole) {
+        // Check if there's a nurse entry for this email
+        const [nurseEntry] = await db
+          .select()
+          .from(nurses)
+          .where(eq(nurses.email, userEmail))
+          .limit(1);
+
+        if (nurseEntry && !nurseEntry.userId) {
+          // User is a nurse - link them and set role
+          await db
+            .update(nurses)
+            .set({ userId: user.id })
+            .where(eq(nurses.id, nurseEntry.id));
+
+          await db
+            .update(users)
+            .set({ role: "nurse" })
+            .where(eq(users.id, user.id));
+        } else {
+          // User is a parent - set role and create bare parent object
+          await db
+            .update(users)
+            .set({ role: "parent" })
+            .where(eq(users.id, user.id));
+
+          // Create a basic parent record that they can fill out later
+          await db.insert(parents).values({
+            userId: user.id,
+            name: user.name || "",
+            phoneNumber: "", // Will be filled later
+            homeAddress: "", // Will be filled later
+          });
+        }
+      }
+
+      return true; // Allow sign in
+    },
+
+    // This callback is called whenever a session is checked (much more frequent)
+    session: async ({ session, user }) => {
+      // Get role from user object (no DB queries here!)
+      // Default to parent if somehow still null (shouldn't happen)
+      const role = ((user as any).role as UserRole) || "parent";
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+          role,
+        },
+      };
+    },
   },
 } satisfies NextAuthConfig;

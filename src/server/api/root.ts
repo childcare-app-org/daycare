@@ -1,5 +1,10 @@
-import { postRouter } from "~/server/api/routers/post";
-import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { hospitalRouter } from '~/server/api/routers/hospital';
+import { nurseRouter } from '~/server/api/routers/nurse';
+import { patientRouter } from '~/server/api/routers/patient';
+import { postRouter } from '~/server/api/routers/post';
+import { userRouter } from '~/server/api/routers/user';
+import { visitRouter } from '~/server/api/routers/visit';
+import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 
 /**
  * This is the primary router for your server.
@@ -8,6 +13,11 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   post: postRouter,
+  user: userRouter,
+  hospital: hospitalRouter,
+  nurse: nurseRouter,
+  patient: patientRouter,
+  visit: visitRouter,
 });
 
 // export type definition of API

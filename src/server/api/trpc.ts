@@ -7,14 +7,16 @@
  * need to use are documented accordingly near the end.
  */
 
-import { initTRPC, TRPCError } from "@trpc/server";
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { type Session } from "next-auth";
-import superjson from "superjson";
-import { ZodError } from "zod";
+import { Session, type } from 'next-auth';
+import superjson from 'superjson';
+import { ZodError } from 'zod';
+import { auth } from '~/server/auth';
+import { db } from '~/server/db';
 
-import { auth } from "~/server/auth";
-import { db } from "~/server/db";
+import { initTRPC, TRPCError } from '@trpc/server';
+import { CreateNextContextOptions, type } from '@trpc/server/adapters/next';
+
+import type { UserRole } from "~/server/auth/config";
 
 /**
  * 1. CONTEXT
@@ -158,3 +160,65 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Admin-only procedure
+ *
+ * Only accessible to users with admin role
+ */
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== "admin") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
+  }
+  return next({ ctx });
+});
+
+/**
+ * Nurse-only procedure
+ *
+ * Only accessible to users with nurse role
+ */
+export const nurseProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== "nurse") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Nurse access required",
+    });
+  }
+  return next({ ctx });
+});
+
+/**
+ * Parent-only procedure
+ *
+ * Only accessible to users with parent role
+ */
+export const parentProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== "parent") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Parent access required",
+    });
+  }
+  return next({ ctx });
+});
+
+/**
+ * Role-based procedure factory
+ *
+ * Creates a procedure that requires specific roles
+ */
+export const createRoleProcedure = (allowedRoles: UserRole[]) => {
+  return protectedProcedure.use(({ ctx, next }) => {
+    if (!allowedRoles.includes(ctx.session.user.role)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: `Access denied. Required roles: ${allowedRoles.join(", ")}`,
+      });
+    }
+    return next({ ctx });
+  });
+};

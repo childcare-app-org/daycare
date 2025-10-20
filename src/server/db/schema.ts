@@ -47,6 +47,7 @@ export const users = createTable("user", (d) => ({
     })
     .default(sql`CURRENT_TIMESTAMP`),
   image: d.varchar({ length: 255 }),
+  role: d.varchar({ length: 50 }).$type<"admin" | "nurse" | "parent">(), // null by default, set on first sign-in
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -140,11 +141,12 @@ export const nurses = createTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: d.varchar({ length: 255 }).notNull(),
+    email: d.varchar({ length: 255 }).notNull().unique(), // Email for automatic linking
     hospitalId: d
       .varchar({ length: 255 })
       .notNull()
       .references(() => hospitals.id),
-    userId: d.varchar({ length: 255 }).references(() => users.id), // Link to auth user if using NextAuth
+    userId: d.varchar({ length: 255 }).references(() => users.id), // Link to auth user after they sign in
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -154,6 +156,7 @@ export const nurses = createTable(
   (t) => [
     index("nurse_hospital_idx").on(t.hospitalId),
     index("nurse_user_idx").on(t.userId),
+    index("nurse_email_idx").on(t.email),
   ],
 );
 
