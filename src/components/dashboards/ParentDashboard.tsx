@@ -23,9 +23,21 @@ type Child = {
 export function ParentDashboard() {
     const { data: activeVisits, isLoading: visitsLoading } = api.visit.getMyChildrenActiveVisits.useQuery();
     const { data: children, isLoading: childrenLoading, refetch } = api.patient.getMyChildren.useQuery();
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingChild, setEditingChild] = useState<Child | null>(null);
     const [deletingChild, setDeletingChild] = useState<Child | null>(null);
     const [error, setError] = useState('');
+
+    const createChildMutation = api.patient.createChild.useMutation({
+        onSuccess: () => {
+            setShowCreateModal(false);
+            setError('');
+            refetch();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
 
     const updateChildMutation = api.patient.updateChild.useMutation({
         onSuccess: () => {
@@ -48,6 +60,11 @@ export function ParentDashboard() {
         },
     });
 
+    const handleCreate = () => {
+        setShowCreateModal(true);
+        setError('');
+    };
+
     const handleEdit = (child: Child) => {
         setEditingChild(child);
         setError('');
@@ -56,6 +73,13 @@ export function ParentDashboard() {
     const handleDelete = (child: Child) => {
         setDeletingChild(child);
         setError('');
+    };
+
+    const handleCreateSubmit = (data: ChildFormData) => {
+        createChildMutation.mutate({
+            ...data,
+            relationshipType: 'Parent',
+        });
     };
 
     const handleUpdateSubmit = (data: ChildFormData) => {
@@ -97,11 +121,7 @@ export function ParentDashboard() {
                                 Manage your children and their daycare visits
                             </CardDescription>
                         </div>
-                        <Link href="/create-child">
-                            <Button>
-                                + Add Child
-                            </Button>
-                        </Link>
+                        <Button onClick={handleCreate}>+ Add Child</Button>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -165,13 +185,27 @@ export function ParentDashboard() {
                     ) : (
                         <div className="text-center py-8">
                             <p className="text-gray-500 mb-4">No children registered yet</p>
-                            <Link href="/create-child">
-                                <Button>Add Your First Child</Button>
-                            </Link>
+                            <Button onClick={handleCreate}>Add Your First Child</Button>
                         </div>
                     )}
                 </CardContent>
             </Card>
+
+            {/* Create Child Dialog */}
+            <EditDialog
+                open={showCreateModal}
+                onOpenChange={() => setShowCreateModal(false)}
+                title="Create Child"
+                description="Register a new child for daycare"
+                error={error}
+            >
+                <ChildForm
+                    mode="create"
+                    onSubmit={handleCreateSubmit}
+                    onCancel={() => setShowCreateModal(false)}
+                    isLoading={createChildMutation.isPending}
+                />
+            </EditDialog>
 
             {/* Edit Child Dialog */}
             <EditDialog

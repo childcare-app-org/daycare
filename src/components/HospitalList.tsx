@@ -20,9 +20,21 @@ type Hospital = {
 
 export function HospitalList() {
     const { data: hospitals, isLoading, refetch } = api.hospital.getAll.useQuery();
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingHospital, setEditingHospital] = useState<Hospital | null>(null);
     const [deletingHospital, setDeletingHospital] = useState<Hospital | null>(null);
     const [error, setError] = useState('');
+
+    const createHospitalMutation = api.hospital.create.useMutation({
+        onSuccess: () => {
+            setShowCreateModal(false);
+            setError('');
+            refetch();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
 
     const updateHospitalMutation = api.hospital.update.useMutation({
         onSuccess: () => {
@@ -45,6 +57,11 @@ export function HospitalList() {
         },
     });
 
+    const handleCreate = () => {
+        setShowCreateModal(true);
+        setError('');
+    };
+
     const handleEdit = (hospital: Hospital, e: React.MouseEvent) => {
         setEditingHospital(hospital);
         setError('');
@@ -53,6 +70,10 @@ export function HospitalList() {
     const handleDelete = (hospital: Hospital, e: React.MouseEvent) => {
         setDeletingHospital(hospital);
         setError('');
+    };
+
+    const handleCreateSubmit = (data: HospitalFormData) => {
+        createHospitalMutation.mutate(data);
     };
 
     const handleUpdateSubmit = (data: HospitalFormData) => {
@@ -94,9 +115,7 @@ export function HospitalList() {
                             {hospitals?.length || 0} hospital{hospitals?.length !== 1 ? 's' : ''} in the system
                         </CardDescription>
                     </div>
-                    <Link href="/create-hospital">
-                        <Button>Add Hospital</Button>
-                    </Link>
+                    <Button onClick={handleCreate}>Add Hospital</Button>
                 </div>
             </CardHeader>
             <CardContent>
@@ -130,12 +149,26 @@ export function HospitalList() {
                 ) : (
                     <div className="text-center py-8">
                         <p className="text-gray-500 mb-4">No hospitals yet</p>
-                        <Link href="/create-hospital">
-                            <Button>Create Your First Hospital</Button>
-                        </Link>
+                        <Button onClick={handleCreate}>Create Your First Hospital</Button>
                     </div>
                 )}
             </CardContent>
+
+            {/* Create Hospital Dialog */}
+            <EditDialog
+                open={showCreateModal}
+                onOpenChange={() => setShowCreateModal(false)}
+                title="Create Hospital"
+                description="Add a new hospital to the system"
+                error={error}
+            >
+                <HospitalForm
+                    mode="create"
+                    onSubmit={handleCreateSubmit}
+                    onCancel={() => setShowCreateModal(false)}
+                    isLoading={createHospitalMutation.isPending}
+                />
+            </EditDialog>
 
             {/* Edit Hospital Dialog */}
             <EditDialog

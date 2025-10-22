@@ -221,7 +221,6 @@ function EventForm({
     const [notes, setNotes] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
         if (eventType.trim()) {
             onSubmit({ eventType: eventType.trim(), notes: notes.trim() || undefined });
             setEventType('');

@@ -38,7 +38,6 @@ export function ChildForm({
     });
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
         onSubmit({
             name: formData.name,
             age: parseInt(formData.age),

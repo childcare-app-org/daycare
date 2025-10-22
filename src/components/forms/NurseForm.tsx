@@ -39,7 +39,6 @@ export function NurseForm({
     });
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
         onSubmit({
             name: formData.name,
             email: formData.email,

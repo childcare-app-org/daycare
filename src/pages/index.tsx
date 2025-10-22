@@ -70,9 +70,9 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Link href="/create-hospital">
+                  <Link href="/dashboard">
                     <Button className="w-full" size="lg">
-                      Create Hospital
+                      Go to Dashboard
                     </Button>
                   </Link>
                 </CardContent>
@@ -91,9 +91,9 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Link href="/create-nurse">
+                  <Link href="/dashboard">
                     <Button className="w-full" size="lg">
-                      Create Nurse
+                      Go to Dashboard
                     </Button>
                   </Link>
                 </CardContent>
@@ -133,9 +133,9 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Link href="/create-child">
+                  <Link href="/dashboard">
                     <Button className="w-full" size="lg">
-                      Create Child
+                      Go to Dashboard
                     </Button>
                   </Link>
                 </CardContent>

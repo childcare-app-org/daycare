@@ -34,7 +34,6 @@ export function HospitalForm({
     });
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
         onSubmit({
             name: formData.name,
             address: formData.address,

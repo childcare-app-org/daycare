@@ -37,14 +37,14 @@ export default function HospitalDetail() {
         { enabled: !!hospitalId }
     );
 
-    const [showAddNurse, setShowAddNurse] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingNurse, setEditingNurse] = useState<Nurse | null>(null);
     const [deletingNurse, setDeletingNurse] = useState<Nurse | null>(null);
     const [error, setError] = useState('');
 
     const createNurseMutation = api.nurse.create.useMutation({
         onSuccess: () => {
-            setShowAddNurse(false);
+            setShowCreateModal(false);
             setError('');
             refetchNurses();
         },
@@ -210,34 +210,10 @@ export default function HospitalDetail() {
                                             {nurses?.length || 0} nurse{nurses?.length !== 1 ? 's' : ''} assigned to this hospital
                                         </CardDescription>
                                     </div>
-                                    {!showAddNurse && (
-                                        <Button onClick={() => setShowAddNurse(true)}>Add Nurse</Button>
-                                    )}
+                                    <Button onClick={() => setShowCreateModal(true)}>Add Nurse</Button>
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {showAddNurse && (
-                                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                                        <h3 className="font-semibold mb-4">Add New Nurse</h3>
-                                        {error && (
-                                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-                                                {error}
-                                            </div>
-                                        )}
-                                        <NurseForm
-                                            mode="create"
-                                            hospitalId={hospitalId}
-                                            hospitalName={hospital?.name || ''}
-                                            onSubmit={handleSubmit}
-                                            onCancel={() => {
-                                                setShowAddNurse(false);
-                                                setError('');
-                                            }}
-                                            isLoading={createNurseMutation.isPending}
-                                        />
-                                    </div>
-                                )}
-
                                 {nursesLoading ? (
                                     <div className="flex justify-center py-8">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
@@ -277,14 +253,30 @@ export default function HospitalDetail() {
                                 ) : (
                                     <div className="text-center py-8">
                                         <p className="text-gray-500 mb-4">No nurses assigned to this hospital yet</p>
-                                        {!showAddNurse && (
-                                            <Button onClick={() => setShowAddNurse(true)}>Add First Nurse</Button>
-                                        )}
+                                        <Button onClick={() => setShowCreateModal(true)}>Add First Nurse</Button>
                                     </div>
                                 )}
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Create Nurse Dialog */}
+                    <EditDialog
+                        open={showCreateModal}
+                        onOpenChange={() => setShowCreateModal(false)}
+                        title="Add Nurse"
+                        description={`Add a new nurse to ${hospital?.name}`}
+                        error={error}
+                    >
+                        <NurseForm
+                            mode="create"
+                            hospitalId={hospitalId}
+                            hospitalName={hospital?.name || ''}
+                            onSubmit={handleSubmit}
+                            onCancel={() => setShowCreateModal(false)}
+                            isLoading={createNurseMutation.isPending}
+                        />
+                    </EditDialog>
 
                     {/* Edit Nurse Dialog */}
                     <EditDialog

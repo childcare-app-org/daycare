@@ -38,7 +38,7 @@ export function VisitForm({
     });
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+
         onSubmit({
             dropOffTime: new Date(formData.dropOffTime),
             pickupTime: formData.pickupTime ? new Date(formData.pickupTime) : undefined,

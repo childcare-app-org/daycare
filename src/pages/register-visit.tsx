@@ -27,7 +27,6 @@ export default function RegisterVisit() {
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
         setError('');
 
         if (!childId || !selectedHospitalId) {
