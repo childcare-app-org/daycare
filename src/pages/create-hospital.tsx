@@ -3,21 +3,16 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { HospitalForm } from '~/components/forms/HospitalForm';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
 import { api } from '~/utils/api';
+
+import type { HospitalFormData } from '~/components/forms/HospitalForm';
 
 export default function CreateHospital() {
     const router = useRouter();
     const { data: session, status } = useSession();
-    const [formData, setFormData] = useState({
-        name: "",
-        address: "",
-        capacity: "",
-        pricing: "",
-    });
     const [error, setError] = useState<string>("");
 
     const createHospitalMutation = api.hospital.create.useMutation({
@@ -29,37 +24,9 @@ export default function CreateHospital() {
         },
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (data: HospitalFormData) => {
         setError("");
-
-        const capacity = parseInt(formData.capacity);
-        const pricing = parseFloat(formData.pricing);
-
-        if (isNaN(capacity) || capacity < 1) {
-            setError("Capacity must be a valid number greater than 0");
-            return;
-        }
-
-        if (isNaN(pricing) || pricing < 0) {
-            setError("Pricing must be a valid number");
-            return;
-        }
-
-        createHospitalMutation.mutate({
-            name: formData.name,
-            address: formData.address,
-            capacity,
-            pricing,
-        });
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        createHospitalMutation.mutate(data);
     };
 
     // Check authentication
@@ -128,92 +95,12 @@ export default function CreateHospital() {
                                         {error}
                                     </div>
                                 )}
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Hospital Name *</Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            type="text"
-                                            placeholder="Enter hospital name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="address">Address *</Label>
-                                        <Input
-                                            id="address"
-                                            name="address"
-                                            type="text"
-                                            placeholder="Enter full address"
-                                            value={formData.address}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="capacity">Capacity *</Label>
-                                            <Input
-                                                id="capacity"
-                                                name="capacity"
-                                                type="number"
-                                                placeholder="20"
-                                                value={formData.capacity}
-                                                onChange={handleInputChange}
-                                                required
-                                                min="1"
-                                                className="w-full"
-                                            />
-                                            <p className="text-sm text-gray-500">
-                                                Maximum number of children
-                                            </p>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="pricing">Daily Pricing *</Label>
-                                            <Input
-                                                id="pricing"
-                                                name="pricing"
-                                                type="number"
-                                                step="0.01"
-                                                placeholder="150.00"
-                                                value={formData.pricing}
-                                                onChange={handleInputChange}
-                                                required
-                                                min="0"
-                                                className="w-full"
-                                            />
-                                            <p className="text-sm text-gray-500">
-                                                Cost per day in dollars
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => router.push("/")}
-                                            className="flex-1"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            disabled={createHospitalMutation.isPending}
-                                            className="flex-1"
-                                        >
-                                            {createHospitalMutation.isPending ? "Creating..." : "Create Hospital"}
-                                        </Button>
-                                    </div>
-                                </form>
+                                <HospitalForm
+                                    mode="create"
+                                    onSubmit={handleSubmit}
+                                    onCancel={() => router.push("/")}
+                                    isLoading={createHospitalMutation.isPending}
+                                />
                             </CardContent>
                         </Card>
                     </div>

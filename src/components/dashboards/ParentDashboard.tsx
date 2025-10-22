@@ -1,11 +1,75 @@
 import Link from 'next/link';
+import { useState } from 'react';
+import { ChildForm } from '~/components/forms/ChildForm';
+import { ActionMenu } from '~/components/shared/ActionMenu';
+import { DeleteDialog } from '~/components/shared/DeleteDialog';
+import { EditDialog } from '~/components/shared/EditDialog';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { api } from '~/utils/api';
 
+import type { ChildFormData } from '~/components/forms/ChildForm';
+
+type Child = {
+    id?: string | null;
+    name?: string | null;
+    age?: number | null;
+    allergies?: string | null;
+    preexistingConditions?: string | null;
+    familyDoctorName?: string | null;
+    familyDoctorPhone?: string | null;
+};
+
 export function ParentDashboard() {
     const { data: activeVisits, isLoading: visitsLoading } = api.visit.getMyChildrenActiveVisits.useQuery();
-    const { data: children, isLoading: childrenLoading } = api.patient.getMyChildren.useQuery();
+    const { data: children, isLoading: childrenLoading, refetch } = api.patient.getMyChildren.useQuery();
+    const [editingChild, setEditingChild] = useState<Child | null>(null);
+    const [deletingChild, setDeletingChild] = useState<Child | null>(null);
+    const [error, setError] = useState('');
+
+    const updateChildMutation = api.patient.updateChild.useMutation({
+        onSuccess: () => {
+            setEditingChild(null);
+            setError('');
+            refetch();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
+
+    const deleteChildMutation = api.patient.deleteChild.useMutation({
+        onSuccess: () => {
+            setDeletingChild(null);
+            refetch();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
+
+    const handleEdit = (child: Child) => {
+        setEditingChild(child);
+        setError('');
+    };
+
+    const handleDelete = (child: Child) => {
+        setDeletingChild(child);
+        setError('');
+    };
+
+    const handleUpdateSubmit = (data: ChildFormData) => {
+        if (!editingChild?.id) return;
+        updateChildMutation.mutate({
+            id: editingChild.id,
+            ...data,
+        });
+    };
+
+    const handleDeleteConfirm = () => {
+        if (!deletingChild?.id) return;
+        deleteChildMutation.mutate({ id: deletingChild.id });
+    };
 
     if (visitsLoading || childrenLoading) {
         return (
@@ -74,7 +138,7 @@ export function ParentDashboard() {
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="ml-4">
+                                            <div className="flex items-start gap-2 ml-4">
                                                 {activeVisit ? (
                                                     <Link href={`/visit/${activeVisit.id}`}>
                                                         <Button variant="outline">
@@ -88,6 +152,10 @@ export function ParentDashboard() {
                                                         </Button>
                                                     </Link>
                                                 )}
+                                                <ActionMenu
+                                                    onEdit={() => handleEdit(child)}
+                                                    onDelete={() => handleDelete(child)}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -104,6 +172,41 @@ export function ParentDashboard() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Edit Child Dialog */}
+            <EditDialog
+                open={!!editingChild}
+                onOpenChange={() => setEditingChild(null)}
+                title="Edit Child"
+                description={`Update ${editingChild?.name}'s information`}
+                error={error}
+            >
+                <ChildForm
+                    mode="edit"
+                    defaultValues={editingChild ? {
+                        name: editingChild.name || '',
+                        age: editingChild.age || 36,
+                        allergies: editingChild.allergies || '',
+                        preexistingConditions: editingChild.preexistingConditions || '',
+                        familyDoctorName: editingChild.familyDoctorName || '',
+                        familyDoctorPhone: editingChild.familyDoctorPhone || '',
+                    } : undefined}
+                    onSubmit={handleUpdateSubmit}
+                    onCancel={() => setEditingChild(null)}
+                    isLoading={updateChildMutation.isPending}
+                />
+            </EditDialog>
+
+            {/* Delete Child Confirmation Dialog */}
+            <DeleteDialog
+                open={!!deletingChild}
+                onOpenChange={() => setDeletingChild(null)}
+                onConfirm={handleDeleteConfirm}
+                title="Delete Child"
+                description={`Are you sure you want to delete ${deletingChild?.name}? This action cannot be undone and will permanently remove all records associated with this child.`}
+                isLoading={deleteChildMutation.isPending}
+                error={error}
+            />
         </div>
     );
 }

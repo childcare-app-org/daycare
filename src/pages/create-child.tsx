@@ -2,23 +2,13 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { Button } from '~/components/ui/button';
+import { ChildForm } from '~/components/forms/ChildForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
 import { api } from '~/utils/api';
 
+import type { ChildFormData } from '~/components/forms/ChildForm';
 export default function CreateChild() {
     const router = useRouter();
-    const [formData, setFormData] = useState({
-        name: "",
-        age: "",
-        allergies: "",
-        preexistingConditions: "",
-        familyDoctorName: "",
-        familyDoctorPhone: "",
-        parentId: "",
-    });
     const [error, setError] = useState<string>("");
 
     const createChildMutation = api.patient.createChild.useMutation({
@@ -30,27 +20,12 @@ export default function CreateChild() {
         },
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (data: ChildFormData) => {
         setError("");
-
         createChildMutation.mutate({
-            name: formData.name,
-            age: parseInt(formData.age),
-            allergies: formData.allergies || undefined,
-            preexistingConditions: formData.preexistingConditions || undefined,
-            familyDoctorName: formData.familyDoctorName || undefined,
-            familyDoctorPhone: formData.familyDoctorPhone || undefined,
+            ...data,
             relationshipType: "Parent",
         });
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
     };
 
     return (
@@ -94,118 +69,12 @@ export default function CreateChild() {
                                         {error}
                                     </div>
                                 )}
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Child's Name *</Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            type="text"
-                                            placeholder="Enter child's full name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="age">Age (in months) *</Label>
-                                        <Input
-                                            id="age"
-                                            name="age"
-                                            type="number"
-                                            placeholder="36"
-                                            value={formData.age}
-                                            onChange={handleInputChange}
-                                            required
-                                            min="3"
-                                            max="144"
-                                            className="w-full"
-                                        />
-                                        <p className="text-sm text-gray-500">
-                                            Age range: 3 months to 12 years
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="allergies">Allergies</Label>
-                                        <textarea
-                                            id="allergies"
-                                            name="allergies"
-                                            placeholder="List any known allergies (e.g., peanuts, dairy, medication)"
-                                            value={formData.allergies}
-                                            onChange={handleInputChange}
-                                            rows={2}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                        />
-                                        <p className="text-sm text-gray-500">
-                                            Leave blank if no known allergies
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="preexistingConditions">Preexisting Conditions</Label>
-                                        <textarea
-                                            id="preexistingConditions"
-                                            name="preexistingConditions"
-                                            placeholder="List any preexisting medical conditions (e.g., asthma, epilepsy)"
-                                            value={formData.preexistingConditions}
-                                            onChange={handleInputChange}
-                                            rows={2}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                        />
-                                        <p className="text-sm text-gray-500">
-                                            Leave blank if no preexisting conditions
-                                        </p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="familyDoctorName">Family Doctor Name</Label>
-                                            <Input
-                                                id="familyDoctorName"
-                                                name="familyDoctorName"
-                                                type="text"
-                                                placeholder="Dr. Smith"
-                                                value={formData.familyDoctorName}
-                                                onChange={handleInputChange}
-                                                className="w-full"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="familyDoctorPhone">Family Doctor Phone</Label>
-                                            <Input
-                                                id="familyDoctorPhone"
-                                                name="familyDoctorPhone"
-                                                type="tel"
-                                                placeholder="(555) 123-4567"
-                                                value={formData.familyDoctorPhone}
-                                                onChange={handleInputChange}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => router.push("/")}
-                                            className="flex-1"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            disabled={createChildMutation.isPending}
-                                            className="flex-1"
-                                        >
-                                            {createChildMutation.isPending ? "Creating..." : "Create Child"}
-                                        </Button>
-                                    </div>
-                                </form>
+                                <ChildForm
+                                    mode="create"
+                                    onSubmit={handleSubmit}
+                                    onCancel={() => router.push("/")}
+                                    isLoading={createChildMutation.isPending}
+                                />
                             </CardContent>
                         </Card>
                     </div>

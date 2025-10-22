@@ -3,11 +3,23 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { NurseForm } from '~/components/forms/NurseForm';
+import { ActionMenu } from '~/components/shared/ActionMenu';
+import { DeleteDialog } from '~/components/shared/DeleteDialog';
+import { EditDialog } from '~/components/shared/EditDialog';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
 import { api } from '~/utils/api';
+
+import type { NurseFormData } from '~/components/forms/NurseForm';
+
+type Nurse = {
+    id: string;
+    name: string;
+    email: string;
+    hospitalId: string;
+    userId: string | null;
+};
 
 export default function HospitalDetail() {
     const router = useRouter();
@@ -26,16 +38,13 @@ export default function HospitalDetail() {
     );
 
     const [showAddNurse, setShowAddNurse] = useState(false);
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-    });
+    const [editingNurse, setEditingNurse] = useState<Nurse | null>(null);
+    const [deletingNurse, setDeletingNurse] = useState<Nurse | null>(null);
     const [error, setError] = useState('');
 
     const createNurseMutation = api.nurse.create.useMutation({
         onSuccess: () => {
             setShowAddNurse(false);
-            setFormData({ name: '', email: '' });
             setError('');
             refetchNurses();
         },
@@ -44,20 +53,62 @@ export default function HospitalDetail() {
         },
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    const updateNurseMutation = api.nurse.update.useMutation({
+        onSuccess: () => {
+            setEditingNurse(null);
+            setError('');
+            refetchNurses();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
 
-        if (!formData.name || !formData.email) {
-            setError('Please fill in all fields');
+    const deleteNurseMutation = api.nurse.delete.useMutation({
+        onSuccess: () => {
+            setDeletingNurse(null);
+            refetchNurses();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
+
+    const handleSubmit = (data: NurseFormData) => {
+        setError('');
+        if (!data.hospitalId) {
+            setError('Hospital ID is required');
             return;
         }
-
         createNurseMutation.mutate({
-            name: formData.name,
-            email: formData.email,
-            hospitalId,
+            name: data.name,
+            email: data.email,
+            hospitalId: data.hospitalId,
         });
+    };
+
+    const handleEdit = (nurse: Nurse) => {
+        setEditingNurse(nurse);
+        setError('');
+    };
+
+    const handleDelete = (nurse: Nurse) => {
+        setDeletingNurse(nurse);
+        setError('');
+    };
+
+    const handleUpdateSubmit = (data: NurseFormData) => {
+        if (!editingNurse) return;
+        updateNurseMutation.mutate({
+            id: editingNurse.id,
+            name: data.name,
+            email: data.email,
+        });
+    };
+
+    const handleDeleteConfirm = () => {
+        if (!deletingNurse) return;
+        deleteNurseMutation.mutate({ id: deletingNurse.id });
     };
 
     // Check authentication
@@ -173,47 +224,17 @@ export default function HospitalDetail() {
                                                 {error}
                                             </div>
                                         )}
-                                        <form onSubmit={handleSubmit} className="space-y-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="name">Name *</Label>
-                                                    <Input
-                                                        id="name"
-                                                        value={formData.name}
-                                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                        placeholder="Nurse name"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="email">Email *</Label>
-                                                    <Input
-                                                        id="email"
-                                                        type="email"
-                                                        value={formData.email}
-                                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                        placeholder="nurse@example.com"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setShowAddNurse(false);
-                                                        setFormData({ name: '', email: '' });
-                                                        setError('');
-                                                    }}
-                                                >
-                                                    Cancel
-                                                </Button>
-                                                <Button type="submit" disabled={createNurseMutation.isPending}>
-                                                    {createNurseMutation.isPending ? 'Adding...' : 'Add Nurse'}
-                                                </Button>
-                                            </div>
-                                        </form>
+                                        <NurseForm
+                                            mode="create"
+                                            hospitalId={hospitalId}
+                                            hospitalName={hospital?.name || ''}
+                                            onSubmit={handleSubmit}
+                                            onCancel={() => {
+                                                setShowAddNurse(false);
+                                                setError('');
+                                            }}
+                                            isLoading={createNurseMutation.isPending}
+                                        />
                                     </div>
                                 )}
 
@@ -245,6 +266,10 @@ export default function HospitalDetail() {
                                                             </div>
                                                         )}
                                                     </div>
+                                                    <ActionMenu
+                                                        onEdit={() => handleEdit(nurse)}
+                                                        onDelete={() => handleDelete(nurse)}
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
@@ -260,6 +285,41 @@ export default function HospitalDetail() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Edit Nurse Dialog */}
+                    <EditDialog
+                        open={!!editingNurse}
+                        onOpenChange={() => setEditingNurse(null)}
+                        title="Edit Nurse"
+                        description="Update nurse information"
+                        error={error}
+                    >
+                        <NurseForm
+                            mode="edit"
+                            hospitalId={hospitalId}
+                            hospitalName={hospital?.name || ''}
+                            defaultValues={editingNurse ? {
+                                name: editingNurse.name,
+                                email: editingNurse.email,
+                            } : undefined}
+                            onSubmit={handleUpdateSubmit}
+                            onCancel={() => setEditingNurse(null)}
+                            isLoading={updateNurseMutation.isPending}
+                            emailDisabled={!!editingNurse?.userId}
+                            emailDisabledMessage={editingNurse?.userId ? "Note: Cannot change email for active nurses" : undefined}
+                        />
+                    </EditDialog>
+
+                    {/* Delete Nurse Confirmation Dialog */}
+                    <DeleteDialog
+                        open={!!deletingNurse}
+                        onOpenChange={() => setDeletingNurse(null)}
+                        onConfirm={handleDeleteConfirm}
+                        title="Delete Nurse"
+                        description={`Are you sure you want to delete ${deletingNurse?.name}? This action cannot be undone.`}
+                        isLoading={deleteNurseMutation.isPending}
+                        error={error}
+                    />
                 </div>
             </main>
         </>

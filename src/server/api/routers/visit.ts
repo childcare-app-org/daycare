@@ -263,4 +263,105 @@ export const visitRouter = createTRPCRouter({
       .leftJoin(hospitals, eq(visits.hospitalId, hospitals.id))
       .where(and(eq(visits.parentId, parent.id), eq(visits.status, "active")));
   }),
+
+  // Update visit (Nurse only)
+  update: nurseProcedure
+    .input(
+      z.object({
+        id: z.string().min(1, "Visit ID is required"),
+        dropOffTime: z.date().optional(),
+        pickupTime: z.date().optional(),
+        status: z.enum(["active", "completed", "cancelled"]).optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the nurse record for the current user
+      const [nurse] = await ctx.db
+        .select()
+        .from(nurses)
+        .where(eq(nurses.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!nurse) {
+        throw new Error("Nurse profile not found");
+      }
+
+      // Check if visit exists and belongs to nurse's hospital
+      const [existingVisit] = await ctx.db
+        .select()
+        .from(visits)
+        .where(eq(visits.id, input.id))
+        .limit(1);
+
+      if (!existingVisit) {
+        throw new Error("Visit not found");
+      }
+
+      if (existingVisit.hospitalId !== nurse.hospitalId) {
+        throw new Error("Visit does not belong to your hospital");
+      }
+
+      const updateData: Record<string, unknown> = {};
+      if (input.dropOffTime !== undefined)
+        updateData.dropOffTime = input.dropOffTime;
+      if (input.pickupTime !== undefined)
+        updateData.pickupTime = input.pickupTime;
+      if (input.status !== undefined) updateData.status = input.status;
+      if (input.notes !== undefined) updateData.notes = input.notes;
+
+      const [visit] = await ctx.db
+        .update(visits)
+        .set(updateData)
+        .where(eq(visits.id, input.id))
+        .returning();
+
+      if (!visit) {
+        throw new Error("Failed to update visit");
+      }
+
+      return visit;
+    }),
+
+  // Delete visit (Nurse only)
+  delete: nurseProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Get the nurse record for the current user
+      const [nurse] = await ctx.db
+        .select()
+        .from(nurses)
+        .where(eq(nurses.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!nurse) {
+        throw new Error("Nurse profile not found");
+      }
+
+      // Check if visit exists and belongs to nurse's hospital
+      const [existingVisit] = await ctx.db
+        .select()
+        .from(visits)
+        .where(eq(visits.id, input.id))
+        .limit(1);
+
+      if (!existingVisit) {
+        throw new Error("Visit not found");
+      }
+
+      if (existingVisit.hospitalId !== nurse.hospitalId) {
+        throw new Error("Visit does not belong to your hospital");
+      }
+
+      const [visit] = await ctx.db
+        .delete(visits)
+        .where(eq(visits.id, input.id))
+        .returning();
+
+      if (!visit) {
+        throw new Error("Failed to delete visit");
+      }
+
+      return visit;
+    }),
 });

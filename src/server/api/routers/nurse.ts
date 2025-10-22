@@ -80,4 +80,87 @@ export const nurseRouter = createTRPCRouter({
         .leftJoin(users, eq(nurses.userId, users.id))
         .where(eq(nurses.hospitalId, input.hospitalId));
     }),
+
+  // Update nurse (Admin only)
+  // Can only edit name and email if nurse is inactive (userId is null)
+  // Hospital assignment is permanent and cannot be changed
+  update: adminProcedure
+    .input(
+      z.object({
+        id: z.string().min(1, "Nurse ID is required"),
+        name: z.string().min(1, "Nurse name is required"),
+        email: z.string().email("Valid email is required").optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if nurse exists and get current state
+      const [existingNurse] = await ctx.db
+        .select()
+        .from(nurses)
+        .where(eq(nurses.id, input.id))
+        .limit(1);
+
+      if (!existingNurse) {
+        throw new Error("Nurse not found");
+      }
+
+      // If nurse is active (has userId), cannot change email
+      if (
+        existingNurse.userId &&
+        input.email &&
+        input.email !== existingNurse.email
+      ) {
+        throw new Error("Cannot change email for active nurse");
+      }
+
+      // If email is being changed, check if it's already in use
+      if (input.email && input.email !== existingNurse.email) {
+        const [emailInUse] = await ctx.db
+          .select()
+          .from(nurses)
+          .where(eq(nurses.email, input.email))
+          .limit(1);
+
+        if (emailInUse) {
+          throw new Error("A nurse with this email already exists");
+        }
+      }
+
+      const updateData: Record<string, string> = {
+        name: input.name,
+      };
+
+      // Only update email if provided and nurse is inactive
+      if (input.email && !existingNurse.userId) {
+        updateData.email = input.email;
+      }
+
+      const [nurse] = await ctx.db
+        .update(nurses)
+        .set(updateData)
+        .where(eq(nurses.id, input.id))
+        .returning();
+
+      if (!nurse) {
+        throw new Error("Failed to update nurse");
+      }
+
+      return nurse;
+    }),
+
+  // Delete nurse (Admin only)
+  delete: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [nurse] = await ctx.db
+        .delete(nurses)
+        .where(eq(nurses.id, input.id))
+        .returning();
+
+      if (!nurse) {
+        throw new Error("Nurse not found");
+      }
+
+      return nurse;
+    }),
 });

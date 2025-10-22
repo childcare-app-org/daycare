@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, parentProcedure, protectedProcedure } from '~/server/api/trpc';
 import { children, parentChildRelations, parents, users } from '~/server/db/schema';
@@ -131,4 +131,113 @@ export const patientRouter = createTRPCRouter({
       .leftJoin(children, eq(parentChildRelations.childId, children.id))
       .where(eq(parentChildRelations.parentId, parent.id));
   }),
+
+  // Update child (Parent only)
+  updateChild: parentProcedure
+    .input(
+      z.object({
+        id: z.string().min(1, "Child ID is required"),
+        name: z.string().min(1, "Child name is required"),
+        age: z
+          .number()
+          .int()
+          .min(3, "Age must be at least 3 months")
+          .max(144, "Age must be at most 144 months"),
+        allergies: z.string().optional(),
+        preexistingConditions: z.string().optional(),
+        familyDoctorName: z.string().optional(),
+        familyDoctorPhone: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the parent record for the current user
+      const [parent] = await ctx.db
+        .select()
+        .from(parents)
+        .where(eq(parents.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!parent) {
+        throw new Error("Parent profile not found");
+      }
+
+      // Verify the child belongs to this parent
+      const [relation] = await ctx.db
+        .select()
+        .from(parentChildRelations)
+        .where(
+          and(
+            eq(parentChildRelations.parentId, parent.id),
+            eq(parentChildRelations.childId, input.id),
+          ),
+        )
+        .limit(1);
+
+      if (!relation) {
+        throw new Error("Child not found or does not belong to this parent");
+      }
+
+      const [child] = await ctx.db
+        .update(children)
+        .set({
+          name: input.name,
+          age: input.age,
+          allergies: input.allergies,
+          preexistingConditions: input.preexistingConditions,
+          familyDoctorName: input.familyDoctorName,
+          familyDoctorPhone: input.familyDoctorPhone,
+        })
+        .where(eq(children.id, input.id))
+        .returning();
+
+      if (!child) {
+        throw new Error("Failed to update child");
+      }
+
+      return child;
+    }),
+
+  // Delete child (Parent only)
+  deleteChild: parentProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Get the parent record for the current user
+      const [parent] = await ctx.db
+        .select()
+        .from(parents)
+        .where(eq(parents.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!parent) {
+        throw new Error("Parent profile not found");
+      }
+
+      // Verify the child belongs to this parent
+      const [relation] = await ctx.db
+        .select()
+        .from(parentChildRelations)
+        .where(
+          and(
+            eq(parentChildRelations.parentId, parent.id),
+            eq(parentChildRelations.childId, input.id),
+          ),
+        )
+        .limit(1);
+
+      if (!relation) {
+        throw new Error("Child not found or does not belong to this parent");
+      }
+
+      // Delete the child (cascade will handle relations)
+      const [child] = await ctx.db
+        .delete(children)
+        .where(eq(children.id, input.id))
+        .returning();
+
+      if (!child) {
+        throw new Error("Failed to delete child");
+      }
+
+      return child;
+    }),
 });
