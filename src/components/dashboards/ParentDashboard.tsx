@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
+import { RegisterVisitForm } from '~/components/forms/RegisterVisitForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
@@ -9,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/com
 import { api } from '~/utils/api';
 
 import type { ChildFormData } from '~/components/forms/ChildForm';
+import type { RegisterVisitFormData } from '~/components/forms/RegisterVisitForm';
 
 type Child = {
     id?: string | null;
@@ -21,9 +23,11 @@ type Child = {
 };
 
 export function ParentDashboard() {
-    const { data: activeVisits, isLoading: visitsLoading } = api.visit.getMyChildrenActiveVisits.useQuery();
+    const { data: activeVisits, isLoading: visitsLoading, refetch: refetchVisits } = api.visit.getMyChildrenActiveVisits.useQuery();
     const { data: children, isLoading: childrenLoading, refetch } = api.patient.getMyChildren.useQuery();
+    const { data: hospitals } = api.hospital.getAll.useQuery();
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [registeringVisitForChild, setRegisteringVisitForChild] = useState<Child | null>(null);
     const [editingChild, setEditingChild] = useState<Child | null>(null);
     const [deletingChild, setDeletingChild] = useState<Child | null>(null);
     const [error, setError] = useState('');
@@ -54,6 +58,17 @@ export function ParentDashboard() {
         onSuccess: () => {
             setDeletingChild(null);
             refetch();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
+
+    const createVisitMutation = api.visit.create.useMutation({
+        onSuccess: () => {
+            setRegisteringVisitForChild(null);
+            setError('');
+            refetchVisits();
         },
         onError: (error) => {
             setError(error.message);
@@ -93,6 +108,19 @@ export function ParentDashboard() {
     const handleDeleteConfirm = () => {
         if (!deletingChild?.id) return;
         deleteChildMutation.mutate({ id: deletingChild.id });
+    };
+
+    const handleRegisterVisit = (child: Child) => {
+        setRegisteringVisitForChild(child);
+        setError('');
+    };
+
+    const handleRegisterVisitSubmit = (data: RegisterVisitFormData) => {
+        createVisitMutation.mutate({
+            childId: data.childId,
+            hospitalId: data.hospitalId,
+            dropOffTime: new Date(),
+        });
     };
 
     if (visitsLoading || childrenLoading) {
@@ -166,11 +194,9 @@ export function ParentDashboard() {
                                                         </Button>
                                                     </Link>
                                                 ) : (
-                                                    <Link href={`/register-visit?childId=${child.id}`}>
-                                                        <Button>
-                                                            Register for Visit
-                                                        </Button>
-                                                    </Link>
+                                                    <Button onClick={() => handleRegisterVisit(child)}>
+                                                        Register for Visit
+                                                    </Button>
                                                 )}
                                                 <ActionMenu
                                                     onEdit={() => handleEdit(child)}
@@ -241,6 +267,28 @@ export function ParentDashboard() {
                 isLoading={deleteChildMutation.isPending}
                 error={error}
             />
+
+            {/* Register Visit Dialog */}
+            <EditDialog
+                open={!!registeringVisitForChild}
+                onOpenChange={() => setRegisteringVisitForChild(null)}
+                title="Register Visit"
+                description={`Register ${registeringVisitForChild?.name} for a daycare visit`}
+                error={error}
+            >
+                <RegisterVisitForm
+                    childId={registeringVisitForChild?.id || ''}
+                    childName={registeringVisitForChild?.name || ''}
+                    hospitals={hospitals?.map(h => ({
+                        id: h.id,
+                        name: h.name,
+                        pricing: h.pricing
+                    })) || []}
+                    onSubmit={handleRegisterVisitSubmit}
+                    onCancel={() => setRegisteringVisitForChild(null)}
+                    isLoading={createVisitMutation.isPending}
+                />
+            </EditDialog>
         </div>
     );
 }
