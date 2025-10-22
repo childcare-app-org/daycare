@@ -4,9 +4,14 @@ import { DialogFooter } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 
+import { AddressAutocomplete } from './AddressAutocomplete';
+
+import type { AddressData } from './AddressAutocomplete';
 export interface HospitalFormData {
     name: string;
     address: string;
+    latitude?: number;
+    longitude?: number;
     capacity: number;
     pricing: number;
 }
@@ -29,14 +34,19 @@ export function HospitalForm({
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
         address: defaultValues?.address || '',
+        latitude: defaultValues?.latitude,
+        longitude: defaultValues?.longitude,
         capacity: defaultValues?.capacity?.toString() || '20',
         pricing: defaultValues?.pricing?.toString() || '0',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         onSubmit({
             name: formData.name,
             address: formData.address,
+            latitude: formData.latitude,
+            longitude: formData.longitude,
             capacity: parseInt(formData.capacity),
             pricing: parseFloat(formData.pricing),
         });
@@ -47,6 +57,15 @@ export function HospitalForm({
         setFormData((prev) => ({
             ...prev,
             [name]: value,
+        }));
+    };
+
+    const handleAddressChange = (addressData: AddressData) => {
+        setFormData((prev) => ({
+            ...prev,
+            address: addressData.address,
+            latitude: addressData.latitude,
+            longitude: addressData.longitude,
         }));
     };
 
@@ -65,18 +84,15 @@ export function HospitalForm({
                 />
             </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="address">Address *</Label>
-                <Input
-                    id="address"
-                    name="address"
-                    type="text"
-                    placeholder="Enter full address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                />
-            </div>
+            <AddressAutocomplete
+                id="address"
+                label="Address"
+                value={formData.address}
+                onChange={handleAddressChange}
+                required
+                placeholder="Enter hospital address"
+                helperText="Start typing and select from suggestions"
+            />
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

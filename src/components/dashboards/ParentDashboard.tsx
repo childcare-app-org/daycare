@@ -25,7 +25,7 @@ type Child = {
 export function ParentDashboard() {
     const { data: activeVisits, isLoading: visitsLoading, refetch: refetchVisits } = api.visit.getMyChildrenActiveVisits.useQuery();
     const { data: children, isLoading: childrenLoading, refetch } = api.patient.getMyChildren.useQuery();
-    const { data: hospitals } = api.hospital.getAll.useQuery();
+    const { data: hospitals } = api.hospital.getAllPublic.useQuery();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [registeringVisitForChild, setRegisteringVisitForChild] = useState<Child | null>(null);
     const [editingChild, setEditingChild] = useState<Child | null>(null);

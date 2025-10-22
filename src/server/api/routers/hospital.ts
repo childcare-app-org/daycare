@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { adminProcedure, createTRPCRouter } from '~/server/api/trpc';
+import { adminProcedure, createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { hospitals } from '~/server/db/schema';
 
 export const hospitalRouter = createTRPCRouter({
@@ -10,6 +10,8 @@ export const hospitalRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1, "Hospital name is required"),
         address: z.string().min(1, "Address is required"),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
         capacity: z.number().int().min(1, "Capacity must be at least 1"),
         pricing: z.number().min(0, "Pricing must be non-negative"),
       }),
@@ -21,6 +23,8 @@ export const hospitalRouter = createTRPCRouter({
         .values({
           name: input.name,
           address: input.address,
+          latitude: input.latitude?.toString(),
+          longitude: input.longitude?.toString(),
           capacity: input.capacity,
           pricing: input.pricing.toString(), // Drizzle stores numeric as string
         })
@@ -32,6 +36,21 @@ export const hospitalRouter = createTRPCRouter({
   // Get all hospitals (Admin only)
   getAll: adminProcedure.query(async ({ ctx }) => {
     return await ctx.db.select().from(hospitals);
+  }),
+
+  // Get all hospitals for public viewing (e.g., parents selecting a hospital)
+  getAllPublic: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db
+      .select({
+        id: hospitals.id,
+        name: hospitals.name,
+        address: hospitals.address,
+        latitude: hospitals.latitude,
+        longitude: hospitals.longitude,
+        pricing: hospitals.pricing,
+        capacity: hospitals.capacity,
+      })
+      .from(hospitals);
   }),
 
   // Get hospital by ID (Admin only)
@@ -53,6 +72,8 @@ export const hospitalRouter = createTRPCRouter({
         id: z.string().min(1, "Hospital ID is required"),
         name: z.string().min(1, "Hospital name is required"),
         address: z.string().min(1, "Address is required"),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
         capacity: z.number().int().min(1, "Capacity must be at least 1"),
         pricing: z.number().min(0, "Pricing must be non-negative"),
       }),
@@ -63,6 +84,8 @@ export const hospitalRouter = createTRPCRouter({
         .set({
           name: input.name,
           address: input.address,
+          latitude: input.latitude?.toString(),
+          longitude: input.longitude?.toString(),
           capacity: input.capacity,
           pricing: input.pricing.toString(),
         })

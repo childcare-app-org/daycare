@@ -12,6 +12,8 @@ export const patientRouter = createTRPCRouter({
         name: z.string().min(1, "Parent name is required"),
         phoneNumber: z.string().min(1, "Phone number is required"),
         homeAddress: z.string().min(1, "Home address is required"),
+        latitude: z.number().optional(),
+        longitude: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -33,12 +35,30 @@ export const patientRouter = createTRPCRouter({
           name: input.name,
           phoneNumber: input.phoneNumber,
           homeAddress: input.homeAddress,
+          latitude: input.latitude?.toString(),
+          longitude: input.longitude?.toString(),
         })
         .where(eq(parents.id, parent.id))
         .returning();
 
       return updatedParent;
     }),
+
+  // Get parent profile (Parent only)
+  getMyProfile: parentProcedure.query(async ({ ctx }) => {
+    // Get the parent record for the current user
+    const [parent] = await ctx.db
+      .select()
+      .from(parents)
+      .where(eq(parents.userId, ctx.session.user.id))
+      .limit(1);
+
+    if (!parent) {
+      throw new Error("Parent profile not found");
+    }
+
+    return parent;
+  }),
 
   // Create child profile (Parent only)
   // Parents can create profiles for their children

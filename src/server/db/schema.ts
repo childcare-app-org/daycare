@@ -121,6 +121,8 @@ export const hospitals = createTable(
       .$defaultFn(() => crypto.randomUUID()),
     name: d.varchar({ length: 255 }).notNull(),
     address: d.text().notNull(),
+    latitude: d.numeric({ precision: 10, scale: 7 }),
+    longitude: d.numeric({ precision: 10, scale: 7 }),
     capacity: d.integer().notNull().default(20), // Default capacity of 20 kids
     pricing: d.numeric({ precision: 10, scale: 2 }).notNull(), // Daily cost
     createdAt: d
@@ -171,6 +173,8 @@ export const parents = createTable(
     name: d.varchar({ length: 255 }).notNull(),
     phoneNumber: d.varchar({ length: 20 }).notNull(),
     homeAddress: d.text().notNull(),
+    latitude: d.numeric({ precision: 10, scale: 7 }),
+    longitude: d.numeric({ precision: 10, scale: 7 }),
     userId: d.varchar({ length: 255 }).references(() => users.id), // Link to auth user if using NextAuth
     createdAt: d
       .timestamp({ withTimezone: true })
