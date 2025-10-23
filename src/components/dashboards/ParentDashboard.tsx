@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
@@ -23,6 +24,7 @@ type Child = {
 };
 
 export function ParentDashboard() {
+    const { data: session } = useSession();
     const { data: activeVisits, isLoading: visitsLoading, refetch: refetchVisits } = api.visit.getMyChildrenActiveVisits.useQuery();
     const { data: children, isLoading: childrenLoading, refetch } = api.patient.getMyChildren.useQuery();
     const { data: hospitals } = api.hospital.getAllPublic.useQuery();
@@ -120,6 +122,7 @@ export function ParentDashboard() {
             childId: data.childId,
             hospitalId: data.hospitalId,
             dropOffTime: new Date(),
+            accessCode: data.accessCode,
         });
     };
 
@@ -139,6 +142,14 @@ export function ParentDashboard() {
 
     return (
         <div className="space-y-6">
+            {/* Header */}
+            <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                    Welcome, {session?.user?.name}
+                </h1>
+                <p className="text-lg text-gray-600">Parent Dashboard</p>
+            </div>
+
             {/* Children List */}
             <Card>
                 <CardHeader>

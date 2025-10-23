@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { validateHospitalAccessCode } from '~/lib/access-code';
 import { createTRPCRouter, nurseProcedure, parentProcedure } from '~/server/api/trpc';
 import {
     children, hospitals, nurses, parentChildRelations, parents, visits
@@ -15,6 +16,7 @@ export const visitRouter = createTRPCRouter({
         hospitalId: z.string().min(1, "Hospital ID is required"),
         dropOffTime: z.date(),
         notes: z.string().optional(),
+        accessCode: z.string().length(4, "Access code must be 4 digits"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -54,6 +56,18 @@ export const visitRouter = createTRPCRouter({
 
       if (!hospital) {
         throw new Error("Hospital not found");
+      }
+
+      // Validate access code
+      if (
+        !validateHospitalAccessCode(
+          input.accessCode,
+          hospital.id,
+          hospital.latitude,
+          hospital.longitude,
+        )
+      ) {
+        throw new Error("Invalid access code");
       }
 
       // Check if child already has an active visit

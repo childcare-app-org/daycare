@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { VisitForm } from '~/components/forms/VisitForm';
@@ -21,7 +22,9 @@ type Visit = {
 };
 
 export function NurseDashboard() {
+    const { data: session } = useSession();
     const { data: activeVisits, isLoading, refetch } = api.visit.getMyHospitalActiveVisits.useQuery();
+    const { data: accessCodeData } = api.hospital.getAccessCode.useQuery();
     const [editingVisit, setEditingVisit] = useState<Visit | null>(null);
     const [deletingVisit, setDeletingVisit] = useState<Visit | null>(null);
     const [error, setError] = useState('');
@@ -81,6 +84,25 @@ export function NurseDashboard() {
 
     return (
         <div className="space-y-6">
+            {/* Header with Welcome Message and Access Code */}
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                        Welcome, {session?.user?.name}
+                    </h1>
+                    <p className="text-lg text-gray-600 mb-2">Nurse Dashboard</p>
+                    {accessCodeData && (
+                        <p className="text-gray-600">Hospital: {accessCodeData.hospitalName}</p>
+                    )}
+                </div>
+                {accessCodeData && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                        <p className="text-sm text-gray-600 mb-1">Access Code</p>
+                        <p className="text-2xl font-bold text-blue-600">{accessCodeData.accessCode}</p>
+                    </div>
+                )}
+            </div>
+
             {/* Active Visits List */}
             <Card>
                 <CardHeader>
@@ -95,32 +117,20 @@ export function NurseDashboard() {
                             {activeVisits.map((visit) => (
                                 <div key={visit.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
                                     <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <Link href={`/visit/${visit.id}`}>
-                                                <h3 className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
+                                        <Link href={`/visit/${visit.id}`} className="flex-1 cursor-pointer">
+                                            <div>
+                                                <h3 className="font-semibold text-blue-600 hover:text-blue-800">
                                                     {visit.child?.name}
                                                 </h3>
-                                            </Link>
-                                            <p className="text-sm text-gray-600">
-                                                Parent: {visit.parent?.name}
-                                            </p>
-                                            <p className="text-sm text-gray-500">
-                                                Dropped off: {new Date(visit.dropOffTime).toLocaleString()}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-start gap-2 ml-4">
-                                            <div className="text-right">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Active
-                                                </span>
-                                                <div className="mt-2">
-                                                    <Link href={`/visit/${visit.id}`}>
-                                                        <Button size="sm" variant="outline">
-                                                            View Timeline
-                                                        </Button>
-                                                    </Link>
-                                                </div>
+                                                <p className="text-sm text-gray-600">
+                                                    Parent: {visit.parent?.name}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    Dropped off: {new Date(visit.dropOffTime).toLocaleString()}
+                                                </p>
                                             </div>
+                                        </Link>
+                                        <div className="flex items-center gap-2 ml-4 my-auto">
                                             <ActionMenu
                                                 onEdit={() => handleEdit(visit)}
                                                 onDelete={() => handleDelete(visit)}
@@ -166,7 +176,7 @@ export function NurseDashboard() {
                 onOpenChange={() => setDeletingVisit(null)}
                 onConfirm={handleDeleteConfirm}
                 title="Delete Visit"
-                description={`Are you sure you want to delete the visit for ${deletingVisit?.child?.name}? This action cannot be undone and will permanently remove this visit record from the database.`}
+                description={`Are you sure you want to delete the visit for ${deletingVisit?.child?.name}? This action cannot be undone and will permanently remove this visit record and all associated logs from the database.`}
                 isLoading={deleteVisitMutation.isPending}
                 error={error}
             />

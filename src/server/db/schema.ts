@@ -290,7 +290,7 @@ export const logs = createTable(
     visitId: d
       .varchar({ length: 255 })
       .notNull()
-      .references(() => visits.id),
+      .references(() => visits.id, { onDelete: "cascade" }),
     nurseId: d
       .varchar({ length: 255 })
       .notNull()

@@ -4,9 +4,9 @@ import { DialogFooter } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 
-import { AddressAutocomplete } from './AddressAutocomplete';
+import { GoogleAddressAutocompleteNew } from './GoogleAddressAutocompleteNew';
 
-import type { AddressData } from './AddressAutocomplete';
+import type { AddressData } from './GoogleAddressAutocompleteNew';
 export interface HospitalFormData {
     name: string;
     address: string;
@@ -84,14 +84,15 @@ export function HospitalForm({
                 />
             </div>
 
-            <AddressAutocomplete
+            <GoogleAddressAutocompleteNew
                 id="address"
-                label="Address"
+                label="Address / 住所"
                 value={formData.address}
                 onChange={handleAddressChange}
                 required
-                placeholder="Enter hospital address"
-                helperText="Start typing and select from suggestions"
+                placeholder="Enter the hospital address"
+                helperText="Suggestions will appear as you type the address"
+                country="JP"
             />
 
             <div className="grid grid-cols-2 gap-4">
