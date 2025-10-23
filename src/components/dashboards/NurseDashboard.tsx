@@ -139,12 +139,11 @@ export function NurseDashboard() {
                 )}
             </div>
 
-            {/* Quick Actions */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
+                    <CardTitle>Create a Visit</CardTitle>
                     <CardDescription>
-                        Register visits or onboard new patients
+                        Create a visit for a returning or new patient
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -245,55 +244,61 @@ export function NurseDashboard() {
             />
 
             {/* Register Visit Modal */}
-            {showRegisterVisitModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
-                        <SearchComponent
-                            title="Register Visit"
-                            description="Search and select a child to register a visit"
-                            placeholder="Search by child name..."
-                            searchQuery={childSearchQuery}
-                            onSearchQueryChange={setChildSearchQuery}
-                            searchResults={childSearchResults}
-                            isLoading={isSearchingChildren}
-                            emptyMessage="No children found."
-                            renderResult={(child) => (
-                                <>
-                                    <p className="font-medium">{child.name}</p>
-                                    <p className="text-sm text-gray-500">
-                                        Age: {child.age} months - Parent: {child.parentName}
-                                    </p>
-                                </>
-                            )}
-                            onSelect={(child) => {
-                                setSelectedChildForVisit(child);
-                                setShowRegisterVisitModal(false);
-                                setShowVisitForm(true);
-                                setChildSearchQuery('');
-                            }}
-                            onCancel={() => {
-                                setShowRegisterVisitModal(false);
-                                setChildSearchQuery('');
-                            }}
-                        />
-                    </div>
-                </div>
-            )}
+            <EditDialog
+                open={showRegisterVisitModal}
+                onOpenChange={() => {
+                    setShowRegisterVisitModal(false);
+                    setChildSearchQuery('');
+                }}
+                title="Register Visit"
+                description="Search and select a child to register a visit"
+                error=""
+            >
+                <SearchComponent
+                    title=""
+                    placeholder="Search by child name..."
+                    searchQuery={childSearchQuery}
+                    onSearchQueryChange={setChildSearchQuery}
+                    searchResults={childSearchResults}
+                    isLoading={isSearchingChildren}
+                    emptyMessage="No children found."
+                    renderResult={(child) => (
+                        <>
+                            <p className="font-medium">{child.name}</p>
+                            <p className="text-sm text-gray-500">
+                                Age: {child.age} months - Parent: {child.parentName}
+                            </p>
+                        </>
+                    )}
+                    onSelect={(child) => {
+                        setSelectedChildForVisit(child);
+                        setShowRegisterVisitModal(false);
+                        setShowVisitForm(true);
+                        setChildSearchQuery('');
+                    }}
+                    onCancel={() => {
+                        setShowRegisterVisitModal(false);
+                        setChildSearchQuery('');
+                    }}
+                />
+            </EditDialog>
 
             {/* Create Patient Modal */}
-            {showCreatePatientModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-                        <CreatePatientFlow
-                            onCancel={() => setShowCreatePatientModal(false)}
-                            onComplete={() => {
-                                setShowCreatePatientModal(false);
-                                refetch(); // Refresh the visits list
-                            }}
-                        />
-                    </div>
-                </div>
-            )}
+            <EditDialog
+                open={showCreatePatientModal}
+                onOpenChange={() => setShowCreatePatientModal(false)}
+                title="Create New Patient"
+                description="Complete the following steps to register a new patient and create a visit"
+                error=""
+            >
+                <CreatePatientFlow
+                    onCancel={() => setShowCreatePatientModal(false)}
+                    onComplete={() => {
+                        setShowCreatePatientModal(false);
+                        refetch(); // Refresh the visits list
+                    }}
+                />
+            </EditDialog>
 
             {/* Visit Form Modal */}
             {showVisitForm && selectedChildForVisit && (

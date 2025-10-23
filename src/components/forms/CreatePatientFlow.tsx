@@ -49,6 +49,9 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
         longitude: undefined as number | undefined,
     });
 
+    // Visit form state
+    const [visitNotes, setVisitNotes] = useState('');
+
     // API queries
     const { data: nurseProfile } = api.nurse.getMyProfile.useQuery();
 
@@ -129,7 +132,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
         });
     };
 
-    const handleVisitCreate = (visitData: any) => {
+    const handleVisitCreate = () => {
         if (!selectedChild || !nurseProfile?.hospitalId) {
             setError('Unable to create visit: nurse hospital information not found');
             return;
@@ -139,7 +142,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
             childId: selectedChild.id,
             hospitalId: nurseProfile.hospitalId,
             dropOffTime: new Date(),
-            notes: visitData.notes || '',
+            notes: visitNotes,
         });
     };
 
@@ -149,13 +152,13 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                 setCurrentStep('search-parent');
                 break;
             case 'search-child':
-                setCurrentStep(selectedParent ? 'search-parent' : 'search-parent');
+                setCurrentStep('search-parent');
                 break;
             case 'create-child':
                 setCurrentStep('search-child');
                 break;
             case 'create-visit':
-                setCurrentStep('create-child');
+                setCurrentStep('search-child');
                 break;
             default:
                 onCancel();
@@ -367,15 +370,40 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                 return (
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-lg font-semibold">Create Visit</h3>
+                            <h3 className="text-lg font-semibold">Register Visit</h3>
                             <p className="text-sm text-gray-600">Register a visit for {selectedChild?.name}</p>
                         </div>
+                        <Card className="bg-blue-50 border-blue-200">
+                            <CardContent className="p-4">
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Child:</span>
+                                        <span className="font-medium">{selectedChild?.name}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Parent:</span>
+                                        <span className="font-medium">{selectedParent?.name}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Hospital:</span>
+                                        <span className="font-medium">{nurseProfile?.hospitalName}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Drop-off Time:</span>
+                                        <span className="font-medium">{new Date().toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Notes (Optional)</label>
+                                <Label htmlFor="visit-notes">Notes (Optional)</Label>
                                 <textarea
-                                    className="w-full p-2 border rounded-md"
-                                    placeholder="Enter any notes for this visit"
+                                    id="visit-notes"
+                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder="Enter any notes for this visit (allergies, special instructions, etc.)"
+                                    value={visitNotes}
+                                    onChange={(e) => setVisitNotes(e.target.value)}
                                     rows={3}
                                 />
                             </div>
@@ -385,11 +413,11 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                 Back
                             </Button>
                             <Button
-                                onClick={() => handleVisitCreate({})}
+                                onClick={handleVisitCreate}
                                 disabled={createVisitMutation.isPending}
                                 className="flex-1"
                             >
-                                {createVisitMutation.isPending ? 'Creating...' : 'Create Visit'}
+                                {createVisitMutation.isPending ? 'Registering...' : 'Register Visit'}
                             </Button>
                         </div>
                     </div>
