@@ -98,31 +98,52 @@ export const authConfig = {
           userRole = "nurse";
           console.log("session callback - linked as nurse");
         } else {
-          // User is a parent - set role and create bare parent object
-          await db
-            .update(users)
-            .set({ role: "parent" })
-            .where(eq(users.id, userId));
-
-          // Check if parent record already exists
-          const [existingParent] = await db
+          // Check if there's a parent entry for this email
+          const [parentEntry] = await db
             .select()
             .from(parents)
-            .where(eq(parents.userId, userId))
+            .where(eq(parents.email, userEmail))
             .limit(1);
 
-          if (!existingParent) {
+          console.log("session callback - parentEntry:", parentEntry);
+
+          if (parentEntry && !parentEntry.userId) {
+            // User is a parent - link them and set role
+            await db
+              .update(parents)
+              .set({ userId: userId })
+              .where(eq(parents.id, parentEntry.id));
+
+            await db
+              .update(users)
+              .set({ role: "parent" })
+              .where(eq(users.id, userId));
+
+            userRole = "parent";
+            console.log("session callback - linked as existing parent");
+          } else if (!parentEntry) {
+            // No parent entry exists - create a bare parent object
+            await db
+              .update(users)
+              .set({ role: "parent" })
+              .where(eq(users.id, userId));
+
             // Create a basic parent record that they can fill out later
             await db.insert(parents).values({
               userId: userId,
               name: user.name || "",
+              email: userEmail,
               phoneNumber: "", // Will be filled later
               homeAddress: "", // Will be filled later
             });
-          }
 
-          userRole = "parent";
-          console.log("session callback - set as parent");
+            userRole = "parent";
+            console.log("session callback - created new parent");
+          } else {
+            // Parent entry exists and is already linked
+            userRole = "parent";
+            console.log("session callback - already linked parent");
+          }
         }
       }
 

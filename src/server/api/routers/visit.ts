@@ -1,50 +1,91 @@
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { validateHospitalAccessCode } from '~/lib/access-code';
-import { createTRPCRouter, nurseProcedure, parentProcedure } from '~/server/api/trpc';
+import {
+    createTRPCRouter, nurseProcedure, parentProcedure, protectedProcedure
+} from '~/server/api/trpc';
 import {
     children, hospitals, nurses, parentChildRelations, parents, visits
 } from '~/server/db/schema';
 
 export const visitRouter = createTRPCRouter({
-  // Create a new visit (Parent only)
-  // Parents create a visit when they drop off their child at a hospital
-  create: parentProcedure
+  // Create a new visit (for parents, nurses, and admins)
+  create: protectedProcedure
     .input(
       z.object({
         childId: z.string().min(1, "Child ID is required"),
         hospitalId: z.string().min(1, "Hospital ID is required"),
         dropOffTime: z.date(),
         notes: z.string().optional(),
-        accessCode: z.string().length(4, "Access code must be 4 digits"),
+        accessCode: z
+          .string()
+          .length(4, "Access code must be 4 digits")
+          .optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Get the parent record for the current user
-      const [parent] = await ctx.db
-        .select()
-        .from(parents)
-        .where(eq(parents.userId, ctx.session.user.id))
-        .limit(1);
+      let parentId: string;
 
-      if (!parent) {
-        throw new Error("Parent profile not found");
-      }
+      // Role-based logic for determining parent ID and permissions
+      if (ctx.session.user.role === "parent") {
+        // Parents create visits for their own children
+        const [parent] = await ctx.db
+          .select()
+          .from(parents)
+          .where(eq(parents.userId, ctx.session.user.id))
+          .limit(1);
 
-      // Verify the child belongs to this parent
-      const [relation] = await ctx.db
-        .select()
-        .from(parentChildRelations)
-        .where(
-          and(
-            eq(parentChildRelations.parentId, parent.id),
-            eq(parentChildRelations.childId, input.childId),
-          ),
-        )
-        .limit(1);
+        if (!parent) {
+          throw new Error("Parent profile not found");
+        }
 
-      if (!relation) {
-        throw new Error("Child not found or does not belong to this parent");
+        // Verify the child belongs to this parent
+        const [relation] = await ctx.db
+          .select()
+          .from(parentChildRelations)
+          .where(
+            and(
+              eq(parentChildRelations.parentId, parent.id),
+              eq(parentChildRelations.childId, input.childId),
+            ),
+          )
+          .limit(1);
+
+        if (!relation) {
+          throw new Error("Child not found or does not belong to this parent");
+        }
+
+        parentId = parent.id;
+
+        // Parents must provide access code
+        if (!input.accessCode) {
+          throw new Error("Access code is required");
+        }
+      } else if (
+        ctx.session.user.role === "nurse" ||
+        ctx.session.user.role === "admin"
+      ) {
+        // Nurses/admins can create visits for any child
+        const [child] = await ctx.db
+          .select({
+            parentId: parentChildRelations.parentId,
+          })
+          .from(children)
+          .innerJoin(
+            parentChildRelations,
+            eq(children.id, parentChildRelations.childId),
+          )
+          .where(eq(children.id, input.childId))
+          .limit(1);
+
+        if (!child) {
+          throw new Error("Child not found");
+        }
+
+        parentId = child.parentId;
+        // Nurses and admins don't need access code
+      } else {
+        throw new Error("Unauthorized: Invalid role for creating visits");
       }
 
       // Verify hospital exists
@@ -58,16 +99,18 @@ export const visitRouter = createTRPCRouter({
         throw new Error("Hospital not found");
       }
 
-      // Validate access code
-      if (
-        !validateHospitalAccessCode(
-          input.accessCode,
-          hospital.id,
-          hospital.latitude,
-          hospital.longitude,
-        )
-      ) {
-        throw new Error("Invalid access code");
+      // Validate access code (only for parents)
+      if (ctx.session.user.role === "parent") {
+        if (
+          !validateHospitalAccessCode(
+            input.accessCode!,
+            hospital.id,
+            hospital.latitude,
+            hospital.longitude,
+          )
+        ) {
+          throw new Error("Invalid access code");
+        }
       }
 
       // Check if child already has an active visit
@@ -89,12 +132,12 @@ export const visitRouter = createTRPCRouter({
       const [visit] = await ctx.db
         .insert(visits)
         .values({
-          parentId: parent.id,
+          parentId: parentId,
           childId: input.childId,
           hospitalId: input.hospitalId,
           dropOffTime: input.dropOffTime,
           status: "active",
-          notes: input.notes,
+          notes: input.notes || null,
         })
         .returning();
 

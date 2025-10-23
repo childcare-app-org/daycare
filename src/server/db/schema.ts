@@ -171,6 +171,7 @@ export const parents = createTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: d.varchar({ length: 255 }).notNull(),
+    email: d.varchar({ length: 255 }).notNull().default(""),
     phoneNumber: d.varchar({ length: 20 }).notNull(),
     homeAddress: d.text().notNull(),
     latitude: d.numeric({ precision: 10, scale: 7 }),
@@ -185,6 +186,7 @@ export const parents = createTable(
   (t) => [
     index("parent_phone_idx").on(t.phoneNumber),
     index("parent_user_idx").on(t.userId),
+    index("parent_email_idx").on(t.email),
   ],
 );
 

@@ -1,9 +1,30 @@
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { adminProcedure, createTRPCRouter } from '~/server/api/trpc';
+import { adminProcedure, createTRPCRouter, nurseProcedure } from '~/server/api/trpc';
 import { hospitals, nurses, users } from '~/server/db/schema';
 
 export const nurseRouter = createTRPCRouter({
+  // Get nurse profile (Nurse only)
+  getMyProfile: nurseProcedure.query(async ({ ctx }) => {
+    const [nurse] = await ctx.db
+      .select({
+        id: nurses.id,
+        name: nurses.name,
+        hospitalId: nurses.hospitalId,
+        hospitalName: hospitals.name,
+      })
+      .from(nurses)
+      .innerJoin(hospitals, eq(nurses.hospitalId, hospitals.id))
+      .where(eq(nurses.userId, ctx.session.user.id))
+      .limit(1);
+
+    if (!nurse) {
+      throw new Error("Nurse profile not found");
+    }
+
+    return nurse;
+  }),
+
   // Create a new nurse entry (Admin only)
   // Admin creates a nurse with their email. When that user signs in, they'll be automatically linked
   create: adminProcedure
