@@ -2,6 +2,7 @@ import { Calendar, Check, ChevronRight, User, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
 import { GoogleAddressAutocompleteNew } from '~/components/forms/GoogleAddressAutocompleteNew';
+import { VisitForm } from '~/components/forms/VisitForm';
 import { SearchComponent } from '~/components/shared/SearchComponent';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -12,6 +13,7 @@ import { api } from '~/utils/api';
 
 import type { AddressData } from '~/components/forms/GoogleAddressAutocompleteNew';
 import type { ChildFormData } from '~/components/forms/ChildForm';
+import type { VisitFormData } from '~/components/forms/VisitForm';
 
 type CreatePatientStep = 'search-parent' | 'create-parent' | 'search-child' | 'create-child' | 'create-visit';
 
@@ -30,7 +32,7 @@ interface ParentData {
 interface ChildData {
     id: string;
     name: string;
-    age: number;
+    birthdate: Date;
     parentId: string;
 }
 
@@ -51,8 +53,6 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
         longitude: undefined as number | undefined,
     });
 
-    // Visit form state
-    const [visitNotes, setVisitNotes] = useState('');
 
     // API queries
     const { data: nurseProfile } = api.nurse.getMyProfile.useQuery();
@@ -134,7 +134,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
         });
     };
 
-    const handleVisitCreate = () => {
+    const handleVisitSubmit = (data: VisitFormData) => {
         if (!selectedChild || !nurseProfile?.hospitalId) {
             setError('Unable to create visit: nurse hospital information not found');
             return;
@@ -143,8 +143,9 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
         createVisitMutation.mutate({
             childId: selectedChild.id,
             hospitalId: nurseProfile.hospitalId,
-            dropOffTime: new Date(),
-            notes: visitNotes,
+            dropOffTime: data.dropOffTime,
+            pickupTime: data.pickupTime!,
+            notes: data.notes,
         });
     };
 
@@ -221,10 +222,6 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
             case 'create-parent':
                 return (
                     <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold">Register New Parent</h3>
-                            <p className="text-sm text-gray-600">Enter the parent's contact information</p>
-                        </div>
                         <div className="space-y-4">
                             <div>
                                 <Label htmlFor="parent-name">Parent Name *</Label>
@@ -295,7 +292,6 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                     }}
                                     required
                                     placeholder="Start typing an address..."
-                                    helperText="Select an address from the suggestions"
                                 />
                             </div>
                         </div>
@@ -342,7 +338,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                             <div>
                                                 <p className="font-medium text-gray-900">{child.name}</p>
                                                 <p className="text-sm text-gray-500">
-                                                    {child.age} months old
+                                                    Birthdate: {new Date(child.birthdate).toLocaleDateString()}
                                                 </p>
                                             </div>
                                         </div>
@@ -370,15 +366,11 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
             case 'create-child':
                 return (
                     <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold">Add New Child</h3>
-                            <p className="text-sm text-gray-600">Enter child information for {selectedParent?.name}</p>
-                        </div>
                         <ChildForm
                             mode="create"
                             defaultValues={{
                                 name: '',
-                                age: 0,
+                                birthdate: new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
                                 allergies: '',
                                 preexistingConditions: '',
                                 familyDoctorName: '',
@@ -394,76 +386,16 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
             case 'create-visit':
                 return (
                     <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold">Review & Check-in</h3>
-                            <p className="text-sm text-gray-600">Review details and confirm check-in</p>
-                        </div>
-
-                        <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
-                            <div className="bg-blue-50 p-4 border-b border-blue-100 flex items-center justify-between">
-                                <span className="text-sm font-medium text-blue-700">VISIT TICKET</span>
-                                <span className="text-xs bg-white px-2 py-1 rounded-full text-blue-600 font-mono">
-                                    {new Date().toLocaleDateString()}
-                                </span>
-                            </div>
-                            <div className="p-5 space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Child</p>
-                                        <p className="font-semibold text-gray-900 text-lg">{selectedChild?.name}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Parent</p>
-                                        <p className="font-medium text-gray-900">{selectedParent?.name}</p>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-gray-100 pt-4">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Check-in Time</p>
-                                    </div>
-                                    <p className="font-medium text-gray-900 pl-6">
-                                        {new Date().toLocaleTimeString(undefined, {
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </p>
-                                </div>
-
-                                <div className="border-t border-gray-100 pt-4">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Location</p>
-                                    </div>
-                                    <p className="font-medium text-gray-900">{nurseProfile?.hospitalName}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="visit-notes">Notes (Optional)</Label>
-                            <textarea
-                                id="visit-notes"
-                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                                placeholder="Enter any notes for this visit (allergies, special instructions, etc.)"
-                                value={visitNotes}
-                                onChange={(e) => setVisitNotes(e.target.value)}
-                                rows={3}
-                            />
-                        </div>
-
-                        <div className="flex gap-3 pt-2">
-                            <Button onClick={handleBack} variant="outline" className="flex-1">
-                                Back
-                            </Button>
-                            <Button
-                                onClick={handleVisitCreate}
-                                disabled={createVisitMutation.isPending}
-                                className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm"
-                            >
-                                {createVisitMutation.isPending ? 'Processing...' : 'Confirm Check-in'}
-                            </Button>
-                        </div>
+                        <VisitForm
+                            mode="create"
+                            defaultValues={{
+                                dropOffTime: new Date(),
+                                status: 'active',
+                            }}
+                            onSubmit={handleVisitSubmit}
+                            onCancel={handleBack}
+                            isLoading={createVisitMutation.isPending}
+                        />
                     </div>
                 );
 

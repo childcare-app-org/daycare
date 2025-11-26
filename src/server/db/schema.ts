@@ -199,7 +199,7 @@ export const children = createTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: d.varchar({ length: 255 }).notNull(),
-    age: d.integer().notNull(), // Age in months for precision
+    birthdate: d.timestamp({ withTimezone: true }).notNull(),
     allergies: d.text(), // JSON string or comma-separated
     preexistingConditions: d.text(), // JSON string or comma-separated
     familyDoctorName: d.varchar({ length: 255 }),

@@ -1,4 +1,4 @@
-export type EventCategory = "Output" | "Input" | "State" | "Other";
+export type EventCategory = "Output" | "Intake" | "Activity" | "Other";
 
 export enum EventType {
   Pee = "Pee",
@@ -7,8 +7,9 @@ export enum EventType {
   Eat = "Eat",
   Drink = "Drink",
   Medication = "Medication",
-  Slept = "Slept",
-  WokeUp = "Woke-up",
+  Sleep = "Sleep",
+  Play = "Play",
+  Tantrum = "Tantrum",
   Temperature = "Temperature",
   Note = "Note",
 }
@@ -41,33 +42,39 @@ export const EVENT_TYPES: EventDefinition[] = [
   },
   {
     label: EventType.Eat,
-    category: "Input",
+    category: "Intake",
     icon: "🍽️",
     tags: ["bottle", "spoon-fed", "self-fed", "full portion", "partial"],
   },
   {
     label: EventType.Drink,
-    category: "Input",
+    category: "Intake",
     icon: "🥤",
     tags: ["water", "milk", "juice", "full portion", "partial"],
   },
   {
     label: EventType.Medication,
-    category: "Input",
+    category: "Intake",
     icon: "💊",
     tags: ["fever reducer", "pain relief", "antibiotic", "inhaler"],
   },
   {
-    label: EventType.Slept,
-    category: "State",
+    label: EventType.Sleep,
+    category: "Activity",
     icon: "😴",
-    tags: ["restful", "restless", "short nap", "long nap"],
+    tags: ["sleep", "woke up"],
   },
   {
-    label: EventType.WokeUp,
-    category: "State",
-    icon: "🌅",
-    tags: ["happy", "cranky"],
+    label: EventType.Play,
+    category: "Activity",
+    icon: "🎮",
+    tags: ["indoor", "outdoor", "quiet", "active"],
+  },
+  {
+    label: EventType.Tantrum,
+    category: "Activity",
+    icon: "😤",
+    tags: ["mild", "moderate", "severe", "resolved"],
   },
   { label: EventType.Temperature, category: "Other", icon: "🌡️" },
   { label: EventType.Note, category: "Other", icon: "📝" },

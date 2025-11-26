@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { CheckCircle2, Info } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -53,9 +53,21 @@ export default function VisitDetail() {
 
     const updateVisitMutation = api.visit.update.useMutation({
         onSuccess: () => {
-            // Optional: show toast or success indicator
+            refetchVisit();
         },
     });
+
+    const handleCompleteVisit = () => {
+        if (!id) return;
+        updateVisitMutation.mutate({
+            id: id as string,
+            status: 'completed',
+        });
+        // Redirect to dashboard after completion
+        setTimeout(() => {
+            router.push('/dashboard');
+        }, 500);
+    };
 
     // Auto-save handler for health check
     const handleHealthCheckUpdate = useDebounceCallback((data: Record<string, any>) => {
@@ -150,24 +162,32 @@ export default function VisitDetail() {
                                     ← Back
                                 </Button>
                             </Link>
+                            {visit.status === 'active' && (
+                                <Button
+                                    onClick={handleCompleteVisit}
+                                    disabled={updateVisitMutation.isPending}
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    {updateVisitMutation.isPending ? 'Completing...' : 'Complete Visit'}
+                                </Button>
+                            )}
                         </div>
 
                         <div className="flex items-center justify-center gap-3 mb-6">
                             <h1 className="text-3xl font-bold text-gray-900">
                                 {visit.child?.name}
                             </h1>
-                            {(visit.child?.allergies || visit.child?.preexistingConditions) && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 rounded-full border-blue-100 text-blue-600 bg-white shadow-sm hover:bg-blue-50"
-                                    aria-label="View care information"
-                                    onClick={() => setShowCareInfo(true)}
-                                >
-                                    <Info className="w-4 h-4" />
-                                </Button>
-                            )}
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8 rounded-full border-blue-100 text-blue-600 bg-white shadow-sm hover:bg-blue-50"
+                                aria-label="View care information"
+                                onClick={() => setShowCareInfo(true)}
+                            >
+                                <Info className="w-4 h-4" />
+                            </Button>
                         </div>
 
 

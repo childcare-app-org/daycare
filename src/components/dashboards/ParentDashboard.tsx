@@ -16,11 +16,20 @@ import type { RegisterVisitFormData } from '~/components/forms/RegisterVisitForm
 type Child = {
     id?: string | null;
     name?: string | null;
-    age?: number | null;
+    birthdate?: Date | null;
     allergies?: string | null;
     preexistingConditions?: string | null;
     familyDoctorName?: string | null;
     familyDoctorPhone?: string | null;
+};
+
+// Helper function to calculate age in months from birthdate
+const calculateAgeInMonths = (birthdate: Date | null | undefined): number => {
+    if (!birthdate) return 0;
+    const today = new Date();
+    const years = today.getFullYear() - birthdate.getFullYear();
+    const months = today.getMonth() - birthdate.getMonth();
+    return years * 12 + months;
 };
 
 export function ParentDashboard() {
@@ -93,10 +102,7 @@ export function ParentDashboard() {
     };
 
     const handleCreateSubmit = (data: ChildFormData) => {
-        createChildMutation.mutate({
-            ...data,
-            relationshipType: 'Parent',
-        });
+        createChildMutation.mutate(data);
     };
 
     const handleUpdateSubmit = (data: ChildFormData) => {
@@ -118,10 +124,12 @@ export function ParentDashboard() {
     };
 
     const handleRegisterVisitSubmit = (data: RegisterVisitFormData) => {
+        const dropOffTime = new Date();
         createVisitMutation.mutate({
             childId: data.childId,
             hospitalId: data.hospitalId,
-            dropOffTime: new Date(),
+            dropOffTime,
+            pickupTime: data.pickupTime,
             accessCode: data.accessCode,
         });
     };
@@ -174,7 +182,10 @@ export function ParentDashboard() {
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-lg">{child.name}</h3>
                                                 <p className="text-sm text-gray-600">
-                                                    Age: {Math.floor((child.age || 0) / 12)} years, {(child.age || 0) % 12} months
+                                                    {(() => {
+                                                        const ageMonths = calculateAgeInMonths(child.birthdate);
+                                                        return `Age: ${Math.floor(ageMonths / 12)} years, ${ageMonths % 12} months`;
+                                                    })()}
                                                 </p>
                                                 {child.allergies && (
                                                     <p className="text-sm text-red-600">
@@ -256,7 +267,7 @@ export function ParentDashboard() {
                     mode="edit"
                     defaultValues={editingChild ? {
                         name: editingChild.name || '',
-                        age: editingChild.age || 36,
+                        birthdate: editingChild.birthdate || new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
                         allergies: editingChild.allergies || '',
                         preexistingConditions: editingChild.preexistingConditions || '',
                         familyDoctorName: editingChild.familyDoctorName || '',

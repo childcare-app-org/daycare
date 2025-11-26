@@ -28,12 +28,6 @@ export function VisitForm({
     onCancel,
     isLoading = false,
 }: VisitFormProps) {
-    // Helper to handle timezone offset for datetime-local inputs
-    const toLocalISOString = (date: Date) => {
-        const offset = date.getTimezoneOffset() * 60000;
-        return new Date(date.getTime() - offset).toISOString().slice(0, 16);
-    };
-
     // Extract just the time part (HH:mm) from a date string or Date object
     const getTimeString = (dateValue?: Date | string) => {
         if (!dateValue) return '';
@@ -192,7 +186,7 @@ export function VisitForm({
                     name="notes"
                     value={formData.notes}
                     onChange={handleInputChange}
-                    placeholder="Add any allergies, special instructions, or notes..."
+                    placeholder="Add any special instructions, or notes..."
                     className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
                 />
             </div>

@@ -137,9 +137,6 @@ export function VisitEventForm({
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={onCancel}>
-                            Cancel
-                        </Button>
                         <Button type="submit" disabled={isLoading}>
                             {isLoading ? 'Adding...' : 'Add Event'}
                         </Button>

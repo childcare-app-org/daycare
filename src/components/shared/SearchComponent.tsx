@@ -59,7 +59,7 @@ interface SearchComponentProps<T extends SearchResult> {
  *     renderResult={(child) => (
  *       <div>
  *         <p className="font-medium">{child.name}</p>
- *         <p className="text-sm text-gray-500">Age: {child.age}</p>
+ *         <p className="text-sm text-gray-500">Birthdate: {child.birthdate?.toLocaleDateString()}</p>
  *       </div>
  *     )}
  *     onSelect={(child) => handleSelect(child)}
@@ -133,7 +133,7 @@ export function SearchComponent<T extends SearchResult>({
                 {searchResults.map((result) => (
                     <Card
                         key={result.id}
-                        className="cursor-pointer hover:bg-gray-50 transition-colors"
+                        className="cursor-pointer hover:bg-gray-50 transition-colors py-2"
                         onClick={() => onSelect(result)}
                     >
                         <CardContent className="p-3">

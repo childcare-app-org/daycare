@@ -6,7 +6,6 @@ export function VisitTimelineView({ logs }: { logs: TimelineLog[] }) {
         return (
             <div className="py-12 text-center">
                 <p className="text-gray-500 mb-2">No events recorded yet</p>
-                <p className="text-xs text-gray-400">Use the quick actions above to start logging</p>
             </div>
         );
     }

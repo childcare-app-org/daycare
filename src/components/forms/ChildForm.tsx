@@ -6,7 +6,7 @@ import { Label } from '~/components/ui/label';
 
 export interface ChildFormData {
     name: string;
-    age: number;
+    birthdate: Date;
     allergies?: string;
     preexistingConditions?: string;
     familyDoctorName?: string;
@@ -28,9 +28,23 @@ export function ChildForm({
     onCancel,
     isLoading = false,
 }: ChildFormProps) {
+    // Helper to format date for input (YYYY-MM-DD)
+    const formatDateForInput = (date?: Date) => {
+        if (!date) return '';
+        const d = typeof date === 'string' ? new Date(date) : date;
+        return d.toISOString().split('T')[0];
+    };
+
+    // Default to 3 years ago if no birthdate provided
+    const getDefaultBirthdate = () => {
+        const date = new Date();
+        date.setFullYear(date.getFullYear() - 3);
+        return date;
+    };
+
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
-        age: defaultValues?.age?.toString() || '36',
+        birthdate: formatDateForInput(defaultValues?.birthdate) || formatDateForInput(getDefaultBirthdate()),
         allergies: defaultValues?.allergies || '',
         preexistingConditions: defaultValues?.preexistingConditions || '',
         familyDoctorName: defaultValues?.familyDoctorName || '',
@@ -38,9 +52,13 @@ export function ChildForm({
     });
 
     const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.birthdate) {
+            return; // Birthdate is required
+        }
         onSubmit({
             name: formData.name,
-            age: parseInt(formData.age),
+            birthdate: new Date(formData.birthdate),
             allergies: formData.allergies || undefined,
             preexistingConditions: formData.preexistingConditions || undefined,
             familyDoctorName: formData.familyDoctorName || undefined,
@@ -75,19 +93,16 @@ export function ChildForm({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="age">Age (in months) *</Label>
+                    <Label htmlFor="birthdate">Birthdate *</Label>
                     <Input
-                        id="age"
-                        name="age"
-                        type="number"
-                        placeholder="36"
-                        value={formData.age}
+                        id="birthdate"
+                        name="birthdate"
+                        type="date"
+                        value={formData.birthdate}
                         onChange={handleInputChange}
                         required
-                        min="3"
-                        max="144"
+                        max={new Date().toISOString().split('T')[0]}
                     />
-                    <p className="text-sm text-gray-500">Age range: 3-144 months</p>
                 </div>
             </div>
 

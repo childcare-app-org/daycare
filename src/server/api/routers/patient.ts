@@ -18,7 +18,7 @@ export const patientRouter = createTRPCRouter({
         .select({
           id: children.id,
           name: children.name,
-          age: children.age,
+          birthdate: children.birthdate,
           parentId: parentChildRelations.parentId,
           parentName: parents.name,
           parentPhone: parents.phoneNumber,
@@ -35,7 +35,7 @@ export const patientRouter = createTRPCRouter({
       return childrenResults.map((child) => ({
         id: child.id,
         name: child.name,
-        age: child.age,
+        birthdate: child.birthdate,
         parentId: child.parentId,
         parentName: child.parentName,
         parentPhone: child.parentPhone,
@@ -127,7 +127,7 @@ export const patientRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(1, "Child name is required"),
-        age: z.number().min(0, "Age must be positive"),
+        birthdate: z.date(),
         allergies: z.string().optional(),
         preexistingConditions: z.string().optional(),
         familyDoctorName: z.string().optional(),
@@ -182,7 +182,7 @@ export const patientRouter = createTRPCRouter({
         .insert(children)
         .values({
           name: input.name,
-          age: input.age,
+          birthdate: input.birthdate,
           allergies: input.allergies || null,
           preexistingConditions: input.preexistingConditions || null,
           familyDoctorName: input.familyDoctorName || null,
@@ -200,7 +200,7 @@ export const patientRouter = createTRPCRouter({
       return {
         id: newChild!.id,
         name: newChild!.name,
-        age: newChild!.age,
+        birthdate: newChild!.birthdate,
         parentId: targetParentId,
       };
     }),
@@ -284,7 +284,7 @@ export const patientRouter = createTRPCRouter({
         .select({
           id: children.id,
           name: children.name,
-          age: children.age,
+          birthdate: children.birthdate,
           allergies: children.allergies,
           preexistingConditions: children.preexistingConditions,
           familyDoctorName: children.familyDoctorName,
@@ -314,7 +314,7 @@ export const patientRouter = createTRPCRouter({
       .select({
         id: children.id,
         name: children.name,
-        age: children.age,
+        birthdate: children.birthdate,
         allergies: children.allergies,
         preexistingConditions: children.preexistingConditions,
         familyDoctorName: children.familyDoctorName,
@@ -332,11 +332,7 @@ export const patientRouter = createTRPCRouter({
       z.object({
         id: z.string().min(1, "Child ID is required"),
         name: z.string().min(1, "Child name is required"),
-        age: z
-          .number()
-          .int()
-          .min(3, "Age must be at least 3 months")
-          .max(144, "Age must be at most 144 months"),
+        birthdate: z.date(),
         allergies: z.string().optional(),
         preexistingConditions: z.string().optional(),
         familyDoctorName: z.string().optional(),
@@ -375,7 +371,7 @@ export const patientRouter = createTRPCRouter({
         .update(children)
         .set({
           name: input.name,
-          age: input.age,
+          birthdate: input.birthdate,
           allergies: input.allergies,
           preexistingConditions: input.preexistingConditions,
           familyDoctorName: input.familyDoctorName,

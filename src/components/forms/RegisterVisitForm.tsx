@@ -1,7 +1,8 @@
-import { Building2, Check, DollarSign, MapPin } from 'lucide-react';
+import { Building2, Check, Clock, DollarSign, MapPin, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '~/components/ui/input-otp';
 import { Label } from '~/components/ui/label';
 import { useHospitalLocation } from '~/hooks/useHospitalLocation';
@@ -13,6 +14,7 @@ export interface RegisterVisitFormData {
     hospitalId: string;
     childId: string;
     accessCode: string;
+    pickupTime: Date;
 }
 
 type FormStep = 'form' | 'pin' | 'success';
@@ -48,10 +50,12 @@ export function RegisterVisitForm({
 }: RegisterVisitFormProps) {
     const [selectedHospitalId, setSelectedHospitalId] = useState('');
     const [accessCode, setAccessCode] = useState('');
+    const [pickupTimeOnly, setPickupTimeOnly] = useState('17:00'); // Default to 5 PM
+    const [dropOffTime] = useState(new Date());
 
     // Multi-step form state
     const [currentStep, setCurrentStep] = useState<FormStep>('form');
-    const [formData, setFormData] = useState<{ hospitalId: string; childId: string } | null>(null);
+    const [formData, setFormData] = useState<{ hospitalId: string; childId: string; pickupTime: Date } | null>(null);
     const [pinError, setPinError] = useState('');
     const [isValidatingPin, setIsValidatingPin] = useState(false);
 
@@ -82,7 +86,13 @@ export function RegisterVisitForm({
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setFormData({ hospitalId: selectedHospitalId, childId });
+
+        // Calculate pickup time from time input
+        const [hours, minutes] = pickupTimeOnly.split(':').map(Number);
+        const pickupTime = new Date(dropOffTime);
+        pickupTime.setHours(hours || 17, minutes || 0, 0, 0);
+
+        setFormData({ hospitalId: selectedHospitalId, childId, pickupTime });
         setCurrentStep('pin');
         setPinError('');
     };
@@ -106,6 +116,7 @@ export function RegisterVisitForm({
             hospitalId: formData!.hospitalId,
             childId: formData!.childId,
             accessCode,
+            pickupTime: formData!.pickupTime,
         });
     };
 
@@ -120,16 +131,6 @@ export function RegisterVisitForm({
     if (currentStep === 'form') {
         return (
             <form onSubmit={handleFormSubmit} className="space-y-6">
-                <div className="space-y-2">
-                    <Label className="text-base">Child</Label>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                            {childName.charAt(0)}
-                        </div>
-                        <span className="font-medium text-gray-900">{childName}</span>
-                    </div>
-                </div>
-
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
                         <Label className="text-base">Select Hospital</Label>
@@ -191,6 +192,38 @@ export function RegisterVisitForm({
                     </div>
                 </div>
 
+                <div className="space-y-3">
+                    <Label htmlFor="pickupTime" className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Pick-up Time
+                    </Label>
+                    <Input
+                        id="pickupTime"
+                        type="time"
+                        value={pickupTimeOnly}
+                        onChange={(e) => setPickupTimeOnly(e.target.value)}
+                        className="text-lg"
+                        required
+                    />
+                    <div className="flex flex-wrap gap-2">
+                        {['09:00', '12:00', '15:00', '17:00', '18:00'].map((time) => (
+                            <button
+                                key={time}
+                                type="button"
+                                onClick={() => setPickupTimeOnly(time)}
+                                className={cn(
+                                    "px-3 py-1 text-sm rounded-full border transition-colors",
+                                    pickupTimeOnly === time
+                                        ? "bg-blue-600 text-white border-blue-600"
+                                        : "bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                                )}
+                            >
+                                {time}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 <DialogFooter>
                     {onCancel && (
                         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
@@ -199,7 +232,7 @@ export function RegisterVisitForm({
                     )}
                     <Button
                         type="submit"
-                        disabled={isLoading || !selectedHospitalId}
+                        disabled={isLoading || !selectedHospitalId || !pickupTimeOnly}
                         className="bg-blue-600 hover:bg-blue-700"
                     >
                         Continue

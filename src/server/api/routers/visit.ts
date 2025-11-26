@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { validateHospitalAccessCode } from '~/lib/access-code';
 import {
@@ -16,6 +16,7 @@ export const visitRouter = createTRPCRouter({
         childId: z.string().min(1, "Child ID is required"),
         hospitalId: z.string().min(1, "Hospital ID is required"),
         dropOffTime: z.date(),
+        pickupTime: z.date(),
         notes: z.string().optional(),
         accessCode: z
           .string()
@@ -136,6 +137,7 @@ export const visitRouter = createTRPCRouter({
           childId: input.childId,
           hospitalId: input.hospitalId,
           dropOffTime: input.dropOffTime,
+          pickupTime: input.pickupTime,
           status: "active",
           notes: input.notes || null,
         })
@@ -180,7 +182,7 @@ export const visitRouter = createTRPCRouter({
         child: {
           id: children.id,
           name: children.name,
-          age: children.age,
+          birthdate: children.birthdate,
           allergies: children.allergies,
           preexistingConditions: children.preexistingConditions,
           familyDoctorName: children.familyDoctorName,
@@ -202,6 +204,74 @@ export const visitRouter = createTRPCRouter({
           eq(visits.status, "active"),
         ),
       );
+  }),
+
+  // Get today's completed visits (Nurse only)
+  getMyHospitalTodaysCompletedVisits: nurseProcedure.query(async ({ ctx }) => {
+    // Get the nurse record for the current user
+    const [nurse] = await ctx.db
+      .select()
+      .from(nurses)
+      .where(eq(nurses.userId, ctx.session.user.id))
+      .limit(1);
+
+    if (!nurse) {
+      throw new Error("Nurse profile not found");
+    }
+
+    // Get start and end of today in UTC
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+
+    // Get completed visits for today
+    return await ctx.db
+      .select({
+        id: visits.id,
+        parentId: visits.parentId,
+        childId: visits.childId,
+        hospitalId: visits.hospitalId,
+        dropOffTime: visits.dropOffTime,
+        pickupTime: visits.pickupTime,
+        status: visits.status,
+        notes: visits.notes,
+        healthCheck: visits.healthCheck,
+        createdAt: visits.createdAt,
+        updatedAt: visits.updatedAt,
+        parent: {
+          id: parents.id,
+          name: parents.name,
+          phoneNumber: parents.phoneNumber,
+        },
+        child: {
+          id: children.id,
+          name: children.name,
+          birthdate: children.birthdate,
+          allergies: children.allergies,
+          preexistingConditions: children.preexistingConditions,
+          familyDoctorName: children.familyDoctorName,
+          familyDoctorPhone: children.familyDoctorPhone,
+        },
+        hospital: {
+          id: hospitals.id,
+          name: hospitals.name,
+          address: hospitals.address,
+        },
+      })
+      .from(visits)
+      .leftJoin(parents, eq(visits.parentId, parents.id))
+      .leftJoin(children, eq(visits.childId, children.id))
+      .leftJoin(hospitals, eq(visits.hospitalId, hospitals.id))
+      .where(
+        and(
+          eq(visits.hospitalId, nurse.hospitalId),
+          eq(visits.status, "completed"),
+          gte(visits.updatedAt, today),
+          lte(visits.updatedAt, tomorrow),
+        ),
+      )
+      .orderBy(visits.updatedAt);
   }),
 
   // Get visit by ID (Nurse only - for visit detail page)
@@ -241,7 +311,7 @@ export const visitRouter = createTRPCRouter({
           child: {
             id: children.id,
             name: children.name,
-            age: children.age,
+            birthdate: children.birthdate,
             allergies: children.allergies,
             preexistingConditions: children.preexistingConditions,
             familyDoctorName: children.familyDoctorName,
@@ -305,7 +375,7 @@ export const visitRouter = createTRPCRouter({
         child: {
           id: children.id,
           name: children.name,
-          age: children.age,
+          birthdate: children.birthdate,
           allergies: children.allergies,
           preexistingConditions: children.preexistingConditions,
           familyDoctorName: children.familyDoctorName,
