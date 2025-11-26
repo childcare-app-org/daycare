@@ -51,7 +51,48 @@
             "title": "Child",
             "description": "Register children for daycare"
         },
-        "createParent": "Create Parent"
+        "createParent": "Create Parent",
+        "hero": {
+            "title": "Peace of mind while you're away",
+            "subtitle": "Professional sick-child daycare with real-time updates. Know your child is in good hands.",
+            "cta": "Get Started"
+        },
+        "features": {
+            "title": "Everything you need",
+            "subtitle": "Simple tools to keep you connected with your child's care",
+            "realtime": {
+                "title": "Real-Time Updates",
+                "description": "Get instant notifications about meals, naps, activities, and health checks throughout the day"
+            },
+            "health": {
+                "title": "Health Monitoring",
+                "description": "Temperature tracking, medication logs, and detailed health records all in one place"
+            },
+            "checkin": {
+                "title": "Easy Check-In",
+                "description": "Quick and secure drop-off with digital verification at any partner hospital"
+            },
+            "history": {
+                "title": "Visit History",
+                "description": "Access complete care records and visit summaries anytime you need them"
+            }
+        },
+        "howItWorks": {
+            "title": "How it works",
+            "subtitle": "Three simple steps to get started",
+            "step1": {
+                "title": "Create an Account",
+                "description": "Sign up and add your children's information to your profile"
+            },
+            "step2": {
+                "title": "Find a Hospital",
+                "description": "Browse nearby partner hospitals and check availability"
+            },
+            "step3": {
+                "title": "Stay Connected",
+                "description": "Receive real-time updates and view your child's care timeline"
+            }
+        }
     },
     "dashboard": {
         "title": "Dashboard - Daycare Management",

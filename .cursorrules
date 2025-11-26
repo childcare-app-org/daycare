@@ -1,0 +1,111 @@
+# Daycare Project Cursor Rules
+
+## Internationalization (i18n) - Adding New Text
+
+This project uses `next-intl` for translations. All user-facing text must be translated.
+
+### Supported Languages
+- English (en) - `src/locales/en.json`
+- Japanese (ja) - `src/locales/ja.json`
+
+### How to Use Translations in Components
+
+```tsx
+import { useTranslations } from "next-intl";
+
+export default function MyComponent() {
+  const t = useTranslations();
+
+  return (
+    <div>
+      {/* Simple usage */}
+      <h1>{t("common.loading")}</h1>
+      
+      {/* With interpolation */}
+      <p>{t("common.welcome", { name: "John" })}</p>
+    </div>
+  );
+}
+```
+
+### Adding New Translation Keys
+
+1. **Always add to BOTH locale files** - Add the key to `src/locales/en.json` AND `src/locales/ja.json`
+2. **Use dot notation** for accessing nested keys: `t("dashboard.parent.title")`
+3. **Keep the structure consistent** between both JSON files
+
+### Translation File Structure
+
+The translations are organized into logical sections:
+
+| Section | Purpose | Example |
+|---------|---------|---------|
+| `common.*` | Shared UI text (buttons, actions) | `common.save`, `common.cancel`, `common.loading` |
+| `home.*` | Home page content | `home.title`, `home.description` |
+| `dashboard.*` | Dashboard pages | `dashboard.admin.title`, `dashboard.nurse.createVisit` |
+| `visit.*` | Visit-related content | `visit.temperature`, `visit.timeline` |
+| `forms.*` | Form labels and placeholders | `forms.child.name`, `forms.hospital.address` |
+| `hospital.*` | Hospital management | `hospital.nurses`, `hospital.capacity` |
+| `eventTypes.*` | Event type names | `eventTypes.Pee`, `eventTypes.Sleep` |
+| `tags.*` | Tag names | `tags.clear`, `tags.normal` |
+| `healthCheck.*` | Health check labels | `healthCheck.cough`, `healthCheck.mood` |
+| `eventCategories.*` | Event categories | `eventCategories.intake`, `eventCategories.output` |
+| `timeline.*` | Timeline text | `timeline.by` |
+
+### Interpolation Syntax
+
+Use `{variableName}` in translations for dynamic values:
+
+```json
+// en.json
+"welcome": "Welcome, {name}"
+"yearsOld": "{years} years, {months} months old"
+
+// ja.json  
+"welcome": "{name}さん、ようこそ"
+"yearsOld": "{years}歳{months}ヶ月"
+```
+
+```tsx
+t("common.welcome", { name: userName })
+t("dashboard.parent.yearsOld", { years: 3, months: 5 })
+```
+
+### Helper Functions for Dynamic Keys
+
+For event types and tags, use the helper functions in `src/utils/translations.ts`:
+
+```tsx
+import { getTranslatedEventType, getTranslatedTag } from "~/utils/translations";
+
+// Translate dynamic event types
+const translatedType = getTranslatedEventType(t, eventType); // "Pee" → "おしっこ"
+
+// Translate dynamic tags
+const translatedTag = getTranslatedTag(t, tag); // "clear" → "透明"
+```
+
+### Checklist When Adding New Text
+
+- [ ] Is the text user-facing? If yes, it must use translations
+- [ ] Added English translation to `src/locales/en.json`
+- [ ] Added Japanese translation to `src/locales/ja.json`
+- [ ] Used correct nested section (common, forms, dashboard, etc.)
+- [ ] Key naming follows existing conventions (camelCase)
+- [ ] Interpolation variables match between both locales
+- [ ] Used `useTranslations()` hook in the component
+
+### Don'ts
+
+- ❌ Don't hardcode user-facing strings: `<button>Save</button>`
+- ❌ Don't add translations to only one locale file
+- ❌ Don't create duplicate keys - check existing translations first
+- ❌ Don't use different interpolation variables between locales
+
+### Do's
+
+- ✅ Use the `t()` function: `<button>{t("common.save")}</button>`
+- ✅ Group related translations under logical sections
+- ✅ Reuse existing common translations when applicable
+- ✅ Keep Japanese translations natural (not literal translations)
+

@@ -51,7 +51,48 @@
             "title": "お子さま",
             "description": "お子さまの登録"
         },
-        "createParent": "保護者を登録"
+        "createParent": "保護者を登録",
+        "hero": {
+            "title": "お子さまを安心して預けられる",
+            "subtitle": "リアルタイムで様子がわかる病児保育。大切なお子さまを、プロの手に。",
+            "cta": "はじめる"
+        },
+        "features": {
+            "title": "充実の機能",
+            "subtitle": "お子さまの様子をいつでも確認",
+            "realtime": {
+                "title": "リアルタイム通知",
+                "description": "食事・お昼寝・遊び・健康チェックの様子をすぐにお届け"
+            },
+            "health": {
+                "title": "健康管理",
+                "description": "体温記録・投薬ログ・詳しい健康記録をまとめて管理"
+            },
+            "checkin": {
+                "title": "かんたん受付",
+                "description": "提携病院でスムーズにお預け。デジタル認証で安心・安全"
+            },
+            "history": {
+                "title": "利用履歴",
+                "description": "過去の保育記録をいつでも確認できます"
+            }
+        },
+        "howItWorks": {
+            "title": "ご利用の流れ",
+            "subtitle": "3つのステップで簡単スタート",
+            "step1": {
+                "title": "アカウント作成",
+                "description": "登録して、お子さまの情報を追加"
+            },
+            "step2": {
+                "title": "病院を探す",
+                "description": "お近くの提携病院を検索・空き確認"
+            },
+            "step3": {
+                "title": "様子を確認",
+                "description": "リアルタイムで保育の様子をチェック"
+            }
+        }
     },
     "dashboard": {
         "title": "ダッシュボード - 病児保育管理",
