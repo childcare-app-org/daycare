@@ -1,7 +1,9 @@
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { Card } from '~/components/ui/card';
 import { EVENT_TYPES, getEventEmoji } from '~/components/visit/eventTypes';
 import { cn } from '~/lib/utils';
+import { getTranslatedEventType, getTranslatedTag } from '~/utils/translations';
 
 import type { EventCategory } from '~/components/visit/eventTypes';
 
@@ -67,6 +69,7 @@ const TimelineItem = React.forwardRef<
     HTMLDivElement,
     TimelineItemProps & React.HTMLAttributes<HTMLDivElement>
 >(({ className, log, icon, ...props }, ref) => {
+    const t = useTranslations();
     const eventData = log.eventData as LogEventData | null | undefined;
     const tags = eventData?.tags ?? [];
     const temperature =
@@ -113,11 +116,11 @@ const TimelineItem = React.forwardRef<
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className="text-base font-semibold leading-tight">
-                                    {log.eventType}
+                                    {getTranslatedEventType(t, log.eventType)}
                                 </h3>
                                 {log.nurse?.name && (
                                     <span className="text-xs text-muted-foreground font-normal">
-                                        by {log.nurse.name}
+                                        {t('timeline.by', { name: log.nurse.name })}
                                     </span>
                                 )}
                             </div>
@@ -140,7 +143,7 @@ const TimelineItem = React.forwardRef<
                                     key={tag}
                                     className="inline-flex items-center rounded-md bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium border border-primary/20"
                                 >
-                                    {tag}
+                                    {getTranslatedTag(t, tag)}
                                 </span>
                             ))}
                             {typeof temperature === 'number' && (

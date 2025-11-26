@@ -1,4 +1,6 @@
 import { useTranslations } from 'next-intl';
+import { getTranslatedEventType } from '~/utils/translations';
+
 import { EVENT_TYPES } from './eventTypes';
 
 import type { EventType, EventCategory } from './eventTypes';
@@ -20,13 +22,7 @@ function getCategoryMetadata(t: (path: string) => string): Record<
     };
 }
 
-// Derive column config from EVENT_TYPES
-const COLUMN_CONFIG = Object.entries(CATEGORY_METADATA).map(([category, metadata]) => ({
-    ...metadata,
-    category: category as EventCategory,
-}));
-
-const getColumnStyles = (color: typeof COLUMN_CONFIG[number]['color']) => {
+const getColumnStyles = (color: 'sky' | 'emerald' | 'indigo' | 'amber') => {
     switch (color) {
         case 'sky':
             return {
@@ -127,7 +123,7 @@ export function VisitQuickAddGrid({ onSelect }: QuickAddGridProps) {
                                         >
                                             {item.icon}
                                         </div>
-                                        <span className="truncate text-left">{item.label}</span>
+                                        <span className="truncate text-left">{getTranslatedEventType(t, item.label)}</span>
                                     </button>
                                 ))}
                             </div>
