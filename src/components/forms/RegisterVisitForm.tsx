@@ -1,4 +1,4 @@
-import { Building2, Check, Clock, DollarSign, MapPin, Timer } from 'lucide-react';
+import { Building2, Check, Clock, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
@@ -176,8 +176,7 @@ export function RegisterVisitForm({
 
                                             <div className="flex items-center gap-4 text-sm text-gray-500">
                                                 <span className="flex items-center">
-                                                    <DollarSign className="w-3 h-3" />
-                                                    {hospital.pricing}{t('forms.registerVisit.perDay')}
+                                                    {t('common.currencySymbol')}{Math.round(parseFloat(hospital.pricing))}{t('forms.registerVisit.perDay')}
                                                 </span>
                                                 {hospital.distance !== undefined && (
                                                     <span className="flex items-center gap-1">

@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useState } from 'react';
 import { HospitalForm } from '~/components/forms/HospitalForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
@@ -138,7 +138,7 @@ export function HospitalList() {
                                                     <span className="font-medium">{t('hospital.capacity')}:</span> {hospital.capacity} {t('hospital.children')}
                                                 </span>
                                                 <span>
-                                                    <span className="font-medium">{t('hospital.dailyRate')}:</span> ${hospital.pricing}
+                                                    <span className="font-medium">{t('hospital.dailyRate')}:</span> {t('common.currencySymbol')}{Math.round(parseFloat(hospital.pricing))}
                                                 </span>
                                             </div>
                                         </div>

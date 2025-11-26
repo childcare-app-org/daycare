@@ -1,8 +1,8 @@
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { NurseForm } from '~/components/forms/NurseForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
@@ -23,11 +23,11 @@ type Nurse = {
 };
 
 export async function getServerSideProps(context: { locale: string }) {
-  return {
-    props: {
-      messages: (await import(`~/locales/${context.locale}.json`)).default
-    }
-  };
+    return {
+        props: {
+            messages: (await import(`~/locales/${context.locale}.json`)).default
+        }
+    };
 }
 
 export default function HospitalDetail() {
@@ -205,7 +205,7 @@ export default function HospitalDetail() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">{t('hospital.dailyRate')}</p>
-                                    <p className="text-lg font-semibold">${hospital.pricing}</p>
+                                    <p className="text-lg font-semibold">{t('common.currencySymbol')}{Math.round(parseFloat(hospital.pricing))}</p>
                                 </div>
                             </CardContent>
                         </Card>

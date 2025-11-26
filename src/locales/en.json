@@ -1,5 +1,6 @@
 {
     "common": {
+        "currencySymbol": "$",
         "loading": "Loading...",
         "signIn": "Sign in",
         "signOut": "Sign out",

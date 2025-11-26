@@ -44,7 +44,7 @@ export function VisitTagSelector({
                             className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             value={temperature}
                             onChange={(e) => onTemperatureChange(e.target.value)}
-                            placeholder="37.0"
+                            placeholder="36.0"
                         />
                     </div>
                 </div>
