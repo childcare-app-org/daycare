@@ -1,19 +1,7 @@
+import type { TimelineLog } from '~/components/ui/timeline';
 import { Timeline, TimelineItem } from '~/components/ui/timeline';
 
-import type { LogEventData } from '~/server/db/schema';
-
-type VisitLog = {
-    id: string;
-    timestamp: string | Date;
-    eventType: string;
-    notes?: string | null;
-    eventData?: LogEventData | null;
-    nurse?: {
-        name?: string | null;
-    } | null;
-};
-
-export function VisitTimelineView({ logs }: { logs: VisitLog[] }) {
+export function VisitTimelineView({ logs }: { logs: TimelineLog[] }) {
     if (!logs || logs.length === 0) {
         return (
             <div className="py-12 text-center">
@@ -28,12 +16,7 @@ export function VisitTimelineView({ logs }: { logs: VisitLog[] }) {
             {logs.map((log) => (
                 <TimelineItem
                     key={log.id}
-                    date={new Date(log.timestamp)}
-                    title={log.eventType}
-                    description={log.notes || undefined}
-                    author={log.nurse?.name || undefined}
                     log={log}
-                    status="completed"
                 />
             ))}
         </Timeline>

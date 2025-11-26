@@ -1,5 +1,9 @@
+import type { EventType } from './eventTypes';
+
+import { getEventTags } from './eventTypes';
+
 type TagSelectorProps = {
-    eventType: string;
+    eventType: EventType | string;
     selectedTags: string[];
     onToggleTag: (tag: string) => void;
     temperature: string;
@@ -14,27 +18,7 @@ export function VisitTagSelector({
     onTemperatureChange,
 }: TagSelectorProps) {
     const lower = eventType.toLowerCase();
-
-    let suggestions: string[] = [];
-
-    if (lower === 'pee') {
-        suggestions = ['clear', 'yellow'];
-    } else if (lower === 'poo') {
-        suggestions = ['diarrhea', 'constipation', 'bloody'];
-    } else if (lower === 'puke') {
-        suggestions = ['after meal', 'projectile', 'mucus', 'with fever'];
-    } else if (lower === 'eat') {
-        suggestions = ['solid', 'bottle', 'hot', 'cold', 'finished all', 'ate a little'];
-    } else if (lower === 'drink') {
-        suggestions = ['hot', 'cold', 'water', 'juice', 'milk'];
-    } else if (lower === 'medication') {
-        suggestions = ['fever', 'pain', 'antibiotic', 'inhaler'];
-    } else if (lower === 'slept') {
-        suggestions = ['easy to sleep', 'restless', 'short nap', 'long nap'];
-    } else if (lower === 'woke-up' || lower === 'woke up') {
-        suggestions = ['happy', 'cranky', 'from nap', 'from night sleep'];
-    }
-
+    const suggestions = getEventTags(eventType);
     const showTemperatureInput = lower === 'temperature';
 
     if (suggestions.length === 0 && !showTemperatureInput) {
@@ -76,8 +60,8 @@ export function VisitTagSelector({
                                     type="button"
                                     onClick={() => onToggleTag(tag)}
                                     className={`rounded-full px-3 py-1 text-xs border transition ${selected
-                                            ? 'bg-purple-600 text-white border-purple-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                        ? 'bg-purple-600 text-white border-purple-600'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                                         }`}
                                 >
                                     {tag}

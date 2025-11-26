@@ -1,11 +1,17 @@
+import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import {
+    Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
+} from '~/components/ui/dialog';
+import { Label } from '~/components/ui/label';
+import { cn } from '~/lib/utils';
 
 import { VisitTagSelector } from './VisitTagSelector';
 
+import type { EventType } from './eventTypes';
 export type VisitEventFormData = {
-    eventType: string;
+    eventType: EventType | string;
     notes?: string;
     tags?: string[];
     temperature?: number;
@@ -13,7 +19,8 @@ export type VisitEventFormData = {
 
 type VisitEventFormProps = {
     visitId: string;
-    initialEventType?: string;
+    isOpen: boolean;
+    initialEventType?: EventType | string;
     isLoading: boolean;
     autoFocusNotes?: boolean;
     onSubmit: (data: VisitEventFormData) => void;
@@ -22,6 +29,7 @@ type VisitEventFormProps = {
 
 export function VisitEventForm({
     visitId,
+    isOpen,
     onSubmit,
     onCancel,
     isLoading,
@@ -39,10 +47,22 @@ export function VisitEventForm({
     }, [initialEventType]);
 
     useEffect(() => {
-        if (autoFocusNotes && notesRef.current) {
-            notesRef.current.focus();
+        if (autoFocusNotes && notesRef.current && isOpen) {
+            // Small delay to ensure dialog is fully rendered
+            setTimeout(() => {
+                notesRef.current?.focus();
+            }, 100);
         }
-    }, [autoFocusNotes]);
+    }, [autoFocusNotes, isOpen]);
+
+    // Reset form when dialog closes
+    useEffect(() => {
+        if (!isOpen) {
+            setNotes('');
+            setSelectedTags([]);
+            setTemperature('');
+        }
+    }, [isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,63 +78,75 @@ export function VisitEventForm({
                         ? Number.parseFloat(temperature)
                         : undefined,
             });
-            setEventType('');
-            setNotes('');
-            setSelectedTags([]);
-            setTemperature('');
         }
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>
-                    {eventType ? `Add ${eventType} Event` : 'Add Event'}
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {eventType && eventType !== 'Note' && (
-                        <VisitTagSelector
-                            eventType={eventType}
-                            selectedTags={selectedTags}
-                            onToggleTag={(tag) => {
-                                setSelectedTags((prev) =>
-                                    prev.includes(tag)
-                                        ? prev.filter((t) => t !== tag)
-                                        : [...prev, tag]
-                                );
-                            }}
-                            temperature={temperature}
-                            onTemperatureChange={setTemperature}
-                        />
-                    )}
-                    <div>
-                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                            Notes
-                        </label>
-                        <textarea
-                            id="notes"
-                            ref={notesRef}
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Add any additional details..."
-                        />
+        <Dialog open={isOpen} onOpenChange={onCancel}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <DialogTitle>
+                                {eventType ? `Add ${eventType} Event` : 'Add Event'}
+                            </DialogTitle>
+                        </div>
+                        <DialogClose asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 rounded-full"
+                                onClick={onCancel}
+                            >
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Close</span>
+                            </Button>
+                        </DialogClose>
                     </div>
-
-                    <div className="flex gap-2">
-                        <Button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Adding...' : 'Add Event'}
-                        </Button>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <div className="space-y-4 pb-4">
+                        {eventType && eventType !== 'Note' && (
+                            <VisitTagSelector
+                                eventType={eventType}
+                                selectedTags={selectedTags}
+                                onToggleTag={(tag) => {
+                                    setSelectedTags((prev) =>
+                                        prev.includes(tag)
+                                            ? prev.filter((t) => t !== tag)
+                                            : [...prev, tag]
+                                    );
+                                }}
+                                temperature={temperature}
+                                onTemperatureChange={setTemperature}
+                            />
+                        )}
+                        <div className="space-y-2">
+                            <Label htmlFor="notes">Notes</Label>
+                            <textarea
+                                id="notes"
+                                ref={notesRef}
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                rows={3}
+                                className={cn(
+                                    "flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                )}
+                                placeholder="Add any additional details..."
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
                         <Button type="button" variant="outline" onClick={onCancel}>
                             Cancel
                         </Button>
-                    </div>
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading ? 'Adding...' : 'Add Event'}
+                        </Button>
+                    </DialogFooter>
                 </form>
-            </CardContent>
-        </Card>
+            </DialogContent>
+        </Dialog>
     );
 }
 
