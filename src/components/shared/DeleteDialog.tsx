@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Button } from '~/components/ui/button';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
@@ -22,6 +23,7 @@ export function DeleteDialog({
     isLoading = false,
     error,
 }: DeleteDialogProps) {
+    const t = useTranslations();
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -36,10 +38,10 @@ export function DeleteDialog({
                 )}
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                     <Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
-                        {isLoading ? 'Deleting...' : 'Delete'}
+                        {isLoading ? t('common.deleting') : t('common.delete')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

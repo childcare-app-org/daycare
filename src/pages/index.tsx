@@ -1,4 +1,5 @@
 import { signIn, signOut, useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -6,12 +7,19 @@ import { useEffect } from 'react';
 import { LanguageSwitcher } from '~/components/shared/LanguageSwitcher';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { useTranslation } from '~/hooks/useTranslation';
+
+export async function getServerSideProps(context: { locale: string }) {
+  return {
+    props: {
+      messages: (await import(`~/locales/${context.locale}.json`)).default
+    }
+  };
+}
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   // Redirect authenticated users to appropriate dashboard based on role
   useEffect(() => {
@@ -158,13 +166,13 @@ export default function Home() {
 
 function AuthShowcase() {
   const { data: sessionData } = useSession();
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
       <p className="text-center text-lg text-gray-700">
         {sessionData && (
-          <span>{t('common.welcome', { name: sessionData.user?.name || '' })}</span>
+          <span>{t('common.welcome', { name: sessionData.user?.name || '' } as any)}</span>
         )}
         {!sessionData && <span>{t('home.pleaseSignIn')}</span>}
       </p>

@@ -1,4 +1,5 @@
 import { Calendar, Check, ChevronRight, User, UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
 import { GoogleAddressAutocompleteNew } from '~/components/forms/GoogleAddressAutocompleteNew';
@@ -37,6 +38,7 @@ interface ChildData {
 }
 
 export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowProps) {
+    const t = useTranslations();
     const [currentStep, setCurrentStep] = useState<CreatePatientStep>('search-parent');
     const [selectedParent, setSelectedParent] = useState<ParentData | null>(null);
     const [selectedChild, setSelectedChild] = useState<ChildData | null>(null);
@@ -179,9 +181,9 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
     };
 
     const steps = [
-        { title: 'Parent', icon: User },
-        { title: 'Child', icon: UserPlus },
-        { title: 'Visit', icon: Calendar },
+        { title: t('forms.createPatientFlow.parent'), icon: User },
+        { title: t('forms.createPatientFlow.child'), icon: UserPlus },
+        { title: t('forms.createPatientFlow.visit'), icon: Calendar },
     ];
 
     const renderStep = () => {
@@ -189,14 +191,14 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
             case 'search-parent':
                 return (
                     <SearchComponent
-                        title="Find Parent"
-                        description="Search for an existing parent or register a new one"
-                        placeholder="Search by parent name or phone number..."
+                        title={t('forms.createPatientFlow.findParent')}
+                        description={t('forms.createPatientFlow.findParentDescription')}
+                        placeholder={t('forms.createPatientFlow.searchParentPlaceholder')}
                         searchQuery={parentSearchQuery}
                         onSearchQueryChange={setParentSearchQuery}
                         searchResults={parentSearchResults}
                         isLoading={isSearchingParents}
-                        emptyMessage="No parents found. You can create a new parent."
+                        emptyMessage={t('forms.createPatientFlow.noParentsFound')}
                         renderResult={(parent) => (
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
@@ -213,7 +215,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                         onCancel={onCancel}
                         additionalActions={
                             <Button onClick={() => setCurrentStep('create-parent')} variant="default" className="flex-1">
-                                Create New Parent
+                                {t('forms.createPatientFlow.createNewParent')}
                             </Button>
                         }
                     />
@@ -224,29 +226,29 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                     <div className="space-y-6">
                         <div className="space-y-4">
                             <div>
-                                <Label htmlFor="parent-name">Parent Name *</Label>
+                                <Label htmlFor="parent-name">{t('forms.createPatientFlow.parentName')}</Label>
                                 <Input
                                     id="parent-name"
                                     type="text"
                                     value={parentFormData.name}
                                     onChange={(e) => setParentFormData({ ...parentFormData, name: e.target.value })}
-                                    placeholder="Enter parent name"
+                                    placeholder={t('forms.createPatientFlow.parentNamePlaceholder')}
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="parent-email">Email Address *</Label>
+                                <Label htmlFor="parent-email">{t('forms.createPatientFlow.emailAddress')}</Label>
                                 <Input
                                     id="parent-email"
                                     type="email"
                                     value={parentFormData.email}
                                     onChange={(e) => setParentFormData({ ...parentFormData, email: e.target.value })}
-                                    placeholder="Enter email address"
+                                    placeholder={t('forms.createPatientFlow.emailAddressPlaceholder')}
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="parent-phone">Phone Number *</Label>
+                                <Label htmlFor="parent-phone">{t('forms.createPatientFlow.phoneNumber')}</Label>
                                 <Input
                                     id="parent-phone"
                                     type="tel"
@@ -273,14 +275,14 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
 
                                         setParentFormData({ ...parentFormData, phoneNumber: formatted });
                                     }}
-                                    placeholder="090-1234-5678"
+                                    placeholder={t('forms.createPatientFlow.phoneNumberPlaceholder')}
                                     required
                                 />
                             </div>
                             <div>
                                 <GoogleAddressAutocompleteNew
                                     id="parent-address"
-                                    label="Home Address"
+                                    label={t('forms.createPatientFlow.homeAddress')}
                                     value={parentFormData.homeAddress}
                                     onChange={(data: AddressData) => {
                                         setParentFormData({
@@ -291,20 +293,20 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                         });
                                     }}
                                     required
-                                    placeholder="Start typing an address..."
+                                    placeholder={t('forms.createPatientFlow.homeAddressPlaceholder')}
                                 />
                             </div>
                         </div>
                         <div className="flex gap-3 pt-4">
                             <Button onClick={handleBack} variant="outline" className="flex-1">
-                                Back
+                                {t('common.back')}
                             </Button>
                             <Button
                                 onClick={handleParentCreate}
                                 disabled={createParentMutation.isPending}
                                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                             >
-                                {createParentMutation.isPending ? 'Creating...' : 'Create Parent'}
+                                {createParentMutation.isPending ? t('common.creating') : t('forms.createPatientFlow.createParent')}
                             </Button>
                         </div>
                     </div>
@@ -314,14 +316,14 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                 return (
                     <div className="space-y-6">
                         <div>
-                            <h3 className="text-lg font-semibold">Select Child</h3>
-                            <p className="text-sm text-gray-600">Choose a child for <span className="font-medium text-gray-900">{selectedParent?.name}</span></p>
+                            <h3 className="text-lg font-semibold">{t('forms.createPatientFlow.selectChild')}</h3>
+                            <p className="text-sm text-gray-600">{t('forms.createPatientFlow.selectChildDescription', { name: selectedParent?.name || '' })}</p>
                         </div>
 
                         {isLoadingChildren ? (
                             <div className="text-center py-8">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <p className="text-sm text-gray-500">Loading children...</p>
+                                <p className="text-sm text-gray-500">{t('forms.createPatientFlow.loadingChildren')}</p>
                             </div>
                         ) : parentChildren.length > 0 ? (
                             <div className="grid grid-cols-1 gap-3">
@@ -338,7 +340,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                             <div>
                                                 <p className="font-medium text-gray-900">{child.name}</p>
                                                 <p className="text-sm text-gray-500">
-                                                    Birthdate: {new Date(child.birthdate).toLocaleDateString()}
+                                                    {t('forms.child.birthdate')}: {new Date(child.birthdate).toLocaleDateString()}
                                                 </p>
                                             </div>
                                         </div>
@@ -348,16 +350,16 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                             </div>
                         ) : (
                             <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                                <p className="text-sm text-gray-500">No children found for this parent.</p>
+                                <p className="text-sm text-gray-500">{t('forms.createPatientFlow.noChildrenFound')}</p>
                             </div>
                         )}
 
                         <div className="flex gap-3 pt-2">
                             <Button onClick={handleBack} variant="outline" className="flex-1">
-                                Back
+                                {t('common.back')}
                             </Button>
                             <Button onClick={() => setCurrentStep('create-child')} variant="default" className="flex-1 bg-blue-600 hover:bg-blue-700">
-                                Add New Child
+                                {t('forms.createPatientFlow.addNewChild')}
                             </Button>
                         </div>
                     </div>

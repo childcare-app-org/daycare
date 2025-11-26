@@ -6,9 +6,11 @@ import { VisitForm } from '~/components/forms/VisitForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
+import { LanguageSwitcher } from '~/components/shared/LanguageSwitcher';
 import { SearchComponent } from '~/components/shared/SearchComponent';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { useTranslations } from 'next-intl';
 import { api } from '~/utils/api';
 
 import type { VisitFormData } from '~/components/forms/VisitForm';
@@ -32,6 +34,7 @@ type VisitListItemProps = {
 };
 
 function VisitListItem({ visit, showActions = false, onEdit, onDelete }: VisitListItemProps) {
+    const t = useTranslations();
     const isCompleted = visit.status === 'completed';
     const avatarBg = isCompleted ? 'bg-green-100' : 'bg-blue-100';
     const avatarText = isCompleted ? 'text-green-600' : 'text-blue-600';
@@ -49,10 +52,10 @@ function VisitListItem({ visit, showActions = false, onEdit, onDelete }: VisitLi
                                 {visit.child?.name}
                             </h3>
                             <p className="text-sm text-gray-600">
-                                Parent: {visit.parent?.name}
+                                {t('dashboard.nurse.parent')}: {visit.parent?.name}
                             </p>
                             <p className="text-sm text-gray-500">
-                                Dropped off: {new Date(visit.dropOffTime).toLocaleString()}
+                                {t('dashboard.nurse.droppedOff')}: {new Date(visit.dropOffTime).toLocaleString()}
                             </p>
                         </div>
                     </div>
@@ -72,6 +75,7 @@ function VisitListItem({ visit, showActions = false, onEdit, onDelete }: VisitLi
 
 export function NurseDashboard() {
     const { data: session } = useSession();
+    const t = useTranslations();
     const [editingVisit, setEditingVisit] = useState<Visit | null>(null);
     const [deletingVisit, setDeletingVisit] = useState<Visit | null>(null);
     const [error, setError] = useState('');
@@ -163,7 +167,7 @@ export function NurseDashboard() {
         return (
             <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading active visits...</p>
+                <p className="text-gray-600">{t('dashboard.nurse.loadingActiveVisits')}</p>
             </div>
         );
     }
@@ -174,26 +178,29 @@ export function NurseDashboard() {
             <div className="flex justify-between items-start">
                 <div>
                     <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                        Welcome, {session?.user?.name}
+                        {t('common.welcome', { name: session?.user?.name || '' })}
                     </h1>
-                    <p className="text-lg text-gray-600 mb-2">Nurse Dashboard</p>
+                    <p className="text-lg text-gray-600 mb-2">{t('dashboard.nurse.title')}</p>
                     {accessCodeData && (
-                        <p className="text-gray-600">Hospital: {accessCodeData.hospitalName}</p>
+                        <p className="text-gray-600">{t('dashboard.nurse.hospital')}: {accessCodeData.hospitalName}</p>
                     )}
                 </div>
-                {accessCodeData && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-                        <p className="text-sm text-gray-600 mb-1">Access Code</p>
-                        <p className="text-2xl font-bold text-blue-600">{accessCodeData.accessCode}</p>
-                    </div>
-                )}
+                <div className="flex flex-col items-end gap-4">
+                    <LanguageSwitcher />
+                    {accessCodeData && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                            <p className="text-sm text-gray-600 mb-1">{t('dashboard.nurse.accessCode')}</p>
+                            <p className="text-2xl font-bold text-blue-600">{accessCodeData.accessCode}</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Create a Visit</CardTitle>
+                    <CardTitle>{t('dashboard.nurse.createVisit')}</CardTitle>
                     <CardDescription>
-                        Create a visit for a returning or new patient
+                        {t('dashboard.nurse.createVisitDescription')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -202,14 +209,14 @@ export function NurseDashboard() {
                             onClick={() => setShowRegisterVisitModal(true)}
                             className="flex-1"
                         >
-                            Returning Patient
+                            {t('dashboard.nurse.returningPatient')}
                         </Button>
                         <Button
                             onClick={() => setShowCreatePatientModal(true)}
                             variant="outline"
                             className="flex-1"
                         >
-                            New Patient
+                            {t('dashboard.nurse.newPatient')}
                         </Button>
                     </div>
                 </CardContent>
@@ -218,9 +225,9 @@ export function NurseDashboard() {
             {/* Active Visits List */}
             <Card className="mb-8">
                 <CardHeader>
-                    <CardTitle>Active Visits</CardTitle>
+                    <CardTitle>{t('dashboard.nurse.activeVisits')}</CardTitle>
                     <CardDescription>
-                        Children currently at your hospital
+                        {t('dashboard.nurse.activeVisitsDescription')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -238,7 +245,7 @@ export function NurseDashboard() {
                         </div>
                     ) : (
                         <div className="text-center py-8">
-                            <p className="text-gray-500">No active visits at your hospital</p>
+                            <p className="text-gray-500">{t('dashboard.nurse.noActiveVisits')}</p>
                         </div>
                     )}
                 </CardContent>
@@ -247,12 +254,12 @@ export function NurseDashboard() {
             {/* Today's Completed Visits Section */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Today's Visits</CardTitle>
-                    <CardDescription>Completed visits from today</CardDescription>
+                    <CardTitle>{t('dashboard.nurse.todaysVisits')}</CardTitle>
+                    <CardDescription>{t('dashboard.nurse.todaysVisitsDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {isLoadingTodaysVisits ? (
-                        <p className="text-gray-500 text-center py-8">Loading...</p>
+                        <p className="text-gray-500 text-center py-8">{t('common.loading')}</p>
                     ) : todaysCompletedVisits && todaysCompletedVisits.length > 0 ? (
                         <div className="space-y-4">
                             {todaysCompletedVisits.map((visit) => (
@@ -266,7 +273,7 @@ export function NurseDashboard() {
                             ))}
                         </div>
                     ) : (
-                        <p className="text-gray-500 text-center py-8">No completed visits today.</p>
+                        <p className="text-gray-500 text-center py-8">{t('dashboard.nurse.noCompletedVisits')}</p>
                     )}
                 </CardContent>
             </Card>
@@ -275,8 +282,8 @@ export function NurseDashboard() {
             <EditDialog
                 open={!!editingVisit}
                 onOpenChange={() => setEditingVisit(null)}
-                title="Edit Visit"
-                description={`Update visit information for ${editingVisit?.child?.name}`}
+                title={t('dashboard.nurse.editVisit')}
+                description={t('dashboard.nurse.editVisitDescription', { name: editingVisit?.child?.name || '' })}
                 error={error}
             >
                 <VisitForm
@@ -298,8 +305,8 @@ export function NurseDashboard() {
                 open={!!deletingVisit}
                 onOpenChange={() => setDeletingVisit(null)}
                 onConfirm={handleDeleteConfirm}
-                title="Delete Visit"
-                description={`Are you sure you want to delete the visit for ${deletingVisit?.child?.name}? This action cannot be undone and will permanently remove this visit record and all associated logs from the database.`}
+                title={t('dashboard.nurse.deleteVisit')}
+                description={t('dashboard.nurse.deleteVisitDescription', { name: deletingVisit?.child?.name || '' })}
                 isLoading={deleteVisitMutation.isPending}
                 error={error}
             />
@@ -311,18 +318,18 @@ export function NurseDashboard() {
                     setShowRegisterVisitModal(false);
                     setChildSearchQuery('');
                 }}
-                title="Register Visit"
-                description="Search and select a child to register a visit"
+                title={t('dashboard.nurse.registerVisit')}
+                description={t('dashboard.nurse.registerVisitDescription')}
                 error=""
             >
                 <SearchComponent
                     title=""
-                    placeholder="Search by child name..."
+                    placeholder={t('dashboard.nurse.searchByChildName')}
                     searchQuery={childSearchQuery}
                     onSearchQueryChange={setChildSearchQuery}
                     searchResults={childSearchResults}
                     isLoading={isSearchingChildren}
-                    emptyMessage="No children found."
+                    emptyMessage={t('dashboard.nurse.noChildrenFound')}
                     renderResult={(child) => (
                         <div className="group space-y-2 py-1">
                             <div className="flex items-start justify-between gap-3">
@@ -331,7 +338,7 @@ export function NurseDashboard() {
                                     {new Date(child.birthdate).toLocaleDateString()}
                                 </span>
                             </div>
-                            <p className="text-sm text-muted-foreground">Parent: {child.parentName}</p>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.nurse.parent')}: {child.parentName}</p>
                         </div>
                     )}
                     onSelect={(child) => {
@@ -351,8 +358,8 @@ export function NurseDashboard() {
             <EditDialog
                 open={showCreatePatientModal}
                 onOpenChange={() => setShowCreatePatientModal(false)}
-                title="Create New Patient"
-                description="Complete the following steps to register a new patient and create a visit"
+                title={t('dashboard.nurse.createNewPatient')}
+                description={t('dashboard.nurse.createNewPatientDescription')}
                 error=""
             >
                 <CreatePatientFlow
@@ -372,8 +379,8 @@ export function NurseDashboard() {
                         setShowVisitForm(false);
                         setSelectedChildForVisit(null);
                     }}
-                    title="Register Visit"
-                    description={`Register a visit for ${selectedChildForVisit.name}`}
+                    title={t('dashboard.nurse.registerVisit')}
+                    description={t('dashboard.nurse.registerVisitFor', { name: selectedChildForVisit.name })}
                     error={error}
                 >
                     <VisitForm

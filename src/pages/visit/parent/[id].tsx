@@ -2,6 +2,7 @@ import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { HealthCheck } from '~/components/dashboards/HealthCheck';
 import { Button } from '~/components/ui/button';
@@ -11,10 +12,19 @@ import { VisitHeader } from '~/components/visit/VisitHeader';
 import { VisitTimelineView } from '~/components/visit/VisitTimelineView';
 import { api } from '~/utils/api';
 
+export async function getServerSideProps(context: { locale: string }) {
+  return {
+    props: {
+      messages: (await import(`~/locales/${context.locale}.json`)).default
+    }
+  };
+}
+
 export default function ParentVisitDetail() {
     const router = useRouter();
     const { id } = router.query;
     const { data: session, status } = useSession();
+    const t = useTranslations();
     const [showCareInfo, setShowCareInfo] = useState(false);
 
     const { data: visit, isLoading: visitLoading } = api.visit.getByIdForParent.useQuery(
@@ -28,7 +38,7 @@ export default function ParentVisitDetail() {
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
+                    <p className="text-gray-600">{t('common.loading')}</p>
                 </div>
             </div>
         );
@@ -38,9 +48,9 @@ export default function ParentVisitDetail() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">Access denied. Parent access required.</p>
+                    <p className="text-gray-600 mb-4">{t('visit.accessDeniedParent')}</p>
                     <Link href="/dashboard">
-                        <Button>Go to Dashboard</Button>
+                        <Button>{t('common.goToDashboard')}</Button>
                     </Link>
                 </div>
             </div>
@@ -52,7 +62,7 @@ export default function ParentVisitDetail() {
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading visit details...</p>
+                    <p className="text-gray-600">{t('visit.loadingVisitDetails')}</p>
                 </div>
             </div>
         );
@@ -62,9 +72,9 @@ export default function ParentVisitDetail() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">Visit not found</p>
+                    <p className="text-gray-600 mb-4">{t('visit.visitNotFound')}</p>
                     <Link href="/dashboard">
-                        <Button>Go to Dashboard</Button>
+                        <Button>{t('common.goToDashboard')}</Button>
                     </Link>
                 </div>
             </div>
@@ -79,8 +89,8 @@ export default function ParentVisitDetail() {
     return (
         <>
             <Head>
-                <title>{visit.child?.name} - Visit Details</title>
-                <meta name="description" content="Visit timeline and details" />
+                <title>{visit.child?.name} - {t('visit.visitDetails')}</title>
+                <meta name="description" content={t('visit.visitTimelineDescription')} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 

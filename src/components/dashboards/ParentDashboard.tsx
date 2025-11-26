@@ -6,8 +6,10 @@ import { RegisterVisitForm } from '~/components/forms/RegisterVisitForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
+import { LanguageSwitcher } from '~/components/shared/LanguageSwitcher';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { useTranslations } from 'next-intl';
 import { api } from '~/utils/api';
 
 import type { ChildFormData } from '~/components/forms/ChildForm';
@@ -34,6 +36,7 @@ const calculateAgeInMonths = (birthdate: Date | null | undefined): number => {
 
 export function ParentDashboard() {
     const { data: session } = useSession();
+    const t = useTranslations();
     const { data: activeVisits, isLoading: visitsLoading, refetch: refetchVisits } = api.visit.getMyChildrenActiveVisits.useQuery();
     const { data: children, isLoading: childrenLoading, refetch } = api.patient.getMyChildren.useQuery();
     const { data: hospitals } = api.hospital.getAllPublic.useQuery();
@@ -138,7 +141,7 @@ export function ParentDashboard() {
         return (
             <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading your children...</p>
+                <p className="text-gray-600">{t('common.loading')}</p>
             </div>
         );
     }
@@ -151,11 +154,14 @@ export function ParentDashboard() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                    Welcome, {session?.user?.name}
-                </h1>
-                <p className="text-lg text-gray-600">Parent Dashboard</p>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                        {t('common.welcome', { name: session?.user?.name || '' })}
+                    </h1>
+                    <p className="text-lg text-gray-600">{t('dashboard.parent.title')}</p>
+                </div>
+                <LanguageSwitcher />
             </div>
 
             {/* Children List */}
@@ -163,12 +169,12 @@ export function ParentDashboard() {
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <div>
-                            <CardTitle>My Children</CardTitle>
+                            <CardTitle>{t('dashboard.parent.myChildren')}</CardTitle>
                             <CardDescription>
-                                Manage your children and their daycare visits
+                                {t('dashboard.parent.myChildrenDescription')}
                             </CardDescription>
                         </div>
-                        <Button onClick={handleCreate}>+ Add Child</Button>
+                        <Button onClick={handleCreate}>{t('dashboard.parent.addChild')}</Button>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -185,7 +191,7 @@ export function ParentDashboard() {
                                                 <div>
                                                     <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{child.name}</h3>
                                                     <p className="text-sm text-gray-500">
-                                                        {Math.floor(ageMonths / 12)} years, {ageMonths % 12} months old
+                                                        {t('dashboard.parent.yearsOld', { years: Math.floor(ageMonths / 12), months: ageMonths % 12 })}
                                                     </p>
                                                 </div>
 
@@ -198,7 +204,7 @@ export function ParentDashboard() {
                                                                     <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                                     </svg>
-                                                                    Allergies: {child.allergies}
+                                                                    {t('dashboard.parent.allergies')}: {child.allergies}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -208,7 +214,7 @@ export function ParentDashboard() {
                                                                     <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                                                     </svg>
-                                                                    Conditions: {child.preexistingConditions}
+                                                                    {t('dashboard.parent.conditions')}: {child.preexistingConditions}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -226,11 +232,11 @@ export function ParentDashboard() {
                                                                 <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                                     <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                                                                 </svg>
-                                                                <span className="break-words">Currently at {activeVisit.hospital?.name}</span>
+                                                                <span className="break-words">{t('dashboard.parent.currentlyAt', { hospital: activeVisit.hospital?.name || '' })}</span>
                                                             </span>
                                                         </div>
                                                         <p className="text-xs text-gray-500 font-medium">
-                                                            Dropped off: {new Date(activeVisit.dropOffTime).toLocaleString()}
+                                                            {t('dashboard.nurse.droppedOff')}: {new Date(activeVisit.dropOffTime).toLocaleString()}
                                                         </p>
                                                     </div>
                                                 )}
@@ -240,12 +246,12 @@ export function ParentDashboard() {
                                                     {activeVisit ? (
                                                         <Link href={`/visit/parent/${activeVisit.id}`} className="flex-1 sm:flex-initial">
                                                             <Button variant="outline" className="w-full sm:w-auto whitespace-nowrap">
-                                                                View Visit
+                                                                {t('dashboard.parent.viewVisit')}
                                                             </Button>
                                                         </Link>
                                                     ) : (
                                                         <Button onClick={() => handleRegisterVisit(child)} className="flex-1 sm:flex-initial whitespace-nowrap">
-                                                            Register for Visit
+                                                            {t('dashboard.parent.registerForVisit')}
                                                         </Button>
                                                     )}
                                                     <ActionMenu
@@ -261,8 +267,8 @@ export function ParentDashboard() {
                         </div>
                     ) : (
                         <div className="text-center py-8">
-                            <p className="text-gray-500 mb-4">No children registered yet</p>
-                            <Button onClick={handleCreate}>Add Your First Child</Button>
+                            <p className="text-gray-500 mb-4">{t('dashboard.parent.noChildrenRegistered')}</p>
+                            <Button onClick={handleCreate}>{t('dashboard.parent.addFirstChild')}</Button>
                         </div>
                     )}
                 </CardContent>
@@ -272,8 +278,8 @@ export function ParentDashboard() {
             <EditDialog
                 open={showCreateModal}
                 onOpenChange={() => setShowCreateModal(false)}
-                title="Create Child"
-                description="Register a new child for daycare"
+                title={t('dashboard.parent.createChild')}
+                description={t('dashboard.parent.createChildDescription')}
                 error={error}
             >
                 <ChildForm
@@ -288,8 +294,8 @@ export function ParentDashboard() {
             <EditDialog
                 open={!!editingChild}
                 onOpenChange={() => setEditingChild(null)}
-                title="Edit Child"
-                description={`Update ${editingChild?.name}'s information`}
+                title={t('dashboard.parent.editChild')}
+                description={t('dashboard.parent.editChildDescription', { name: editingChild?.name || '' })}
                 error={error}
             >
                 <ChildForm
@@ -313,8 +319,8 @@ export function ParentDashboard() {
                 open={!!deletingChild}
                 onOpenChange={() => setDeletingChild(null)}
                 onConfirm={handleDeleteConfirm}
-                title="Delete Child"
-                description={`Are you sure you want to delete ${deletingChild?.name}? This action cannot be undone and will permanently remove all records associated with this child.`}
+                title={t('dashboard.parent.deleteChild')}
+                description={t('dashboard.parent.deleteChildDescription', { name: deletingChild?.name || '' })}
                 isLoading={deleteChildMutation.isPending}
                 error={error}
             />
@@ -323,8 +329,8 @@ export function ParentDashboard() {
             <EditDialog
                 open={!!registeringVisitForChild}
                 onOpenChange={() => setRegisteringVisitForChild(null)}
-                title="Register Visit"
-                description={`Register ${registeringVisitForChild?.name} for a daycare visit`}
+                title={t('dashboard.parent.registerVisit')}
+                description={t('dashboard.parent.registerVisitDescription', { name: registeringVisitForChild?.name || '' })}
                 error={error}
             >
                 <RegisterVisitForm

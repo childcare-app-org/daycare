@@ -2,6 +2,7 @@ import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { NurseForm } from '~/components/forms/NurseForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
@@ -21,9 +22,18 @@ type Nurse = {
     userId: string | null;
 };
 
+export async function getServerSideProps(context: { locale: string }) {
+  return {
+    props: {
+      messages: (await import(`~/locales/${context.locale}.json`)).default
+    }
+  };
+}
+
 export default function HospitalDetail() {
     const router = useRouter();
     const { data: session, status: authStatus } = useSession();
+    const t = useTranslations();
     const { id } = router.query;
     const hospitalId = typeof id === 'string' ? id : '';
 
@@ -117,7 +127,7 @@ export default function HospitalDetail() {
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
+                    <p className="text-gray-600">{t('common.loading')}</p>
                 </div>
             </div>
         );
@@ -127,9 +137,9 @@ export default function HospitalDetail() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">You must be an admin to access this page</p>
+                    <p className="text-gray-600 mb-4">{t('hospital.mustBeAdmin')}</p>
                     <Link href="/dashboard">
-                        <Button>Go to Dashboard</Button>
+                        <Button>{t('common.goToDashboard')}</Button>
                     </Link>
                 </div>
             </div>
@@ -141,7 +151,7 @@ export default function HospitalDetail() {
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading hospital...</p>
+                    <p className="text-gray-600">{t('hospital.loadingHospital')}</p>
                 </div>
             </div>
         );
@@ -151,9 +161,9 @@ export default function HospitalDetail() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">Hospital not found</p>
+                    <p className="text-gray-600 mb-4">{t('hospital.hospitalNotFound')}</p>
                     <Link href="/dashboard">
-                        <Button>Back to Dashboard</Button>
+                        <Button>{t('hospital.backToDashboard')}</Button>
                     </Link>
                 </div>
             </div>
@@ -176,7 +186,7 @@ export default function HospitalDetail() {
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
-                            Back to Dashboard
+                            {t('hospital.backToDashboard')}
                         </Link>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">{hospital.name}</h1>
                         <p className="text-lg text-gray-600">{hospital.address}</p>
@@ -186,15 +196,15 @@ export default function HospitalDetail() {
                         {/* Hospital Info */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Hospital Information</CardTitle>
+                                <CardTitle>{t('hospital.hospitalInformation')}</CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-sm text-gray-500">Capacity</p>
-                                    <p className="text-lg font-semibold">{hospital.capacity} children</p>
+                                    <p className="text-sm text-gray-500">{t('hospital.capacity')}</p>
+                                    <p className="text-lg font-semibold">{hospital.capacity} {t('hospital.children')}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Daily Rate</p>
+                                    <p className="text-sm text-gray-500">{t('hospital.dailyRate')}</p>
                                     <p className="text-lg font-semibold">${hospital.pricing}</p>
                                 </div>
                             </CardContent>
@@ -205,12 +215,12 @@ export default function HospitalDetail() {
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <CardTitle>Nurses</CardTitle>
+                                        <CardTitle>{t('hospital.nurses')}</CardTitle>
                                         <CardDescription>
-                                            {nurses?.length || 0} nurse{nurses?.length !== 1 ? 's' : ''} assigned to this hospital
+                                            {t('hospital.nursesAssigned', { count: nurses?.length || 0, nurses: (nurses?.length || 0) !== 1 ? 's' : '' })}
                                         </CardDescription>
                                     </div>
-                                    <Button onClick={() => setShowCreateModal(true)}>Add Nurse</Button>
+                                    <Button onClick={() => setShowCreateModal(true)}>{t('hospital.addNurse')}</Button>
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -231,14 +241,14 @@ export default function HospitalDetail() {
                                                                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                                 </svg>
-                                                                Active
+                                                                {t('common.active')}
                                                             </div>
                                                         ) : (
                                                             <div className="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                                                 </svg>
-                                                                Pending Sign-In
+                                                                {t('common.pendingSignIn')}
                                                             </div>
                                                         )}
                                                     </div>
@@ -252,8 +262,8 @@ export default function HospitalDetail() {
                                     </div>
                                 ) : (
                                     <div className="text-center py-8">
-                                        <p className="text-gray-500 mb-4">No nurses assigned to this hospital yet</p>
-                                        <Button onClick={() => setShowCreateModal(true)}>Add First Nurse</Button>
+                                        <p className="text-gray-500 mb-4">{t('hospital.noNursesAssigned')}</p>
+                                        <Button onClick={() => setShowCreateModal(true)}>{t('hospital.addFirstNurse')}</Button>
                                     </div>
                                 )}
                             </CardContent>
@@ -264,8 +274,8 @@ export default function HospitalDetail() {
                     <EditDialog
                         open={showCreateModal}
                         onOpenChange={() => setShowCreateModal(false)}
-                        title="Add Nurse"
-                        description={`Add a new nurse to ${hospital?.name}`}
+                        title={t('hospital.addNurseTitle')}
+                        description={t('hospital.addNurseDescription', { name: hospital?.name || '' })}
                         error={error}
                     >
                         <NurseForm
@@ -282,8 +292,8 @@ export default function HospitalDetail() {
                     <EditDialog
                         open={!!editingNurse}
                         onOpenChange={() => setEditingNurse(null)}
-                        title="Edit Nurse"
-                        description="Update nurse information"
+                        title={t('hospital.editNurse')}
+                        description={t('hospital.editNurseDescription')}
                         error={error}
                     >
                         <NurseForm
@@ -298,7 +308,7 @@ export default function HospitalDetail() {
                             onCancel={() => setEditingNurse(null)}
                             isLoading={updateNurseMutation.isPending}
                             emailDisabled={!!editingNurse?.userId}
-                            emailDisabledMessage={editingNurse?.userId ? "Note: Cannot change email for active nurses" : undefined}
+                            emailDisabledMessage={editingNurse?.userId ? t('hospital.noteCannotChangeEmail') : undefined}
                         />
                     </EditDialog>
 
@@ -307,8 +317,8 @@ export default function HospitalDetail() {
                         open={!!deletingNurse}
                         onOpenChange={() => setDeletingNurse(null)}
                         onConfirm={handleDeleteConfirm}
-                        title="Delete Nurse"
-                        description={`Are you sure you want to delete ${deletingNurse?.name}? This action cannot be undone.`}
+                        title={t('hospital.deleteNurse')}
+                        description={t('hospital.deleteNurseDescription', { name: deletingNurse?.name || '' })}
                         isLoading={deleteNurseMutation.isPending}
                         error={error}
                     />

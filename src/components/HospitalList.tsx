@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { HospitalForm } from '~/components/forms/HospitalForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
@@ -19,6 +20,7 @@ type Hospital = {
 };
 
 export function HospitalList() {
+    const t = useTranslations();
     const { data: hospitals, isLoading, refetch } = api.hospital.getAll.useQuery();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingHospital, setEditingHospital] = useState<Hospital | null>(null);
@@ -93,8 +95,8 @@ export function HospitalList() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Hospitals</CardTitle>
-                    <CardDescription>Loading hospitals...</CardDescription>
+                    <CardTitle>{t('hospital.hospitals')}</CardTitle>
+                    <CardDescription>{t('hospital.loadingHospitals')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-center py-8">
@@ -105,17 +107,20 @@ export function HospitalList() {
         );
     }
 
+    const hospitalCount = hospitals?.length || 0;
+    const hospitalPlural = hospitalCount !== 1 ? 's' : '';
+
     return (
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Hospitals</CardTitle>
+                        <CardTitle>{t('hospital.hospitals')}</CardTitle>
                         <CardDescription>
-                            {hospitals?.length || 0} hospital{hospitals?.length !== 1 ? 's' : ''} in the system
+                            {t('hospital.hospitalsInSystem', { count: hospitalCount, hospitals: hospitalPlural })}
                         </CardDescription>
                     </div>
-                    <Button onClick={handleCreate}>Add Hospital</Button>
+                    <Button onClick={handleCreate}>{t('hospital.addHospital')}</Button>
                 </div>
             </CardHeader>
             <CardContent>
@@ -130,10 +135,10 @@ export function HospitalList() {
                                             <p className="text-sm text-gray-600 mb-2">{hospital.address}</p>
                                             <div className="flex gap-4 text-sm text-gray-500">
                                                 <span>
-                                                    <span className="font-medium">Capacity:</span> {hospital.capacity} children
+                                                    <span className="font-medium">{t('hospital.capacity')}:</span> {hospital.capacity} {t('hospital.children')}
                                                 </span>
                                                 <span>
-                                                    <span className="font-medium">Daily Rate:</span> ${hospital.pricing}
+                                                    <span className="font-medium">{t('hospital.dailyRate')}:</span> ${hospital.pricing}
                                                 </span>
                                             </div>
                                         </div>
@@ -148,8 +153,8 @@ export function HospitalList() {
                     </div>
                 ) : (
                     <div className="text-center py-8">
-                        <p className="text-gray-500 mb-4">No hospitals yet</p>
-                        <Button onClick={handleCreate}>Create Your First Hospital</Button>
+                        <p className="text-gray-500 mb-4">{t('hospital.noHospitalsYet')}</p>
+                        <Button onClick={handleCreate}>{t('hospital.createFirstHospital')}</Button>
                     </div>
                 )}
             </CardContent>
@@ -158,8 +163,8 @@ export function HospitalList() {
             <EditDialog
                 open={showCreateModal}
                 onOpenChange={() => setShowCreateModal(false)}
-                title="Create Hospital"
-                description="Add a new hospital to the system"
+                title={t('hospital.createHospital')}
+                description={t('hospital.createHospitalDescription')}
                 error={error}
             >
                 <HospitalForm
@@ -174,8 +179,8 @@ export function HospitalList() {
             <EditDialog
                 open={!!editingHospital}
                 onOpenChange={() => setEditingHospital(null)}
-                title="Edit Hospital"
-                description="Update hospital information"
+                title={t('hospital.editHospital')}
+                description={t('hospital.editHospitalDescription')}
                 error={error}
             >
                 <HospitalForm
@@ -197,8 +202,8 @@ export function HospitalList() {
                 open={!!deletingHospital}
                 onOpenChange={() => setDeletingHospital(null)}
                 onConfirm={handleDeleteConfirm}
-                title="Delete Hospital"
-                description={`Are you sure you want to delete ${deletingHospital?.name}? This action cannot be undone.`}
+                title={t('hospital.deleteHospital')}
+                description={t('hospital.deleteHospitalDescription', { name: deletingHospital?.name || '' })}
                 isLoading={deleteHospitalMutation.isPending}
                 error={error}
             />

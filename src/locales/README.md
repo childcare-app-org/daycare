@@ -1,18 +1,18 @@
 # Internationalization (i18n) Setup
 
-This project supports English (en) and Japanese (ja) languages using Next.js Pages Router i18n.
+This project supports English (en) and Japanese (ja) languages using `next-intl` with Next.js Pages Router.
 
 ## How to Use
 
 ### In Components
 
-Use the `useTranslation` hook to access translations:
+Use the `useTranslations` hook from `next-intl` to access translations:
 
 ```tsx
-import { useTranslation } from "~/hooks/useTranslation";
+import { useTranslations } from "next-intl";
 
 export default function MyComponent() {
-  const { t, locale } = useTranslation();
+  const t = useTranslations();
 
   return (
     <div>

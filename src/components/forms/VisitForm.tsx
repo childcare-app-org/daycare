@@ -1,4 +1,5 @@
 import { Calendar, Clock, Timer } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
@@ -28,6 +29,7 @@ export function VisitForm({
     onCancel,
     isLoading = false,
 }: VisitFormProps) {
+    const t = useTranslations();
     // Extract just the time part (HH:mm) from a date string or Date object
     const getTimeString = (dateValue?: Date | string) => {
         if (!dateValue) return '';
@@ -120,7 +122,7 @@ export function VisitForm({
                         <Calendar className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                        <p className="text-sm text-blue-600 font-medium">Drop-off Time</p>
+                        <p className="text-sm text-blue-600 font-medium">{t('visit.dropOffTime')}</p>
                         <p className="text-lg font-bold text-gray-900">
                             {formData.dropOffTime.toLocaleTimeString(undefined, {
                                 hour: '2-digit',
@@ -142,11 +144,11 @@ export function VisitForm({
             <div className="space-y-3">
                 <Label htmlFor="pickupTime" className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    Pick-up Time
+                    {t('visit.pickUpTime')}
                     {duration && (
                         <span className="ml-auto text-xs font-normal text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
                             <Timer className="w-3 h-3" />
-                            Duration: {duration}
+                            {t('visit.duration')}: {duration}
                         </span>
                     )}
                 </Label>
@@ -180,13 +182,13 @@ export function VisitForm({
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">{t('visit.notes')}</Label>
                 <textarea
                     id="notes"
                     name="notes"
                     value={formData.notes}
                     onChange={handleInputChange}
-                    placeholder="Add any special instructions, or notes..."
+                    placeholder={t('forms.visit.notesPlaceholder')}
                     className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
                 />
             </div>
@@ -194,17 +196,17 @@ export function VisitForm({
             <DialogFooter>
                 {onCancel && (
                     <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                 )}
                 <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
                     {isLoading
                         ? mode === 'create'
-                            ? 'Creating...'
-                            : 'Updating...'
+                            ? t('forms.visit.creating')
+                            : t('forms.visit.updating')
                         : mode === 'create'
-                            ? 'Check In Child'
-                            : 'Update Visit'}
+                            ? t('forms.visit.checkInChild')
+                            : t('forms.visit.updateVisit')}
                 </Button>
             </DialogFooter>
         </form>

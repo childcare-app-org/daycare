@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import {
@@ -36,6 +37,7 @@ export function VisitEventForm({
     initialEventType,
     autoFocusNotes = false,
 }: VisitEventFormProps) {
+    const t = useTranslations();
     const [eventType, setEventType] = useState(initialEventType || '');
     const [notes, setNotes] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -88,7 +90,7 @@ export function VisitEventForm({
                     <div className="flex items-start justify-between">
                         <div>
                             <DialogTitle>
-                                {eventType ? `Add ${eventType} Event` : 'Add Event'}
+                                {eventType ? t('visit.addEventTitle', { type: eventType }) : t('visit.addEventDefault')}
                             </DialogTitle>
                         </div>
                         <DialogClose asChild>
@@ -99,7 +101,7 @@ export function VisitEventForm({
                                 onClick={onCancel}
                             >
                                 <X className="h-4 w-4" />
-                                <span className="sr-only">Close</span>
+                                <span className="sr-only">{t('common.close')}</span>
                             </Button>
                         </DialogClose>
                     </div>
@@ -122,7 +124,7 @@ export function VisitEventForm({
                             />
                         )}
                         <div className="space-y-2">
-                            <Label htmlFor="notes">Notes</Label>
+                            <Label htmlFor="notes">{t('visit.notes')}</Label>
                             <textarea
                                 id="notes"
                                 ref={notesRef}
@@ -132,13 +134,13 @@ export function VisitEventForm({
                                 className={cn(
                                     "flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                 )}
-                                placeholder="Add any additional details..."
+                                placeholder={t('visit.notesPlaceholder')}
                             />
                         </div>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Adding...' : 'Add Event'}
+                            {isLoading ? t('common.adding') : t('visit.addEventButton')}
                         </Button>
                     </DialogFooter>
                 </form>

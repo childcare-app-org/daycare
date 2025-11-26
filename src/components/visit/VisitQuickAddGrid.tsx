@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { EVENT_TYPES } from './eventTypes';
 
 import type { EventType, EventCategory } from './eventTypes';
@@ -7,16 +8,17 @@ type QuickAddGridProps = {
     onSelect: (eventType: EventType) => void;
 };
 
-// Map categories to column metadata
-const CATEGORY_METADATA: Record<
+function getCategoryMetadata(t: (path: string) => string): Record<
     EventCategory,
     { id: string; title: string; color: 'sky' | 'emerald' | 'indigo' | 'amber' }
-> = {
-    Intake: { id: 'intake', title: 'Intake', color: 'sky' },
-    Output: { id: 'output', title: 'Output', color: 'emerald' },
-    Activity: { id: 'activity', title: 'Activity', color: 'indigo' },
-    Other: { id: 'general', title: 'General', color: 'amber' },
-};
+> {
+    return {
+        Intake: { id: 'intake', title: t('eventCategories.intake'), color: 'sky' },
+        Output: { id: 'output', title: t('eventCategories.output'), color: 'emerald' },
+        Activity: { id: 'activity', title: t('eventCategories.activity'), color: 'indigo' },
+        Other: { id: 'general', title: t('eventCategories.general'), color: 'amber' },
+    };
+}
 
 // Derive column config from EVENT_TYPES
 const COLUMN_CONFIG = Object.entries(CATEGORY_METADATA).map(([category, metadata]) => ({
@@ -78,13 +80,20 @@ const getColumnStyles = (color: typeof COLUMN_CONFIG[number]['color']) => {
 };
 
 export function VisitQuickAddGrid({ onSelect }: QuickAddGridProps) {
+    const t = useTranslations();
+    const CATEGORY_METADATA = getCategoryMetadata(t);
+    // Derive column config from CATEGORY_METADATA
+    const COLUMN_CONFIG = Object.entries(CATEGORY_METADATA).map(([category, metadata]) => ({
+        ...metadata,
+        category: category as EventCategory,
+    }));
     // Order columns: Intake, Output, Activity, General
     const columnOrder: EventCategory[] = ['Intake', 'Output', 'Activity', 'Other'];
     const orderedColumns = columnOrder.map((category) => COLUMN_CONFIG.find((col) => col.category === category)).filter(Boolean) as typeof COLUMN_CONFIG;
 
     return (
         <div className="mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Event</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('visit.addEvent')}</h2>
             <div className="flex lg:grid lg:grid-cols-4 gap-4 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 -mx-4 lg:mx-0 px-4 lg:px-0 scrollbar-hide">
                 {orderedColumns.map((column) => {
                     const styles = getColumnStyles(column.color);

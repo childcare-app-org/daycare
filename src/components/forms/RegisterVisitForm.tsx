@@ -1,4 +1,5 @@
 import { Building2, Check, Clock, DollarSign, MapPin, Timer } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
@@ -48,6 +49,7 @@ export function RegisterVisitForm({
     onCancel,
     isLoading = false,
 }: RegisterVisitFormProps) {
+    const t = useTranslations();
     const [selectedHospitalId, setSelectedHospitalId] = useState('');
     const [accessCode, setAccessCode] = useState('');
     const [pickupTimeOnly, setPickupTimeOnly] = useState('17:00'); // Default to 5 PM
@@ -133,9 +135,9 @@ export function RegisterVisitForm({
             <form onSubmit={handleFormSubmit} className="space-y-6">
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <Label className="text-base">Select Hospital</Label>
+                        <Label className="text-base">{t('forms.registerVisit.selectHospital')}</Label>
                         <span className="text-xs text-muted-foreground">
-                            Sorted by distance
+                            {t('forms.registerVisit.sortedByDistance')}
                         </span>
                     </div>
 
@@ -175,7 +177,7 @@ export function RegisterVisitForm({
                                             <div className="flex items-center gap-4 text-sm text-gray-500">
                                                 <span className="flex items-center">
                                                     <DollarSign className="w-3 h-3" />
-                                                    {hospital.pricing}/day
+                                                    {hospital.pricing}{t('forms.registerVisit.perDay')}
                                                 </span>
                                                 {hospital.distance !== undefined && (
                                                     <span className="flex items-center gap-1">
@@ -195,7 +197,7 @@ export function RegisterVisitForm({
                 <div className="space-y-3">
                     <Label htmlFor="pickupTime" className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        Pick-up Time
+                        {t('visit.pickUpTime')}
                     </Label>
                     <Input
                         id="pickupTime"
@@ -227,7 +229,7 @@ export function RegisterVisitForm({
                 <DialogFooter>
                     {onCancel && (
                         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                     )}
                     <Button
@@ -235,7 +237,7 @@ export function RegisterVisitForm({
                         disabled={isLoading || !selectedHospitalId || !pickupTimeOnly}
                         className="bg-blue-600 hover:bg-blue-700"
                     >
-                        Continue
+                        {t('common.continue')}
                     </Button>
                 </DialogFooter>
             </form>
@@ -251,9 +253,9 @@ export function RegisterVisitForm({
                     <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
                         <Building2 className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900">Enter Access Code</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">{t('forms.registerVisit.enterAccessCode')}</h3>
                     <p className="text-gray-500 max-w-[280px] mx-auto text-sm">
-                        Please enter the 4-digit code provided by <span className="font-medium text-gray-900">{selectedHospital?.name}</span>
+                        {t('forms.registerVisit.enterAccessCodeDescription', { hospital: selectedHospital?.name || '' })}
                     </p>
                 </div>
 
@@ -286,7 +288,7 @@ export function RegisterVisitForm({
                         )}
                         {isValidatingPin && (
                             <p className="text-sm text-blue-600 animate-pulse">
-                                Validating code...
+                                {t('forms.registerVisit.validatingCode')}
                             </p>
                         )}
                     </div>
@@ -294,11 +296,11 @@ export function RegisterVisitForm({
 
                 <DialogFooter className="gap-2 sm:gap-0">
                     <Button type="button" variant="ghost" onClick={handleBackToForm}>
-                        Back to Hospital Selection
+                        {t('forms.registerVisit.backToHospitalSelection')}
                     </Button>
                     {onCancel && (
                         <Button type="button" variant="outline" onClick={onCancel}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                     )}
                 </DialogFooter>
@@ -314,16 +316,16 @@ export function RegisterVisitForm({
                         <Check className="w-10 h-10 text-green-600" strokeWidth={3} />
                     </div>
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-900">Verification Successful</h3>
+                        <h3 className="text-xl font-semibold text-gray-900">{t('forms.registerVisit.verificationSuccessful')}</h3>
                         <p className="text-gray-500 mt-2">
-                            The access code has been verified. You can now proceed with the check-in.
+                            {t('forms.registerVisit.verificationSuccessfulDescription')}
                         </p>
                     </div>
                 </div>
 
                 <DialogFooter>
                     <Button onClick={handleSuccessSubmit} className="w-full bg-green-600 hover:bg-green-700 text-lg py-6">
-                        Complete Check-in
+                        {t('forms.registerVisit.completeCheckIn')}
                     </Button>
                 </DialogFooter>
             </div>

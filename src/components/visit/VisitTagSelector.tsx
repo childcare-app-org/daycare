@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import type { EventType } from './eventTypes';
 
 import { getEventTags } from './eventTypes';
@@ -17,6 +18,7 @@ export function VisitTagSelector({
     temperature,
     onTemperatureChange,
 }: TagSelectorProps) {
+    const t = useTranslations();
     const lower = eventType.toLowerCase();
     const suggestions = getEventTags(eventType);
     const showTemperatureInput = lower === 'temperature';
@@ -30,7 +32,7 @@ export function VisitTagSelector({
             {showTemperatureInput && (
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Temperature (°C)
+                        {t('visit.temperature')} ({t('visit.temperatureUnit')})
                     </label>
                     <div className="flex items-center gap-2">
                         <input
@@ -49,7 +51,7 @@ export function VisitTagSelector({
             {suggestions.length > 0 && (
                 <div>
                     <div className="mb-2 text-xs font-medium text-gray-600">
-                        Tags
+                        {t('visit.tags')}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {suggestions.map((tag) => {

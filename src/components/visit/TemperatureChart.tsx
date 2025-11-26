@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import {
     Area, AreaChart, CartesianGrid, Dot, ResponsiveContainer, Tooltip, XAxis, YAxis
@@ -15,6 +16,7 @@ interface TemperatureChartProps {
 }
 
 export function TemperatureChart({ logs }: TemperatureChartProps) {
+    const t = useTranslations();
     // Extract temperature readings from logs
     const temperatureData = React.useMemo(() => {
         return logs
@@ -38,9 +40,9 @@ export function TemperatureChart({ logs }: TemperatureChartProps) {
         return (
             <Card className="bg-white">
                 <CardContent className="pt-6">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Temperature</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('visit.temperature')}</h2>
                     <div className="flex h-[200px] items-center justify-center text-sm text-gray-500">
-                        No temperature readings available
+                        {t('visit.noTemperatureReadings')}
                     </div>
                 </CardContent>
             </Card>
@@ -94,7 +96,7 @@ export function TemperatureChart({ logs }: TemperatureChartProps) {
     return (
         <Card className="bg-white">
             <CardContent >
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Temperature</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('visit.temperature')}</h2>
                 <ResponsiveContainer width="100%" height={320}>
                     <AreaChart
                         data={temperatureData}

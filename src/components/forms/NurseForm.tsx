@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
@@ -33,6 +34,7 @@ export function NurseForm({
     emailDisabled = false,
     emailDisabledMessage,
 }: NurseFormProps) {
+    const t = useTranslations();
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
         email: defaultValues?.email || '',
@@ -57,12 +59,12 @@ export function NurseForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="name">Nurse Name *</Label>
+                <Label htmlFor="name">{t('forms.nurse.name')}</Label>
                 <Input
                     id="name"
                     name="name"
                     type="text"
-                    placeholder="Enter nurse's full name"
+                    placeholder={t('forms.nurse.namePlaceholder')}
                     value={formData.name}
                     onChange={handleInputChange}
                     required
@@ -70,12 +72,12 @@ export function NurseForm({
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
+                <Label htmlFor="email">{t('forms.nurse.email')}</Label>
                 <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="nurse@hospital.com"
+                    placeholder={t('forms.nurse.emailPlaceholder')}
                     value={formData.email}
                     onChange={handleInputChange}
                     required
@@ -86,7 +88,7 @@ export function NurseForm({
                 )}
                 {!emailDisabled && (
                     <p className="text-sm text-gray-500">
-                        The nurse will use this email to sign in
+                        {t('forms.nurse.emailHelperText')}
                     </p>
                 )}
             </div>
@@ -94,17 +96,17 @@ export function NurseForm({
             <DialogFooter>
                 {onCancel && (
                     <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                 )}
                 <Button type="submit" disabled={isLoading}>
                     {isLoading
                         ? mode === 'create'
-                            ? 'Creating...'
-                            : 'Updating...'
+                            ? t('common.creating')
+                            : t('common.updating')
                         : mode === 'create'
-                            ? 'Create Nurse'
-                            : 'Update'}
+                            ? t('forms.nurse.createNurse')
+                            : t('forms.nurse.update')}
                 </Button>
             </DialogFooter>
         </form>

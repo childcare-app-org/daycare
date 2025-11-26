@@ -1,4 +1,5 @@
 import { Droplets, Frown, Meh, Smile, Stethoscope, Utensils, Wind } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { Slider } from '~/components/ui/slider';
 import { cn } from '~/lib/utils';
@@ -44,70 +45,60 @@ const OPTION_STYLES = {
     },
 } satisfies Record<string, AilmentOptionStyle>;
 
-const AILMENTS: {
-    id: AilmentType;
-    label: string;
-    icon: React.ElementType;
-    options: {
-        value: number;
-        label: string;
-        icon?: React.ElementType;
-        labelClass: string;
-        activeLabelClass: string;
-        dotClass: string;
-    }[]
-}[] = [
+function getAilments(t: (path: string) => string) {
+    return [
         {
-            id: 'cough',
-            label: 'Cough',
-            icon: Wind, // Using Wind as proxy for cough/air
+            id: 'cough' as AilmentType,
+            label: t('healthCheck.cough'),
+            icon: Wind,
             options: [
-                { value: 0, label: 'Normal', icon: Meh, ...OPTION_STYLES.normalGray },
-                { value: 1, label: 'Mild', icon: Frown, ...OPTION_STYLES.mildYellow },
-                { value: 2, label: 'Severe', icon: Frown, ...OPTION_STYLES.redSevere },
+                { value: 0, label: t('healthCheck.normal'), icon: Meh, ...OPTION_STYLES.normalGray },
+                { value: 1, label: t('healthCheck.mild'), icon: Frown, ...OPTION_STYLES.mildYellow },
+                { value: 2, label: t('healthCheck.severe'), icon: Frown, ...OPTION_STYLES.redSevere },
             ]
         },
         {
-            id: 'nasal',
-            label: 'Nasal',
+            id: 'nasal' as AilmentType,
+            label: t('healthCheck.nasal'),
             icon: Droplets,
             options: [
-                { value: 0, label: 'Normal', icon: Meh, ...OPTION_STYLES.normalGray },
-                { value: 1, label: 'Mild', icon: Frown, ...OPTION_STYLES.mildYellow },
-                { value: 2, label: 'Severe', icon: Frown, ...OPTION_STYLES.redSevere },
+                { value: 0, label: t('healthCheck.normal'), icon: Meh, ...OPTION_STYLES.normalGray },
+                { value: 1, label: t('healthCheck.mild'), icon: Frown, ...OPTION_STYLES.mildYellow },
+                { value: 2, label: t('healthCheck.severe'), icon: Frown, ...OPTION_STYLES.redSevere },
             ]
         },
         {
-            id: 'wheezing',
-            label: 'Wheeze',
+            id: 'wheezing' as AilmentType,
+            label: t('healthCheck.wheezing'),
             icon: Stethoscope,
             options: [
-                { value: 0, label: 'Normal', icon: Meh, ...OPTION_STYLES.normalGray },
-                { value: 1, label: 'Mild', icon: Frown, ...OPTION_STYLES.mildYellow },
-                { value: 2, label: 'Severe', icon: Frown, ...OPTION_STYLES.redSevere },
+                { value: 0, label: t('healthCheck.normal'), icon: Meh, ...OPTION_STYLES.normalGray },
+                { value: 1, label: t('healthCheck.mild'), icon: Frown, ...OPTION_STYLES.mildYellow },
+                { value: 2, label: t('healthCheck.severe'), icon: Frown, ...OPTION_STYLES.redSevere },
             ]
         },
         {
-            id: 'mood',
-            label: 'Mood',
+            id: 'mood' as AilmentType,
+            label: t('healthCheck.mood'),
             icon: Smile,
             options: [
-                { value: -1, label: 'Terrible', icon: Frown, ...OPTION_STYLES.redSevere },
-                { value: 0, label: 'Normal', icon: Meh, ...OPTION_STYLES.normalGray },
-                { value: 1, label: 'Excellent', icon: Smile, ...OPTION_STYLES.greenExcellent },
+                { value: -1, label: t('healthCheck.terrible'), icon: Frown, ...OPTION_STYLES.redSevere },
+                { value: 0, label: t('healthCheck.normal'), icon: Meh, ...OPTION_STYLES.normalGray },
+                { value: 1, label: t('healthCheck.excellent'), icon: Smile, ...OPTION_STYLES.greenExcellent },
             ]
         },
         {
-            id: 'appetite',
-            label: 'Appetite',
+            id: 'appetite' as AilmentType,
+            label: t('healthCheck.appetite'),
             icon: Utensils,
             options: [
-                { value: -1, label: 'Terrible', icon: Frown, ...OPTION_STYLES.redSevere },
-                { value: 0, label: 'Normal', icon: Meh, ...OPTION_STYLES.normalGray },
-                { value: 1, label: 'Excellent', icon: Smile, ...OPTION_STYLES.greenExcellent },
+                { value: -1, label: t('healthCheck.terrible'), icon: Frown, ...OPTION_STYLES.redSevere },
+                { value: 0, label: t('healthCheck.normal'), icon: Meh, ...OPTION_STYLES.normalGray },
+                { value: 1, label: t('healthCheck.excellent'), icon: Smile, ...OPTION_STYLES.greenExcellent },
             ]
         },
     ];
+}
 
 function getAilmentPillClasses(id: AilmentType, value: number, isSelected: boolean) {
     if (isSelected) {
@@ -141,9 +132,11 @@ function getAilmentPillClasses(id: AilmentType, value: number, isSelected: boole
 }
 
 export function HealthCheck({ initialData = {}, onUpdate, readOnly = false }: HealthCheckProps) {
+    const t = useTranslations();
     const [data, setData] = React.useState<Record<string, number>>(initialData as Record<string, number>);
     const [expandedId, setExpandedId] = React.useState<string | null>(null);
     const cardRef = React.useRef<HTMLDivElement>(null);
+    const AILMENTS = React.useMemo(() => getAilments(t), [t]);
 
     React.useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -181,7 +174,7 @@ export function HealthCheck({ initialData = {}, onUpdate, readOnly = false }: He
         return (
             <div className="w-full space-y-4">
                 <div className="bg-white rounded-xl border border-gray-300 p-6 shadow-lg w-full">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Health Status</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('visit.healthStatus')}</h2>
                     <div className="space-y-6">
                         {AILMENTS.map((ailment) => {
                             const value = data[ailment.id] ?? 0;

@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '~/components/ui/button';
 import {
     Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle
@@ -15,15 +16,16 @@ type VisitCareInfoModalProps = {
 };
 
 export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModalProps) {
+    const t = useTranslations();
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <div className="flex items-start justify-between">
                         <div>
-                            <DialogTitle>Care Information</DialogTitle>
+                            <DialogTitle>{t('visit.careInformation')}</DialogTitle>
                             <DialogDescription>
-                                Visit details and contact information
+                                {t('visit.careInformationDescription')}
                             </DialogDescription>
                         </div>
                         <DialogClose asChild>
@@ -34,7 +36,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                                 onClick={onClose}
                             >
                                 <X className="h-4 w-4" />
-                                <span className="sr-only">Close</span>
+                                <span className="sr-only">{t('common.close')}</span>
                             </Button>
                         </DialogClose>
                     </div>
@@ -44,7 +46,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                         {/* Visit Times - Grid Layout */}
                         <div className="rounded-lg border bg-muted/30 p-4">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                Drop Off Time
+                                {t('visit.dropOffTime')}
                             </p>
                             <p className="text-base font-semibold">
                                 {new Date(visit.dropOffTime).toLocaleString([], {
@@ -58,7 +60,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                         {visit.pickupTime && (
                             <div className="rounded-lg border bg-muted/30 p-4">
                                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                    Pick Up Time
+                                    {t('visit.pickUpTime')}
                                 </p>
                                 <p className="text-base font-semibold">
                                     {new Date(visit.pickupTime).toLocaleString([], {
@@ -76,7 +78,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                     {visit.parent && (
                         <div className="mt-4 rounded-lg border bg-muted/30 p-4">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                                Parent Contact
+                                {t('visit.parentContact')}
                             </p>
                             <div className="space-y-2">
                                 {visit.parent.name && (
@@ -102,7 +104,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                             {visit.child?.allergies && (
                                 <div className="rounded-lg border bg-amber-50/50 p-4">
                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                        Allergies
+                                        {t('dashboard.parent.allergies')}
                                     </p>
                                     <p className="text-sm font-medium text-amber-900">{visit.child.allergies}</p>
                                 </div>
@@ -110,7 +112,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                             {visit.child?.preexistingConditions && (
                                 <div className="rounded-lg border bg-amber-50/50 p-4">
                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                        Conditions
+                                        {t('dashboard.parent.conditions')}
                                     </p>
                                     <p className="text-sm font-medium text-amber-900">{visit.child.preexistingConditions}</p>
                                 </div>

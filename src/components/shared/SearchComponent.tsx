@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent } from '~/components/ui/card';
@@ -76,15 +77,17 @@ export function SearchComponent<T extends SearchResult>({
     onSearchQueryChange,
     searchResults,
     isLoading,
-    emptyMessage = "No results found",
+    emptyMessage,
     renderResult,
     onSelect,
     onCancel,
     additionalActions,
     debounceMs = 300,
 }: SearchComponentProps<T>) {
+    const t = useTranslations();
     // Local state for the input field (updates immediately)
     const [localQuery, setLocalQuery] = useState(searchQuery);
+    const defaultEmptyMessage = emptyMessage || t('common.noResults');
 
     // Debounce the search query updates to parent
     useEffect(() => {
@@ -120,13 +123,13 @@ export function SearchComponent<T extends SearchResult>({
             />
 
             {isLoading && (
-                <p className="text-sm text-gray-500">Searching...</p>
+                <p className="text-sm text-gray-500">{t('common.searching')}</p>
             )}
 
             <div className="max-h-60 overflow-y-auto space-y-2">
                 {showEmptyMessage && (
                     <div className="text-center py-4">
-                        <p className="text-sm text-gray-500">{emptyMessage}</p>
+                        <p className="text-sm text-gray-500">{defaultEmptyMessage}</p>
                     </div>
                 )}
 
@@ -145,7 +148,7 @@ export function SearchComponent<T extends SearchResult>({
 
             <div className="flex gap-2">
                 <Button onClick={onCancel} variant="outline" className="flex-1">
-                    Cancel
+                    {t('common.cancel')}
                 </Button>
                 {additionalActions}
             </div>

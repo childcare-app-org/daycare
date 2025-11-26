@@ -1,4 +1,5 @@
 import { CheckCircle2, Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Button } from '~/components/ui/button';
 
@@ -21,13 +22,14 @@ export function VisitHeader({
     isCompleting = false,
     onShowCareInfo,
 }: VisitHeaderProps) {
+    const t = useTranslations();
     return (
         <div className="mb-6">
             {/* Back button and Complete Visit button */}
             <div className="flex items-center justify-between mb-4">
                 <Link href="/dashboard">
                     <Button variant="ghost" size="sm" className="-ml-2">
-                        ← Back
+                        {t('common.back')}
                     </Button>
                 </Link>
                 {!readOnly && visit.status === 'active' && onCompleteVisit && (
@@ -37,7 +39,7 @@ export function VisitHeader({
                         className="bg-green-600 hover:bg-green-700 text-white"
                     >
                         <CheckCircle2 className="w-4 h-4" />
-                        {isCompleting ? 'Completing...' : 'Complete Visit'}
+                        {isCompleting ? t('visit.completing') : t('visit.completeVisit')}
                     </Button>
                 )}
             </div>
@@ -53,7 +55,7 @@ export function VisitHeader({
                         variant="outline"
                         size="icon"
                         className="h-8 w-8 rounded-full border-blue-100 text-blue-600 bg-white shadow-sm hover:bg-blue-50"
-                        aria-label="View care information"
+                        aria-label={t('visit.viewCareInformation')}
                         onClick={onShowCareInfo}
                     >
                         <Info className="w-4 h-4" />

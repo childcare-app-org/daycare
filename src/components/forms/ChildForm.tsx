@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
@@ -28,6 +29,7 @@ export function ChildForm({
     onCancel,
     isLoading = false,
 }: ChildFormProps) {
+    const t = useTranslations();
     // Helper to format date for input (YYYY-MM-DD)
     const formatDateForInput = (date?: Date) => {
         if (!date) return '';
@@ -80,12 +82,12 @@ export function ChildForm({
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Child's Name *</Label>
+                    <Label htmlFor="name">{t('forms.child.name')}</Label>
                     <Input
                         id="name"
                         name="name"
                         type="text"
-                        placeholder="Enter child's full name"
+                        placeholder={t('forms.child.namePlaceholder')}
                         value={formData.name}
                         onChange={handleInputChange}
                         required
@@ -93,7 +95,7 @@ export function ChildForm({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="birthdate">Birthdate *</Label>
+                    <Label htmlFor="birthdate">{t('forms.child.birthdate')}</Label>
                     <Input
                         id="birthdate"
                         name="birthdate"
@@ -107,11 +109,11 @@ export function ChildForm({
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="allergies">Allergies</Label>
+                <Label htmlFor="allergies">{t('forms.child.allergies')}</Label>
                 <textarea
                     id="allergies"
                     name="allergies"
-                    placeholder="List any known allergies (e.g., peanuts, dairy)"
+                    placeholder={t('forms.child.allergiesPlaceholder')}
                     value={formData.allergies}
                     onChange={handleInputChange}
                     rows={2}
@@ -120,11 +122,11 @@ export function ChildForm({
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="preexistingConditions">Preexisting Conditions</Label>
+                <Label htmlFor="preexistingConditions">{t('forms.child.preexistingConditions')}</Label>
                 <textarea
                     id="preexistingConditions"
                     name="preexistingConditions"
-                    placeholder="List any preexisting medical conditions"
+                    placeholder={t('forms.child.preexistingConditionsPlaceholder')}
                     value={formData.preexistingConditions}
                     onChange={handleInputChange}
                     rows={2}
@@ -134,24 +136,24 @@ export function ChildForm({
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="familyDoctorName">Family Doctor Name</Label>
+                    <Label htmlFor="familyDoctorName">{t('forms.child.familyDoctorName')}</Label>
                     <Input
                         id="familyDoctorName"
                         name="familyDoctorName"
                         type="text"
-                        placeholder="Dr. Smith"
+                        placeholder={t('forms.child.familyDoctorNamePlaceholder')}
                         value={formData.familyDoctorName}
                         onChange={handleInputChange}
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="familyDoctorPhone">Family Doctor Phone</Label>
+                    <Label htmlFor="familyDoctorPhone">{t('forms.child.familyDoctorPhone')}</Label>
                     <Input
                         id="familyDoctorPhone"
                         name="familyDoctorPhone"
                         type="tel"
-                        placeholder="(555) 123-4567"
+                        placeholder={t('forms.child.familyDoctorPhonePlaceholder')}
                         value={formData.familyDoctorPhone}
                         onChange={handleInputChange}
                     />
@@ -161,17 +163,17 @@ export function ChildForm({
             <DialogFooter>
                 {onCancel && (
                     <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                 )}
                 <Button type="submit" disabled={isLoading}>
                     {isLoading
                         ? mode === 'create'
-                            ? 'Creating...'
-                            : 'Updating...'
+                            ? t('forms.child.creating')
+                            : t('forms.child.updating')
                         : mode === 'create'
-                            ? 'Create Child'
-                            : 'Update'}
+                            ? t('forms.child.createChild')
+                            : t('forms.child.update')}
                 </Button>
             </DialogFooter>
         </form>

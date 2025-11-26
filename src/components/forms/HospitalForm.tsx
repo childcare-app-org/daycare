@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
@@ -31,6 +32,7 @@ export function HospitalForm({
     onCancel,
     isLoading = false,
 }: HospitalFormProps) {
+    const t = useTranslations();
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
         address: defaultValues?.address || '',
@@ -72,12 +74,12 @@ export function HospitalForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="name">Hospital Name *</Label>
+                <Label htmlFor="name">{t('forms.hospital.name')}</Label>
                 <Input
                     id="name"
                     name="name"
                     type="text"
-                    placeholder="Enter hospital name"
+                    placeholder={t('forms.hospital.namePlaceholder')}
                     value={formData.name}
                     onChange={handleInputChange}
                     required
@@ -86,62 +88,62 @@ export function HospitalForm({
 
             <GoogleAddressAutocompleteNew
                 id="address"
-                label="Address / 住所"
+                label={t('forms.hospital.address')}
                 value={formData.address}
                 onChange={handleAddressChange}
                 required
-                placeholder="Enter the hospital address"
-                helperText="Suggestions will appear as you type the address"
+                placeholder={t('forms.hospital.addressPlaceholder')}
+                helperText={t('forms.hospital.addressHelperText')}
                 country="JP"
             />
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="capacity">Capacity *</Label>
+                    <Label htmlFor="capacity">{t('forms.hospital.capacity')}</Label>
                     <Input
                         id="capacity"
                         name="capacity"
                         type="number"
-                        placeholder="20"
+                        placeholder={t('forms.hospital.capacityPlaceholder')}
                         value={formData.capacity}
                         onChange={handleInputChange}
                         required
                         min="1"
                     />
-                    <p className="text-sm text-gray-500">Maximum number of children</p>
+                    <p className="text-sm text-gray-500">{t('forms.hospital.capacityHelperText')}</p>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="pricing">Daily Pricing *</Label>
+                    <Label htmlFor="pricing">{t('forms.hospital.pricing')}</Label>
                     <Input
                         id="pricing"
                         name="pricing"
                         type="number"
                         step="0.01"
-                        placeholder="150.00"
+                        placeholder={t('forms.hospital.pricingPlaceholder')}
                         value={formData.pricing}
                         onChange={handleInputChange}
                         required
                         min="0"
                     />
-                    <p className="text-sm text-gray-500">Cost per day in dollars</p>
+                    <p className="text-sm text-gray-500">{t('forms.hospital.pricingHelperText')}</p>
                 </div>
             </div>
 
             <DialogFooter>
                 {onCancel && (
                     <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                 )}
                 <Button type="submit" disabled={isLoading}>
                     {isLoading
                         ? mode === 'create'
-                            ? 'Creating...'
-                            : 'Updating...'
+                            ? t('common.creating')
+                            : t('common.updating')
                         : mode === 'create'
-                            ? 'Create Hospital'
-                            : 'Update'}
+                            ? t('forms.hospital.createHospital')
+                            : t('forms.hospital.update')}
                 </Button>
             </DialogFooter>
         </form>

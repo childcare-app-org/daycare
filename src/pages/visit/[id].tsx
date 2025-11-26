@@ -1,4 +1,5 @@
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -14,6 +15,15 @@ import { api } from '~/utils/api';
 
 import type { EventType } from '~/components/visit/eventTypes';
 import type { VisitEventFormData } from '~/components/visit/VisitEventForm';
+
+export async function getServerSideProps(context: { locale: string }) {
+    return {
+        props: {
+            messages: (await import(`~/locales/${context.locale}.json`)).default
+        }
+    };
+}
+
 // Simple debounce hook implementation if not present
 function useDebounceCallback<T extends (...args: any[]) => any>(callback: T, delay: number) {
     const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
@@ -29,6 +39,7 @@ export default function VisitDetail() {
     const router = useRouter();
     const { id } = router.query;
     const { data: session, status } = useSession();
+    const t = useTranslations();
     const [showEventForm, setShowEventForm] = useState(false);
     const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null);
     const [showCareInfo, setShowCareInfo] = useState(false);
@@ -90,7 +101,7 @@ export default function VisitDetail() {
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
+                    <p className="text-gray-600">{t('common.loading')}</p>
                 </div>
             </div>
         );
@@ -100,9 +111,9 @@ export default function VisitDetail() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">Access denied. Nurse access required.</p>
+                    <p className="text-gray-600 mb-4">{t('visit.accessDenied')}</p>
                     <Link href="/dashboard">
-                        <Button>Go to Dashboard</Button>
+                        <Button>{t('common.goToDashboard')}</Button>
                     </Link>
                 </div>
             </div>
@@ -114,7 +125,7 @@ export default function VisitDetail() {
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading visit details...</p>
+                    <p className="text-gray-600">{t('visit.loadingVisitDetails')}</p>
                 </div>
             </div>
         );
@@ -124,9 +135,9 @@ export default function VisitDetail() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">Visit not found</p>
+                    <p className="text-gray-600 mb-4">{t('visit.visitNotFound')}</p>
                     <Link href="/dashboard">
-                        <Button>Go to Dashboard</Button>
+                        <Button>{t('common.goToDashboard')}</Button>
                     </Link>
                 </div>
             </div>
@@ -153,8 +164,8 @@ export default function VisitDetail() {
     return (
         <>
             <Head>
-                <title>{visit.child?.name} - Visit Details</title>
-                <meta name="description" content="Visit timeline and details" />
+                <title>{visit.child?.name} - {t('visit.visitDetails')}</title>
+                <meta name="description" content={t('visit.visitTimelineDescription')} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
