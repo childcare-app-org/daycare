@@ -1,9 +1,11 @@
+import { Building2, Check, DollarSign, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '~/components/ui/input-otp';
 import { Label } from '~/components/ui/label';
 import { useHospitalLocation } from '~/hooks/useHospitalLocation';
+import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatDistance } from '~/utils/geolocation';
 
@@ -117,34 +119,76 @@ export function RegisterVisitForm({
     // Render different steps
     if (currentStep === 'form') {
         return (
-            <form onSubmit={handleFormSubmit} className="space-y-4">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
                 <div className="space-y-2">
-                    <Label>Child</Label>
-                    <div className="p-3 bg-gray-100 rounded-md border border-gray-200">
-                        <p className="font-medium">{childName}</p>
+                    <Label className="text-base">Child</Label>
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                            {childName.charAt(0)}
+                        </div>
+                        <span className="font-medium text-gray-900">{childName}</span>
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="hospitalId">Select Hospital *</Label>
-                    <select
-                        id="hospitalId"
-                        value={selectedHospitalId}
-                        onChange={(e) => setSelectedHospitalId(e.target.value)}
-                        required
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                        <option value="">Choose a hospital...</option>
-                        {sortedHospitals.map((hospital) => (
-                            <option key={hospital.id} value={hospital.id}>
-                                {hospital.name} - ${hospital.pricing}/day
-                                {hospital.distance !== undefined && ` (${formatDistance(hospital.distance)})`}
-                            </option>
-                        ))}
-                    </select>
-                    <p className="text-sm text-gray-500">
-                        Hospitals are sorted by distance from you. The nearest hospital is pre-selected.
-                    </p>
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <Label className="text-base">Select Hospital</Label>
+                        <span className="text-xs text-muted-foreground">
+                            Sorted by distance
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 max-h-[300px] overflow-y-auto pr-2">
+                        {sortedHospitals.map((hospital) => {
+                            const isSelected = selectedHospitalId === hospital.id;
+                            return (
+                                <div
+                                    key={hospital.id}
+                                    onClick={() => setSelectedHospitalId(hospital.id)}
+                                    className={cn(
+                                        "relative cursor-pointer rounded-xl border-2 p-4 transition-all hover:border-blue-200 hover:bg-blue-50/50",
+                                        isSelected
+                                            ? "border-blue-600 bg-blue-50 shadow-sm"
+                                            : "border-gray-200 bg-white"
+                                    )}
+                                >
+                                    {isSelected && (
+                                        <div className="absolute top-3 right-3 text-blue-600">
+                                            <Check className="w-5 h-5" />
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-start gap-3">
+                                        <div className={cn(
+                                            "mt-1 p-2 rounded-lg",
+                                            isSelected ? "bg-blue-200 text-blue-700" : "bg-gray-100 text-gray-500"
+                                        )}>
+                                            <Building2 className="w-5 h-5" />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <h4 className={cn("font-semibold", isSelected ? "text-blue-900" : "text-gray-900")}>
+                                                {hospital.name}
+                                            </h4>
+
+                                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                <span className="flex items-center">
+                                                    <DollarSign className="w-3 h-3" />
+                                                    {hospital.pricing}/day
+                                                </span>
+                                                {hospital.distance !== undefined && (
+                                                    <span className="flex items-center gap-1">
+                                                        <MapPin className="w-3 h-3" />
+                                                        {formatDistance(hospital.distance)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 <DialogFooter>
@@ -153,7 +197,11 @@ export function RegisterVisitForm({
                             Cancel
                         </Button>
                     )}
-                    <Button type="submit" disabled={isLoading || !selectedHospitalId}>
+                    <Button
+                        type="submit"
+                        disabled={isLoading || !selectedHospitalId}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
                         Continue
                     </Button>
                 </DialogFooter>
@@ -165,52 +213,55 @@ export function RegisterVisitForm({
         const selectedHospital = sortedHospitals.find(h => h.id === formData?.hospitalId);
 
         return (
-            <div className="space-y-6">
-                <div className="text-center space-y-2">
-                    <h3 className="text-lg font-semibold">Hospital Access Code</h3>
-                    <p className="text-sm text-gray-600">
-                        Please ask the hospital staff for today's 4-digit access code.
+            <div className="space-y-8 py-4">
+                <div className="text-center space-y-3">
+                    <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
+                        <Building2 className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900">Enter Access Code</h3>
+                    <p className="text-gray-500 max-w-[280px] mx-auto text-sm">
+                        Please enter the 4-digit code provided by <span className="font-medium text-gray-900">{selectedHospital?.name}</span>
                     </p>
-                    {selectedHospital && (
-                        <p className="text-sm text-gray-500">
-                            Hospital: <span className="font-medium">{selectedHospital.name}</span>
-                        </p>
-                    )}
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <div className="flex justify-center">
                         <InputOTP
                             maxLength={4}
                             value={accessCode}
                             onChange={handlePinChange}
                             disabled={isValidatingPin}
+                            autoFocus
                         >
-                            <InputOTPGroup>
-                                <InputOTPSlot index={0} />
-                                <InputOTPSlot index={1} />
-                                <InputOTPSlot index={2} />
-                                <InputOTPSlot index={3} />
+                            <InputOTPGroup className="gap-2">
+                                {[0, 1, 2, 3].map((index) => (
+                                    <InputOTPSlot
+                                        key={index}
+                                        index={index}
+                                        className="w-14 h-16 text-2xl border-2 rounded-lg data-[active=true]:border-blue-600 data-[active=true]:ring-blue-200"
+                                    />
+                                ))}
                             </InputOTPGroup>
                         </InputOTP>
                     </div>
 
-                    {pinError && (
-                        <div className="text-center">
-                            <p className="text-sm text-red-600">{pinError}</p>
-                        </div>
-                    )}
-
-                    {isValidatingPin && (
-                        <div className="text-center">
-                            <p className="text-sm text-gray-600">Validating code...</p>
-                        </div>
-                    )}
+                    <div className="min-h-[24px] text-center">
+                        {pinError && (
+                            <p className="text-sm text-red-600 font-medium animate-in fade-in slide-in-from-top-1">
+                                {pinError}
+                            </p>
+                        )}
+                        {isValidatingPin && (
+                            <p className="text-sm text-blue-600 animate-pulse">
+                                Validating code...
+                            </p>
+                        )}
+                    </div>
                 </div>
 
-                <DialogFooter>
-                    <Button type="button" variant="outline" onClick={handleBackToForm}>
-                        Back
+                <DialogFooter className="gap-2 sm:gap-0">
+                    <Button type="button" variant="ghost" onClick={handleBackToForm}>
+                        Back to Hospital Selection
                     </Button>
                     {onCancel && (
                         <Button type="button" variant="outline" onClick={onCancel}>
@@ -224,22 +275,22 @@ export function RegisterVisitForm({
 
     if (currentStep === 'success') {
         return (
-            <div className="space-y-6">
+            <div className="py-8 space-y-8">
                 <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto animate-in zoom-in duration-300">
+                        <Check className="w-10 h-10 text-green-600" strokeWidth={3} />
                     </div>
-                    <h3 className="text-lg font-semibold text-green-800">Access Code Verified!</h3>
-                    <p className="text-sm text-gray-600">
-                        Your visit registration has been successfully submitted.
-                    </p>
+                    <div>
+                        <h3 className="text-xl font-semibold text-gray-900">Verification Successful</h3>
+                        <p className="text-gray-500 mt-2">
+                            The access code has been verified. You can now proceed with the check-in.
+                        </p>
+                    </div>
                 </div>
 
                 <DialogFooter>
-                    <Button onClick={handleSuccessSubmit} className="w-full">
-                        Complete Registration
+                    <Button onClick={handleSuccessSubmit} className="w-full bg-green-600 hover:bg-green-700 text-lg py-6">
+                        Complete Check-in
                     </Button>
                 </DialogFooter>
             </div>

@@ -3,6 +3,13 @@ import { z } from 'zod';
 import { createTRPCRouter, nurseProcedure } from '~/server/api/trpc';
 import { children, logs, nurses, visits } from '~/server/db/schema';
 
+const logEventDataSchema = z
+  .object({
+    tags: z.array(z.string()).optional(),
+    temperature: z.number().optional(),
+  })
+  .partial();
+
 export const logsRouter = createTRPCRouter({
   // Create a new log entry (Nurse only)
   create: nurseProcedure
@@ -10,7 +17,7 @@ export const logsRouter = createTRPCRouter({
       z.object({
         visitId: z.string().min(1, "Visit ID is required"),
         eventType: z.string().min(1, "Event type is required"),
-        eventData: z.record(z.any()).optional(),
+        eventData: logEventDataSchema.optional(),
         notes: z.string().optional(),
       }),
     )

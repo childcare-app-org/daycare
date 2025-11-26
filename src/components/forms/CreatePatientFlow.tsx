@@ -1,3 +1,4 @@
+import { Calendar, Check, ChevronRight, User, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
 import { GoogleAddressAutocompleteNew } from '~/components/forms/GoogleAddressAutocompleteNew';
@@ -6,6 +7,7 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 
 import type { AddressData } from '~/components/forms/GoogleAddressAutocompleteNew';
@@ -153,12 +155,14 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                 break;
             case 'search-child':
                 setCurrentStep('search-parent');
+                setSelectedParent(null); // Reset parent selection when going back
                 break;
             case 'create-child':
                 setCurrentStep('search-child');
                 break;
             case 'create-visit':
                 setCurrentStep('search-child');
+                setSelectedChild(null); // Reset child selection when going back
                 break;
             default:
                 onCancel();
@@ -166,13 +170,26 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
         setError('');
     };
 
+    // Helper to determine active step index (0, 1, or 2)
+    const getActiveStepIndex = () => {
+        if (currentStep === 'search-parent' || currentStep === 'create-parent') return 0;
+        if (currentStep === 'search-child' || currentStep === 'create-child') return 1;
+        return 2;
+    };
+
+    const steps = [
+        { title: 'Parent', icon: User },
+        { title: 'Child', icon: UserPlus },
+        { title: 'Visit', icon: Calendar },
+    ];
+
     const renderStep = () => {
         switch (currentStep) {
             case 'search-parent':
                 return (
                     <SearchComponent
-                        title="Search Parent"
-                        description="Search for an existing parent or create a new one"
+                        title="Find Parent"
+                        description="Search for an existing parent or register a new one"
                         placeholder="Search by parent name or phone number..."
                         searchQuery={parentSearchQuery}
                         onSearchQueryChange={setParentSearchQuery}
@@ -180,10 +197,16 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                         isLoading={isSearchingParents}
                         emptyMessage="No parents found. You can create a new parent."
                         renderResult={(parent) => (
-                            <>
-                                <p className="font-medium">{parent.name}</p>
-                                <p className="text-sm text-gray-500">{parent.phoneNumber}</p>
-                            </>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                    {parent.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-900">{parent.name}</p>
+                                    <p className="text-sm text-gray-500">{parent.phoneNumber}</p>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-gray-400 ml-auto" />
+                            </div>
                         )}
                         onSelect={(parent) => handleParentSelect(parent as ParentData)}
                         onCancel={onCancel}
@@ -197,10 +220,10 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
 
             case 'create-parent':
                 return (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <h3 className="text-lg font-semibold">Create New Parent</h3>
-                            <p className="text-sm text-gray-600">Enter parent information</p>
+                            <h3 className="text-lg font-semibold">Register New Parent</h3>
+                            <p className="text-sm text-gray-600">Enter the parent's contact information</p>
                         </div>
                         <div className="space-y-4">
                             <div>
@@ -233,24 +256,17 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                     value={parentFormData.phoneNumber}
                                     onChange={(e) => {
                                         const input = e.target.value;
-                                        // Remove all non-digit characters
                                         const digits = input.replace(/\D/g, '');
-                                        // Limit to 11 digits (max for mobile)
                                         const limited = digits.slice(0, 11);
-
-                                        // Format based on length
                                         let formatted = limited;
 
                                         if (limited.length <= 10) {
-                                            // 10 digits: landline format XX-XXXX-XXXX or XXX-XXX-XXXX
-                                            // Use XX-XXXX-XXXX for simplicity (works for Tokyo/Osaka)
                                             if (limited.length > 6) {
                                                 formatted = `${limited.slice(0, 2)}-${limited.slice(2, 6)}-${limited.slice(6)}`;
                                             } else if (limited.length > 2) {
                                                 formatted = `${limited.slice(0, 2)}-${limited.slice(2)}`;
                                             }
                                         } else {
-                                            // 11 digits: mobile format XXX-XXXX-XXXX
                                             if (limited.length > 7) {
                                                 formatted = `${limited.slice(0, 3)}-${limited.slice(3, 7)}-${limited.slice(7)}`;
                                             } else if (limited.length > 3) {
@@ -283,14 +299,14 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                 />
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3 pt-4">
                             <Button onClick={handleBack} variant="outline" className="flex-1">
                                 Back
                             </Button>
                             <Button
                                 onClick={handleParentCreate}
                                 disabled={createParentMutation.isPending}
-                                className="flex-1"
+                                className="flex-1 bg-blue-600 hover:bg-blue-700"
                             >
                                 {createParentMutation.isPending ? 'Creating...' : 'Create Parent'}
                             </Button>
@@ -300,43 +316,52 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
 
             case 'search-child':
                 return (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
                             <h3 className="text-lg font-semibold">Select Child</h3>
-                            <p className="text-sm text-gray-600">Select a child of {selectedParent?.name} or create a new one</p>
+                            <p className="text-sm text-gray-600">Choose a child for <span className="font-medium text-gray-900">{selectedParent?.name}</span></p>
                         </div>
 
                         {isLoadingChildren ? (
-                            <p className="text-sm text-gray-500">Loading children...</p>
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p className="text-sm text-gray-500">Loading children...</p>
+                            </div>
                         ) : parentChildren.length > 0 ? (
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                            <div className="grid grid-cols-1 gap-3">
                                 {parentChildren.map((child) => (
-                                    <Card
+                                    <div
                                         key={child.id}
-                                        className="cursor-pointer hover:bg-gray-50 transition-colors"
                                         onClick={() => handleChildSelect(child as ChildData)}
+                                        className="group cursor-pointer border rounded-xl p-4 hover:border-blue-200 hover:bg-blue-50 transition-all flex items-center justify-between"
                                     >
-                                        <CardContent className="p-3">
-                                            <p className="font-medium">{child.name}</p>
-                                            <p className="text-sm text-gray-500">
-                                                Age: {child.age} months
-                                            </p>
-                                        </CardContent>
-                                    </Card>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-lg group-hover:bg-white group-hover:text-blue-600 transition-colors">
+                                                {child.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900">{child.name}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    {child.age} months old
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors" />
+                                    </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-4">
+                            <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                                 <p className="text-sm text-gray-500">No children found for this parent.</p>
                             </div>
                         )}
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-3 pt-2">
                             <Button onClick={handleBack} variant="outline" className="flex-1">
                                 Back
                             </Button>
-                            <Button onClick={() => setCurrentStep('create-child')} variant="default" className="flex-1">
-                                Create New Child
+                            <Button onClick={() => setCurrentStep('create-child')} variant="default" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                                Add New Child
                             </Button>
                         </div>
                     </div>
@@ -344,9 +369,9 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
 
             case 'create-child':
                 return (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <h3 className="text-lg font-semibold">Create New Child</h3>
+                            <h3 className="text-lg font-semibold">Add New Child</h3>
                             <p className="text-sm text-gray-600">Enter child information for {selectedParent?.name}</p>
                         </div>
                         <ChildForm
@@ -368,56 +393,75 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
 
             case 'create-visit':
                 return (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <h3 className="text-lg font-semibold">Register Visit</h3>
-                            <p className="text-sm text-gray-600">Register a visit for {selectedChild?.name}</p>
+                            <h3 className="text-lg font-semibold">Review & Check-in</h3>
+                            <p className="text-sm text-gray-600">Review details and confirm check-in</p>
                         </div>
-                        <Card className="bg-blue-50 border-blue-200">
-                            <CardContent className="p-4">
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Child:</span>
-                                        <span className="font-medium">{selectedChild?.name}</span>
+
+                        <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                            <div className="bg-blue-50 p-4 border-b border-blue-100 flex items-center justify-between">
+                                <span className="text-sm font-medium text-blue-700">VISIT TICKET</span>
+                                <span className="text-xs bg-white px-2 py-1 rounded-full text-blue-600 font-mono">
+                                    {new Date().toLocaleDateString()}
+                                </span>
+                            </div>
+                            <div className="p-5 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Child</p>
+                                        <p className="font-semibold text-gray-900 text-lg">{selectedChild?.name}</p>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Parent:</span>
-                                        <span className="font-medium">{selectedParent?.name}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Hospital:</span>
-                                        <span className="font-medium">{nurseProfile?.hospitalName}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Drop-off Time:</span>
-                                        <span className="font-medium">{new Date().toLocaleString()}</span>
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Parent</p>
+                                        <p className="font-medium text-gray-900">{selectedParent?.name}</p>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="visit-notes">Notes (Optional)</Label>
-                                <textarea
-                                    id="visit-notes"
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Enter any notes for this visit (allergies, special instructions, etc.)"
-                                    value={visitNotes}
-                                    onChange={(e) => setVisitNotes(e.target.value)}
-                                    rows={3}
-                                />
+
+                                <div className="border-t border-gray-100 pt-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Calendar className="w-4 h-4 text-gray-400" />
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Check-in Time</p>
+                                    </div>
+                                    <p className="font-medium text-gray-900 pl-6">
+                                        {new Date().toLocaleTimeString(undefined, {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </p>
+                                </div>
+
+                                <div className="border-t border-gray-100 pt-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Location</p>
+                                    </div>
+                                    <p className="font-medium text-gray-900">{nurseProfile?.hospitalName}</p>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex gap-2">
+
+                        <div className="space-y-2">
+                            <Label htmlFor="visit-notes">Notes (Optional)</Label>
+                            <textarea
+                                id="visit-notes"
+                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                                placeholder="Enter any notes for this visit (allergies, special instructions, etc.)"
+                                value={visitNotes}
+                                onChange={(e) => setVisitNotes(e.target.value)}
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
                             <Button onClick={handleBack} variant="outline" className="flex-1">
                                 Back
                             </Button>
                             <Button
                                 onClick={handleVisitCreate}
                                 disabled={createVisitMutation.isPending}
-                                className="flex-1"
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm"
                             >
-                                {createVisitMutation.isPending ? 'Registering...' : 'Register Visit'}
+                                {createVisitMutation.isPending ? 'Processing...' : 'Confirm Check-in'}
                             </Button>
                         </div>
                     </div>
@@ -428,33 +472,56 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
         }
     };
 
+    const activeStepIndex = getActiveStepIndex();
+
     return (
-        <div className="space-y-4">
-            {/* Progress Indicator */}
-            <div className="flex items-center justify-center space-x-2">
-                {['search-parent', 'search-child', 'create-visit'].map((step, index) => (
-                    <div key={step} className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === step ? 'bg-blue-600 text-white' :
-                            ['search-parent', 'search-child', 'create-visit'].indexOf(currentStep) > index ? 'bg-green-600 text-white' :
-                                'bg-gray-200 text-gray-600'
-                            }`}>
-                            {index + 1}
+        <div className="space-y-6 py-2">
+            {/* Visual Progress Stepper */}
+            <div className="relative flex items-center justify-between px-2">
+                <div className="absolute left-0 top-1/2 w-full h-0.5 bg-gray-200 -z-10 transform -translate-y-1/2" />
+                <div className="absolute left-0 top-1/2 h-0.5 bg-blue-600 -z-10 transform -translate-y-1/2 transition-all duration-300"
+                    style={{ width: `${(activeStepIndex / (steps.length - 1)) * 100}%` }} />
+
+                {steps.map((step, index) => {
+                    const isActive = index <= activeStepIndex;
+                    const isCurrent = index === activeStepIndex;
+                    const Icon = step.icon;
+
+                    return (
+                        <div key={step.title} className="flex flex-col items-center gap-2 bg-white px-2">
+                            <div className={cn(
+                                "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
+                                isActive
+                                    ? "bg-blue-600 border-blue-600 text-white shadow-md scale-110"
+                                    : "bg-white border-gray-300 text-gray-400"
+                            )}>
+                                {index < activeStepIndex ? (
+                                    <Check className="w-6 h-6" />
+                                ) : (
+                                    <Icon className="w-5 h-5" />
+                                )}
+                            </div>
+                            <span className={cn(
+                                "text-xs font-medium transition-colors duration-300",
+                                isActive ? "text-blue-600" : "text-gray-400"
+                            )}>
+                                {step.title}
+                            </span>
                         </div>
-                        {index < 2 && (
-                            <div className={`w-8 h-1 mx-1 ${['search-parent', 'search-child', 'create-visit'].indexOf(currentStep) > index ? 'bg-green-600' : 'bg-gray-200'
-                                }`} />
-                        )}
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                    <p className="text-sm text-red-600">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <p className="text-sm font-medium">{error}</p>
                 </div>
             )}
 
-            {renderStep()}
+            <div className="animate-in fade-in duration-300">
+                {renderStep()}
+            </div>
         </div>
     );
 }

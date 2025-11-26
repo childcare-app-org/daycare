@@ -265,6 +265,7 @@ export const visits = createTable(
     dropOffTime: d.timestamp({ withTimezone: true }).notNull(),
     pickupTime: d.timestamp({ withTimezone: true }),
     status: d.varchar({ length: 20 }).notNull().default("active"), // active, completed, cancelled
+    healthCheck: d.jsonb(), // Flexible JSON for dynamic health indicators (cough, mood, etc.)
     notes: d.text(),
     createdAt: d
       .timestamp({ withTimezone: true })
@@ -280,6 +281,11 @@ export const visits = createTable(
     index("visit_dropoff_idx").on(t.dropOffTime),
   ],
 );
+
+export type LogEventData = {
+  tags?: string[];
+  temperature?: number;
+};
 
 export const logs = createTable(
   "log",

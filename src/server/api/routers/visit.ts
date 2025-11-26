@@ -168,6 +168,7 @@ export const visitRouter = createTRPCRouter({
         dropOffTime: visits.dropOffTime,
         pickupTime: visits.pickupTime,
         status: visits.status,
+        healthCheck: visits.healthCheck,
         notes: visits.notes,
         createdAt: visits.createdAt,
         updatedAt: visits.updatedAt,
@@ -229,6 +230,7 @@ export const visitRouter = createTRPCRouter({
           pickupTime: visits.pickupTime,
           status: visits.status,
           notes: visits.notes,
+          healthCheck: visits.healthCheck,
           createdAt: visits.createdAt,
           updatedAt: visits.updatedAt,
           parent: {
@@ -291,6 +293,7 @@ export const visitRouter = createTRPCRouter({
         dropOffTime: visits.dropOffTime,
         pickupTime: visits.pickupTime,
         status: visits.status,
+        healthCheck: visits.healthCheck,
         notes: visits.notes,
         createdAt: visits.createdAt,
         updatedAt: visits.updatedAt,
@@ -330,6 +333,7 @@ export const visitRouter = createTRPCRouter({
         pickupTime: z.date().optional(),
         status: z.enum(["active", "completed", "cancelled"]).optional(),
         notes: z.string().optional(),
+        healthCheck: z.record(z.string(), z.any()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -366,6 +370,8 @@ export const visitRouter = createTRPCRouter({
         updateData.pickupTime = input.pickupTime;
       if (input.status !== undefined) updateData.status = input.status;
       if (input.notes !== undefined) updateData.notes = input.notes;
+      if (input.healthCheck !== undefined)
+        updateData.healthCheck = input.healthCheck;
 
       const [visit] = await ctx.db
         .update(visits)

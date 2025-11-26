@@ -1,19 +1,34 @@
+import { Info } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { HealthCheck } from '~/components/dashboards/HealthCheck';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { Timeline, TimelineItem } from '~/components/ui/timeline';
 import { api } from '~/utils/api';
+
+// Simple debounce hook implementation if not present
+function useDebounceCallback<T extends (...args: any[]) => any>(callback: T, delay: number) {
+    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
+    return (...args: Parameters<T>) => {
+        if (timeoutId) clearTimeout(timeoutId);
+        const id = setTimeout(() => callback(...args), delay);
+        setTimeoutId(id);
+    };
+}
 
 export default function VisitDetail() {
     const router = useRouter();
     const { id } = router.query;
     const { data: session, status } = useSession();
     const [showEventForm, setShowEventForm] = useState(false);
+    const [selectedEventType, setSelectedEventType] = useState<string | null>(null);
 
-    const { data: visit, isLoading: visitLoading } = api.visit.getById.useQuery(
+    const { data: visit, isLoading: visitLoading, refetch: refetchVisit } = api.visit.getById.useQuery(
         { id: id as string },
         { enabled: !!id }
     );
@@ -26,9 +41,25 @@ export default function VisitDetail() {
     const createLogMutation = api.logs.create.useMutation({
         onSuccess: () => {
             setShowEventForm(false);
+            setSelectedEventType(null);
             refetchLogs();
         },
     });
+
+    const updateVisitMutation = api.visit.update.useMutation({
+        onSuccess: () => {
+            // Optional: show toast or success indicator
+        },
+    });
+
+    // Auto-save handler for health check
+    const handleHealthCheckUpdate = useDebounceCallback((data: Record<string, any>) => {
+        if (!id) return;
+        updateVisitMutation.mutate({
+            id: id as string,
+            healthCheck: data,
+        });
+    }, 1000); // 1 second debounce
 
     // Redirect if not authenticated or not a nurse
     if (status === 'loading') {
@@ -79,10 +110,19 @@ export default function VisitDetail() {
         );
     }
 
-    const handleCreateEvent = (eventData: { eventType: string; notes?: string }) => {
+    const handleCreateEvent = (eventData: { eventType: string; notes?: string; tags?: string[]; temperature?: number }) => {
+        const eventDataPayload: Record<string, any> = {};
+        if (eventData.tags && eventData.tags.length > 0) {
+            eventDataPayload.tags = eventData.tags;
+        }
+        if (typeof eventData.temperature === 'number') {
+            eventDataPayload.temperature = eventData.temperature;
+        }
+
         createLogMutation.mutate({
             visitId: id as string,
             eventType: eventData.eventType,
+            eventData: eventDataPayload,
             notes: eventData.notes,
         });
     };
@@ -96,54 +136,115 @@ export default function VisitDetail() {
             </Head>
 
             <main className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100">
-                <div className="container mx-auto px-4 py-8">
+                <div className="container mx-auto px-4 py-8 max-w-3xl">
                     {/* Header with back navigation */}
-                    <div className="mb-8">
-                        <Link href="/dashboard">
-                            <Button variant="outline" className="mb-4">
-                                ← Back to Dashboard
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <Link href="/dashboard">
+                                <Button variant="ghost" size="sm" className="-ml-2">
+                                    ← Back
+                                </Button>
+                            </Link>
+                            <Button variant="outline" size="icon" className="rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                             </Button>
-                        </Link>
-                        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                            {visit.child?.name}
-                        </h1>
-                        <p className="text-lg text-gray-600">
-                            Visit Timeline - {visit.hospital?.name}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                            <span>Parent: {visit.parent?.name}</span>
-                            <span>•</span>
-                            <span>Dropped off: {new Date(visit.dropOffTime).toLocaleString()}</span>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Active
-                            </span>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-3 mb-6">
+                            <h1 className="text-3xl font-bold text-gray-900">
+                                {visit.child?.name}
+                            </h1>
+                            {(visit.child?.allergies || visit.child?.preexistingConditions) && (
+                                <div className="relative group">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-full border-blue-100 text-blue-600 bg-white shadow-sm hover:bg-blue-50"
+                                        aria-label="View care information"
+                                    >
+                                        <Info className="w-4 h-4" />
+                                    </Button>
+                                    <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 hidden min-w-[220px] max-w-xs rounded-2xl bg-white px-4 py-3 text-left text-sm text-gray-700 shadow-lg ring-1 ring-black/5 group-hover:block">
+                                        <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-white ring-1 ring-black/5" />
+                                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                            Care information
+                                        </p>
+                                        {visit.child?.allergies && (
+                                            <div className="mb-1">
+                                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                    Allergies
+                                                </span>
+                                                <div>{visit.child.allergies}</div>
+                                            </div>
+                                        )}
+                                        {visit.child?.preexistingConditions && (
+                                            <div>
+                                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                    Conditions
+                                                </span>
+                                                <div>{visit.child.preexistingConditions}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+
+                        {/* Health Check Section */}
+                        <div className="mb-8">
+                            <HealthCheck
+                                initialData={(visit.healthCheck as Record<string, any>) || {}}
+                                onUpdate={handleHealthCheckUpdate}
+                            />
                         </div>
                     </div>
 
-                    {/* Timeline */}
-                    <div className="space-y-6">
-                        {/* Add Event Button */}
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-semibold text-gray-900">Timeline</h2>
-                            <Button onClick={() => setShowEventForm(true)}>
-                                + Add Event
-                            </Button>
-                        </div>
+                    {/* Timeline + Quick Add */}
+                    <div className="space-y-6 bg-white rounded-3xl p-6 shadow-sm">
+                        {/* Quick Add Grid */}
+                        <QuickAddGrid
+                            onSelect={(eventType) => {
+                                setSelectedEventType(eventType);
+                                setShowEventForm(true);
+                            }}
+                        />
 
                         {/* Timeline Component */}
                         <TimelineView logs={logs || []} />
+                    </div>
+                </div>
 
-                        {/* Event Creation Form */}
-                        {showEventForm && (
+                {/* Event Creation Modal */}
+                {showEventForm && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4"
+                        onClick={() => {
+                            setShowEventForm(false);
+                            setSelectedEventType(null);
+                        }}
+                    >
+                        <div
+                            className="w-full max-w-md"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
                             <EventForm
                                 visitId={id as string}
                                 onSubmit={handleCreateEvent}
-                                onCancel={() => setShowEventForm(false)}
+                                onCancel={() => {
+                                    setShowEventForm(false);
+                                    setSelectedEventType(null);
+                                }}
                                 isLoading={createLogMutation.isPending}
+                                initialEventType={selectedEventType || undefined}
+                                autoFocusNotes
                             />
-                        )}
+                        </div>
                     </div>
-                </div>
+                )}
             </main>
         </>
     );
@@ -153,126 +254,123 @@ export default function VisitDetail() {
 function TimelineView({ logs }: { logs: any[] }) {
     if (logs.length === 0) {
         return (
-            <Card>
-                <CardContent className="py-12">
-                    <div className="text-center">
-                        <p className="text-gray-500 mb-4">No events recorded yet</p>
-                        <p className="text-sm text-gray-400">Click "Add Event" to start logging activities</p>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="py-12 text-center">
+                <p className="text-gray-500 mb-2">No events recorded yet</p>
+                <p className="text-xs text-gray-400">Click "+ Add" to start logging</p>
+            </div>
         );
     }
 
     return (
-        <Card>
-            <CardContent className="p-6">
-                <div className="space-y-6">
-                    {logs.map((log, index) => (
-                        <div key={log.id} className="flex gap-4">
-                            {/* Timeline dot and line */}
-                            <div className="flex flex-col items-center">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-sm"></div>
-                                {index < logs.length - 1 && (
-                                    <div className="w-0.5 h-16 bg-gray-200 mt-2"></div>
-                                )}
-                            </div>
-
-                            {/* Event content */}
-                            <div className="flex-1 pb-6">
-                                <div className="bg-white rounded-lg border p-4 shadow-sm">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="font-semibold text-gray-900">
-                                            {log.eventType}
-                                        </h3>
-                                        <span className="text-sm text-gray-500">
-                                            {new Date(log.timestamp).toLocaleTimeString()}
-                                        </span>
-                                    </div>
-                                    {log.notes && (
-                                        <p className="text-gray-600 text-sm">{log.notes}</p>
-                                    )}
-                                    <div className="mt-2 text-xs text-gray-400">
-                                        Logged by {log.nurse?.name || 'Unknown'}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
+        <Timeline>
+            {logs.map((log) => (
+                <TimelineItem
+                    key={log.id}
+                    date={new Date(log.timestamp)}
+                    title={log.eventType}
+                    description={typeof log.notes === 'string' ? log.notes : undefined}
+                    author={log.nurse?.name}
+                    log={log}
+                    // You could dynamically assign icons based on eventType here
+                    status="completed"
+                />
+            ))}
+        </Timeline>
     );
 }
+
 
 // Event Form Component
 function EventForm({
     visitId,
     onSubmit,
     onCancel,
-    isLoading
+    isLoading,
+    initialEventType,
+    autoFocusNotes = false,
 }: {
     visitId: string;
-    onSubmit: (data: { eventType: string; notes?: string }) => void;
+    onSubmit: (data: { eventType: string; notes?: string; tags?: string[]; temperature?: number }) => void;
     onCancel: () => void;
     isLoading: boolean;
+    initialEventType?: string;
+    autoFocusNotes?: boolean;
 }) {
-    const [eventType, setEventType] = useState('');
+    const [eventType, setEventType] = useState(initialEventType || '');
     const [notes, setNotes] = useState('');
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [temperature, setTemperature] = useState<string>('');
+    const notesRef = useRef<HTMLTextAreaElement | null>(null);
+
+    useEffect(() => {
+        setEventType(initialEventType || '');
+    }, [initialEventType]);
+
+    useEffect(() => {
+        if (autoFocusNotes && notesRef.current) {
+            notesRef.current.focus();
+        }
+    }, [autoFocusNotes]);
 
     const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         if (eventType.trim()) {
-            onSubmit({ eventType: eventType.trim(), notes: notes.trim() || undefined });
+            const trimmedType = eventType.trim();
+
+            const tagsFromTemperature =
+                trimmedType === 'Temperature' && temperature.trim()
+                    ? [`${temperature.trim()}°C`]
+                    : [];
+
+            const allTags = [...selectedTags, ...tagsFromTemperature];
+
+            onSubmit({
+                eventType: trimmedType,
+                notes: notes.trim() || undefined,
+                tags: allTags.length > 0 ? allTags : undefined,
+                temperature:
+                    trimmedType === 'Temperature' && temperature.trim()
+                        ? Number.parseFloat(temperature)
+                        : undefined,
+            });
             setEventType('');
             setNotes('');
+            setSelectedTags([]);
+            setTemperature('');
         }
     };
-
-    const commonEventTypes = [
-        'Meal Time',
-        'Nap Time',
-        'Play Time',
-        'Diaper Change',
-        'Temperature Check',
-        'Medication Given',
-        'Health Check',
-        'Activity',
-        'General Care',
-        'Other'
-    ];
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Add New Event</CardTitle>
-                <CardDescription>Log an activity or event for this child</CardDescription>
+                <CardTitle>
+                    {eventType ? `Add ${eventType} Event` : 'Add Event'}
+                </CardTitle>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label htmlFor="eventType" className="block text-sm font-medium text-gray-700 mb-1">
-                            Event Type
-                        </label>
-                        <select
-                            id="eventType"
-                            value={eventType}
-                            onChange={(e) => setEventType(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        >
-                            <option value="">Select an event type</option>
-                            {commonEventTypes.map((type) => (
-                                <option key={type} value={type}>{type}</option>
-                            ))}
-                        </select>
-                    </div>
-
+                    {eventType && eventType !== 'Note' && (
+                        <TagSelector
+                            eventType={eventType}
+                            selectedTags={selectedTags}
+                            onToggleTag={(tag) => {
+                                setSelectedTags((prev) =>
+                                    prev.includes(tag)
+                                        ? prev.filter((t) => t !== tag)
+                                        : [...prev, tag]
+                                );
+                            }}
+                            temperature={temperature}
+                            onTemperatureChange={setTemperature}
+                        />
+                    )}
                     <div>
                         <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                            Notes (Optional)
+                            Notes
                         </label>
                         <textarea
                             id="notes"
+                            ref={notesRef}
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             rows={3}
@@ -294,3 +392,151 @@ function EventForm({
         </Card>
     );
 }
+
+// Tag selector + temperature input for events
+function TagSelector({
+    eventType,
+    selectedTags,
+    onToggleTag,
+    temperature,
+    onTemperatureChange,
+}: {
+    eventType: string;
+    selectedTags: string[];
+    onToggleTag: (tag: string) => void;
+    temperature: string;
+    onTemperatureChange: (value: string) => void;
+}) {
+    const lower = eventType.toLowerCase();
+
+    let suggestions: string[] = [];
+
+    if (lower === 'pee') {
+        suggestions = ['clear', 'yellow'];
+    } else if (lower === 'poo') {
+        suggestions = ['diarrhea', 'constipation', 'bloody'];
+    } else if (lower === 'puke') {
+        suggestions = ['after meal', 'projectile', 'mucus', 'with fever'];
+    } else if (lower === 'eat') {
+        suggestions = ['solid', 'bottle', 'hot', 'cold', 'finished all', 'ate a little'];
+    } else if (lower === 'drink') {
+        suggestions = ['hot', 'cold', 'water', 'juice', 'milk'];
+    } else if (lower === 'medication') {
+        suggestions = ['fever', 'pain', 'antibiotic', 'inhaler'];
+    } else if (lower === 'slept') {
+        suggestions = ['easy to sleep', 'restless', 'short nap', 'long nap'];
+    } else if (lower === 'woke-up' || lower === 'woke up') {
+        suggestions = ['happy', 'cranky', 'from nap', 'from night sleep'];
+    }
+
+    const showTemperatureInput = lower === 'temperature';
+
+    if (suggestions.length === 0 && !showTemperatureInput) {
+        return null;
+    }
+
+    return (
+        <div className="space-y-3">
+            {showTemperatureInput && (
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Temperature (°C)
+                    </label>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="number"
+                            step="0.1"
+                            inputMode="decimal"
+                            className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            value={temperature}
+                            onChange={(e) => onTemperatureChange(e.target.value)}
+                            placeholder="37.0"
+                        />
+                    </div>
+                </div>
+            )}
+
+            {suggestions.length > 0 && (
+                <div>
+                    <div className="mb-2 text-xs font-medium text-gray-600">
+                        Tags
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {suggestions.map((tag) => {
+                            const selected = selectedTags.includes(tag);
+                            return (
+                                <button
+                                    key={tag}
+                                    type="button"
+                                    onClick={() => onToggleTag(tag)}
+                                    className={`rounded-full px-3 py-1 text-xs border transition ${selected
+                                        ? 'bg-purple-600 text-white border-purple-600'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {tag}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Inline Quick Add Grid (above timeline)
+function QuickAddGrid({
+    onSelect,
+}: {
+    onSelect: (eventType: string) => void;
+}) {
+    const quickAddEvents: { label: string; category: 'Output' | 'Input' | 'State' | 'Other'; icon: string }[] = [
+        { label: 'Pee', category: 'Output', icon: '💧' },
+        { label: 'Poo', category: 'Output', icon: '💩' },
+        { label: 'Puke', category: 'Output', icon: '🤢' },
+        { label: 'Eat', category: 'Input', icon: '🍽️' },
+        { label: 'Drink', category: 'Input', icon: '🥤' },
+        { label: 'Medication', category: 'Input', icon: '💊' },
+        { label: 'Slept', category: 'State', icon: '😴' },
+        { label: 'Woke-up', category: 'State', icon: '🌅' },
+        { label: 'Temperature', category: 'Other', icon: '🌡️' },
+        { label: 'Note', category: 'Other', icon: '📝' },
+    ];
+
+    const getBadgeClasses = (category: 'Output' | 'Input' | 'State' | 'Other') => {
+        switch (category) {
+            case 'Output':
+                return 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+            case 'Input':
+                return 'bg-sky-50 text-sky-700 border border-sky-100';
+            case 'State':
+                return 'bg-indigo-50 text-indigo-700 border border-indigo-100';
+            default:
+                return 'bg-amber-50 text-amber-700 border border-amber-100';
+        }
+    };
+
+    return (
+        <div className="mb-4">
+            <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+                {quickAddEvents.map((item) => (
+                    <button
+                        key={item.label}
+                        type="button"
+                        className="flex flex-col items-center rounded-2xl bg-gray-50 px-2 py-2 text-[11px] font-medium text-gray-800 hover:bg-gray-100 active:scale-[0.97] transition"
+                        onClick={() => onSelect(item.label)}
+                    >
+                        <div
+                            className={`mb-1 flex h-9 w-9 items-center justify-center rounded-2xl text-[15px] ${getBadgeClasses(item.category)}`}
+                        >
+                            {item.icon}
+                        </div>
+                        <span className="truncate">{item.label}</span>
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+

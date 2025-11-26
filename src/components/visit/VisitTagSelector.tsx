@@ -1,0 +1,94 @@
+type TagSelectorProps = {
+    eventType: string;
+    selectedTags: string[];
+    onToggleTag: (tag: string) => void;
+    temperature: string;
+    onTemperatureChange: (value: string) => void;
+};
+
+export function VisitTagSelector({
+    eventType,
+    selectedTags,
+    onToggleTag,
+    temperature,
+    onTemperatureChange,
+}: TagSelectorProps) {
+    const lower = eventType.toLowerCase();
+
+    let suggestions: string[] = [];
+
+    if (lower === 'pee') {
+        suggestions = ['clear', 'yellow'];
+    } else if (lower === 'poo') {
+        suggestions = ['diarrhea', 'constipation', 'bloody'];
+    } else if (lower === 'puke') {
+        suggestions = ['after meal', 'projectile', 'mucus', 'with fever'];
+    } else if (lower === 'eat') {
+        suggestions = ['solid', 'bottle', 'hot', 'cold', 'finished all', 'ate a little'];
+    } else if (lower === 'drink') {
+        suggestions = ['hot', 'cold', 'water', 'juice', 'milk'];
+    } else if (lower === 'medication') {
+        suggestions = ['fever', 'pain', 'antibiotic', 'inhaler'];
+    } else if (lower === 'slept') {
+        suggestions = ['easy to sleep', 'restless', 'short nap', 'long nap'];
+    } else if (lower === 'woke-up' || lower === 'woke up') {
+        suggestions = ['happy', 'cranky', 'from nap', 'from night sleep'];
+    }
+
+    const showTemperatureInput = lower === 'temperature';
+
+    if (suggestions.length === 0 && !showTemperatureInput) {
+        return null;
+    }
+
+    return (
+        <div className="space-y-3">
+            {showTemperatureInput && (
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Temperature (°C)
+                    </label>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="number"
+                            step="0.1"
+                            inputMode="decimal"
+                            className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            value={temperature}
+                            onChange={(e) => onTemperatureChange(e.target.value)}
+                            placeholder="37.0"
+                        />
+                    </div>
+                </div>
+            )}
+
+            {suggestions.length > 0 && (
+                <div>
+                    <div className="mb-2 text-xs font-medium text-gray-600">
+                        Tags
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {suggestions.map((tag) => {
+                            const selected = selectedTags.includes(tag);
+                            return (
+                                <button
+                                    key={tag}
+                                    type="button"
+                                    onClick={() => onToggleTag(tag)}
+                                    className={`rounded-full px-3 py-1 text-xs border transition ${selected
+                                            ? 'bg-purple-600 text-white border-purple-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {tag}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+
