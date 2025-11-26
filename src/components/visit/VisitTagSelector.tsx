@@ -1,7 +1,9 @@
 import { useTranslations } from 'next-intl';
-import type { EventType } from './eventTypes';
+import { getTranslatedTag } from '~/utils/translations';
 
 import { getEventTags } from './eventTypes';
+
+import type { EventType } from './eventTypes';
 
 type TagSelectorProps = {
     eventType: EventType | string;
@@ -66,7 +68,7 @@ export function VisitTagSelector({
                                         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                                         }`}
                                 >
-                                    {tag}
+                                    {getTranslatedTag(t, tag)}
                                 </button>
                             );
                         })}
