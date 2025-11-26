@@ -394,6 +394,78 @@ export const visitRouter = createTRPCRouter({
       .where(and(eq(visits.parentId, parent.id), eq(visits.status, "active")));
   }),
 
+  // Get visit history for a specific child (Parent only)
+  getChildVisitHistory: parentProcedure
+    .input(
+      z.object({
+        childId: z.string(),
+        limit: z.number().min(1).max(50).optional().default(3),
+        offset: z.number().min(0).optional().default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Get the parent record for the current user
+      const [parent] = await ctx.db
+        .select()
+        .from(parents)
+        .where(eq(parents.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!parent) {
+        throw new Error("Parent profile not found");
+      }
+
+      // Verify the child belongs to this parent
+      const [relation] = await ctx.db
+        .select()
+        .from(parentChildRelations)
+        .where(
+          and(
+            eq(parentChildRelations.parentId, parent.id),
+            eq(parentChildRelations.childId, input.childId),
+          ),
+        )
+        .limit(1);
+
+      if (!relation) {
+        throw new Error("Child not found or does not belong to this parent");
+      }
+
+      // Get total count of visits for this child
+      const [countResult] = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(visits)
+        .where(eq(visits.childId, input.childId));
+
+      const totalCount = Number(countResult?.count || 0);
+
+      // Get visits for this child with limit and offset
+      const visitHistory = await ctx.db
+        .select({
+          id: visits.id,
+          dropOffTime: visits.dropOffTime,
+          pickupTime: visits.pickupTime,
+          status: visits.status,
+          updatedAt: visits.updatedAt,
+          hospital: {
+            id: hospitals.id,
+            name: hospitals.name,
+          },
+        })
+        .from(visits)
+        .leftJoin(hospitals, eq(visits.hospitalId, hospitals.id))
+        .where(eq(visits.childId, input.childId))
+        .orderBy(desc(visits.dropOffTime))
+        .limit(input.limit)
+        .offset(input.offset);
+
+      return {
+        visits: visitHistory,
+        totalCount,
+        hasMore: totalCount > input.offset + input.limit,
+      };
+    }),
+
   // Get visit by ID (Parent only - for parent visit detail page)
   getByIdForParent: parentProcedure
     .input(z.object({ id: z.string() }))

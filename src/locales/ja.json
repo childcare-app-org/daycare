@@ -109,7 +109,13 @@
             "currentlyAt": "{hospital}でお預かり中",
             "yearsOld": "{years}歳{months}ヶ月",
             "allergies": "アレルギー",
-            "conditions": "既往症"
+            "conditions": "既往症",
+            "visitHistory": "利用履歴",
+            "noVisitsYet": "まだ利用履歴がありません",
+            "seeMore": "もっと見る",
+            "visitOn": "{date} {hospital}",
+            "duration": "{hours}時間{minutes}分",
+            "inProgress": "利用中"
         }
     },
     "visit": {

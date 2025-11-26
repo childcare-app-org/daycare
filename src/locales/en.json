@@ -109,7 +109,13 @@
             "currentlyAt": "Currently at {hospital}",
             "yearsOld": "{years} years, {months} months old",
             "allergies": "Allergies",
-            "conditions": "Conditions"
+            "conditions": "Conditions",
+            "visitHistory": "Visit History",
+            "noVisitsYet": "No visits yet",
+            "seeMore": "See more",
+            "visitOn": "{date} at {hospital}",
+            "duration": "{hours}h {minutes}m",
+            "inProgress": "In progress"
         }
     },
     "visit": {
