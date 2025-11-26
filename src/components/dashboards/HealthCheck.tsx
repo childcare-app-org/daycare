@@ -6,6 +6,7 @@ import { cn } from '~/lib/utils';
 export interface HealthCheckProps {
     initialData?: Record<string, any>
     onUpdate: (data: Record<string, any>) => void
+    readOnly?: boolean
 }
 
 type AilmentType = 'cough' | 'nasal' | 'wheezing' | 'mood' | 'appetite';
@@ -139,7 +140,7 @@ function getAilmentPillClasses(id: AilmentType, value: number, isSelected: boole
     return "bg-gray-100 text-gray-500";
 }
 
-export function HealthCheck({ initialData = {}, onUpdate }: HealthCheckProps) {
+export function HealthCheck({ initialData = {}, onUpdate, readOnly = false }: HealthCheckProps) {
     const [data, setData] = React.useState<Record<string, number>>(initialData as Record<string, number>);
     const [expandedId, setExpandedId] = React.useState<string | null>(null);
     const cardRef = React.useRef<HTMLDivElement>(null);
@@ -151,15 +152,16 @@ export function HealthCheck({ initialData = {}, onUpdate }: HealthCheckProps) {
             }
         }
 
-        if (expandedId) {
+        if (expandedId && !readOnly) {
             document.addEventListener("mousedown", handleClickOutside);
         }
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [expandedId]);
+    }, [expandedId, readOnly]);
 
     const handleValueChange = (id: string, value: number) => {
+        if (readOnly) return;
         const newData = { ...data, [id]: value };
         setData(newData);
         onUpdate(newData);
@@ -174,6 +176,82 @@ export function HealthCheck({ initialData = {}, onUpdate }: HealthCheckProps) {
         ? Math.max(...activeAilment.options.map((o) => o.value))
         : 1;
 
+    // In read-only mode, show all ailments with their values
+    if (readOnly) {
+        return (
+            <div className="w-full space-y-4">
+                <div className="bg-white rounded-xl border border-gray-300 p-6 shadow-lg w-full">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Health Status</h2>
+                    <div className="space-y-6">
+                        {AILMENTS.map((ailment) => {
+                            const value = data[ailment.id] ?? 0;
+                            const Icon = ailment.icon;
+                            const currentOption = ailment.options.find(opt => opt.value === value);
+                            const displayOption = currentOption ?? ailment.options[0]!;
+
+                            return (
+                                <div key={ailment.id} className="space-y-3">
+                                    {/* Ailment Header */}
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                            "p-2 rounded-full transition-colors shadow-sm",
+                                            getAilmentPillClasses(ailment.id, value, false)
+                                        )}>
+                                            <Icon className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-sm font-semibold text-gray-900">
+                                            {ailment.label}
+                                        </span>
+                                    </div>
+
+                                    {/* All Options Display */}
+                                    <div className="flex justify-between gap-2 px-2">
+                                        {ailment.options.map((opt) => {
+                                            const isActive = opt.value === value;
+                                            return (
+                                                <div
+                                                    key={opt.value}
+                                                    className={cn(
+                                                        "flex flex-col items-center gap-1.5 w-full text-center p-2 rounded-md transition-all",
+                                                        isActive
+                                                            ? "bg-blue-50 border-2 border-blue-300"
+                                                            : "bg-gray-50 border border-gray-200"
+                                                    )}
+                                                >
+                                                    {opt.icon && (
+                                                        <opt.icon className={cn(
+                                                            "w-4 h-4",
+                                                            isActive ? opt.activeLabelClass : opt.labelClass
+                                                        )} />
+                                                    )}
+                                                    <span className={cn(
+                                                        "text-xs font-medium",
+                                                        isActive ? opt.activeLabelClass : opt.labelClass
+                                                    )}>
+                                                        {opt.label}
+                                                    </span>
+                                                    {isActive && (
+                                                        <div
+                                                            className={cn(
+                                                                "w-2 h-2 rounded-full",
+                                                                opt.dotClass
+                                                            )}
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Original editable mode
     return (
         <div className="w-full space-y-6 relative min-h-[120px]">
             <div ref={cardRef} className="bg-white rounded-xl border border-gray-300 p-6 shadow-lg w-full">
@@ -189,7 +267,8 @@ export function HealthCheck({ initialData = {}, onUpdate }: HealthCheckProps) {
                                 <div
                                     key={ailment.id}
                                     className={cn(
-                                        "flex flex-1 flex-col items-center cursor-pointer transition-all duration-200",
+                                        "flex flex-1 flex-col items-center transition-all duration-200",
+                                        "cursor-pointer",
                                         isSelected ? "scale-110 opacity-100" : "opacity-50 hover:opacity-80 scale-90"
                                     )}
                                     onClick={() => setExpandedId(ailment.id)}

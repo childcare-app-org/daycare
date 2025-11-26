@@ -84,6 +84,7 @@ export function VisitQuickAddGrid({ onSelect }: QuickAddGridProps) {
 
     return (
         <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Event</h2>
             <div className="flex lg:grid lg:grid-cols-4 gap-4 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 -mx-4 lg:mx-0 px-4 lg:px-0 scrollbar-hide">
                 {orderedColumns.map((column) => {
                     const styles = getColumnStyles(column.color);

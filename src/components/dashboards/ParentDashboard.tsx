@@ -176,54 +176,83 @@ export function ParentDashboard() {
                         <div className="space-y-4">
                             {children.map((child) => {
                                 const activeVisit = getChildVisitStatus(child.id || '');
+                                const ageMonths = calculateAgeInMonths(child.birthdate);
                                 return (
-                                    <div key={child.id} className="p-4 border rounded-lg">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-lg">{child.name}</h3>
-                                                <p className="text-sm text-gray-600">
-                                                    {(() => {
-                                                        const ageMonths = calculateAgeInMonths(child.birthdate);
-                                                        return `Age: ${Math.floor(ageMonths / 12)} years, ${ageMonths % 12} months`;
-                                                    })()}
-                                                </p>
-                                                {child.allergies && (
-                                                    <p className="text-sm text-red-600">
-                                                        Allergies: {child.allergies}
+                                    <div key={child.id} className="p-4 sm:p-6 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                                            <div className="flex-1 space-y-3 sm:space-y-4">
+                                                {/* Name - Primary Hierarchy */}
+                                                <div>
+                                                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{child.name}</h3>
+                                                    <p className="text-sm text-gray-500">
+                                                        {Math.floor(ageMonths / 12)} years, {ageMonths % 12} months old
                                                     </p>
-                                                )}
-                                                {child.preexistingConditions && (
-                                                    <p className="text-sm text-orange-600">
-                                                        Conditions: {child.preexistingConditions}
-                                                    </p>
-                                                )}
-                                                {activeVisit && (
-                                                    <div className="mt-2">
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            Currently at {activeVisit.hospital?.name}
-                                                        </span>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            Since: {new Date(activeVisit.dropOffTime).toLocaleString()}
-                                                        </p>
+                                                </div>
+
+                                                {/* Medical Information - Secondary Hierarchy */}
+                                                {(child.allergies || child.preexistingConditions) && (
+                                                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                                                        {child.allergies && (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
+                                                                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                    Allergies: {child.allergies}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {child.preexistingConditions && (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+                                                                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                    Conditions: {child.preexistingConditions}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex items-start gap-2 ml-4">
-                                                {activeVisit ? (
-                                                    <Link href={`/visit/${activeVisit.id}`}>
-                                                        <Button variant="outline">
-                                                            View Visit
-                                                        </Button>
-                                                    </Link>
-                                                ) : (
-                                                    <Button onClick={() => handleRegisterVisit(child)}>
-                                                        Register for Visit
-                                                    </Button>
+
+                                            {/* Right Side - Visit Details & Actions */}
+                                            <div className="flex flex-col items-stretch sm:items-end gap-3 flex-shrink-0 w-full sm:w-auto">
+                                                {/* Active Visit Status */}
+                                                {activeVisit && (
+                                                    <div className="text-left sm:text-right">
+                                                        <div className="flex items-center sm:justify-end gap-2 mb-1.5">
+                                                            <span className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-green-50 text-green-800 border border-green-200 break-words">
+                                                                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                                                </svg>
+                                                                <span className="break-words">Currently at {activeVisit.hospital?.name}</span>
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 font-medium">
+                                                            Dropped off: {new Date(activeVisit.dropOffTime).toLocaleString()}
+                                                        </p>
+                                                    </div>
                                                 )}
-                                                <ActionMenu
-                                                    onEdit={() => handleEdit(child)}
-                                                    onDelete={() => handleDelete(child)}
-                                                />
+
+                                                {/* Action Buttons */}
+                                                <div className="flex items-stretch sm:items-start gap-2 w-full sm:w-auto">
+                                                    {activeVisit ? (
+                                                        <Link href={`/visit/parent/${activeVisit.id}`} className="flex-1 sm:flex-initial">
+                                                            <Button variant="outline" className="w-full sm:w-auto whitespace-nowrap">
+                                                                View Visit
+                                                            </Button>
+                                                        </Link>
+                                                    ) : (
+                                                        <Button onClick={() => handleRegisterVisit(child)} className="flex-1 sm:flex-initial whitespace-nowrap">
+                                                            Register for Visit
+                                                        </Button>
+                                                    )}
+                                                    <ActionMenu
+                                                        onEdit={() => handleEdit(child)}
+                                                        onDelete={() => handleDelete(child)}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

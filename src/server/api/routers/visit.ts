@@ -1,11 +1,11 @@
-import { and, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { validateHospitalAccessCode } from '~/lib/access-code';
 import {
     createTRPCRouter, nurseProcedure, parentProcedure, protectedProcedure
 } from '~/server/api/trpc';
 import {
-    children, hospitals, nurses, parentChildRelations, parents, visits
+    children, hospitals, logs, nurses, parentChildRelations, parents, visits
 } from '~/server/db/schema';
 
 export const visitRouter = createTRPCRouter({
@@ -393,6 +393,90 @@ export const visitRouter = createTRPCRouter({
       .leftJoin(hospitals, eq(visits.hospitalId, hospitals.id))
       .where(and(eq(visits.parentId, parent.id), eq(visits.status, "active")));
   }),
+
+  // Get visit by ID (Parent only - for parent visit detail page)
+  getByIdForParent: parentProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Get the parent record for the current user
+      const [parent] = await ctx.db
+        .select()
+        .from(parents)
+        .where(eq(parents.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!parent) {
+        throw new Error("Parent profile not found");
+      }
+
+      // Get visit details with related data
+      const [visit] = await ctx.db
+        .select({
+          id: visits.id,
+          parentId: visits.parentId,
+          childId: visits.childId,
+          hospitalId: visits.hospitalId,
+          dropOffTime: visits.dropOffTime,
+          pickupTime: visits.pickupTime,
+          status: visits.status,
+          notes: visits.notes,
+          healthCheck: visits.healthCheck,
+          createdAt: visits.createdAt,
+          updatedAt: visits.updatedAt,
+          parent: {
+            id: parents.id,
+            name: parents.name,
+            phoneNumber: parents.phoneNumber,
+          },
+          child: {
+            id: children.id,
+            name: children.name,
+            birthdate: children.birthdate,
+            allergies: children.allergies,
+            preexistingConditions: children.preexistingConditions,
+            familyDoctorName: children.familyDoctorName,
+            familyDoctorPhone: children.familyDoctorPhone,
+          },
+          hospital: {
+            id: hospitals.id,
+            name: hospitals.name,
+            address: hospitals.address,
+          },
+        })
+        .from(visits)
+        .leftJoin(parents, eq(visits.parentId, parents.id))
+        .leftJoin(children, eq(visits.childId, children.id))
+        .leftJoin(hospitals, eq(visits.hospitalId, hospitals.id))
+        .where(and(eq(visits.id, input.id), eq(visits.parentId, parent.id)))
+        .limit(1);
+
+      if (!visit) {
+        throw new Error("Visit not found or does not belong to you");
+      }
+
+      // Get logs for this visit, ordered by timestamp
+      const visitLogs = await ctx.db
+        .select({
+          id: logs.id,
+          timestamp: logs.timestamp,
+          eventType: logs.eventType,
+          eventData: logs.eventData,
+          notes: logs.notes,
+          customMemo: logs.customMemo,
+          nurse: {
+            name: nurses.name,
+          },
+        })
+        .from(logs)
+        .leftJoin(nurses, eq(logs.nurseId, nurses.id))
+        .where(eq(logs.visitId, input.id))
+        .orderBy(desc(logs.timestamp));
+
+      return {
+        ...visit,
+        logs: visitLogs,
+      };
+    }),
 
   // Update visit (Nurse only)
   update: nurseProcedure

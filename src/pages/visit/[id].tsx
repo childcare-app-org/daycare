@@ -1,4 +1,3 @@
-import { CheckCircle2, Info } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -8,6 +7,7 @@ import { HealthCheck } from '~/components/dashboards/HealthCheck';
 import { Button } from '~/components/ui/button';
 import { VisitCareInfoModal } from '~/components/visit/VisitCareInfoModal';
 import { VisitEventForm } from '~/components/visit/VisitEventForm';
+import { VisitHeader } from '~/components/visit/VisitHeader';
 import { VisitQuickAddGrid } from '~/components/visit/VisitQuickAddGrid';
 import { VisitTimelineView } from '~/components/visit/VisitTimelineView';
 import { api } from '~/utils/api';
@@ -51,28 +51,34 @@ export default function VisitDetail() {
         },
     });
 
-    const updateVisitMutation = api.visit.update.useMutation({
+    const updateHealthCheckMutation = api.visit.update.useMutation({
         onSuccess: () => {
             refetchVisit();
         },
     });
 
+    const completeVisitMutation = api.visit.update.useMutation({
+        onSuccess: () => {
+            refetchVisit();
+            // Redirect to dashboard after completion
+            setTimeout(() => {
+                router.push('/dashboard');
+            }, 500);
+        },
+    });
+
     const handleCompleteVisit = () => {
         if (!id) return;
-        updateVisitMutation.mutate({
+        completeVisitMutation.mutate({
             id: id as string,
             status: 'completed',
         });
-        // Redirect to dashboard after completion
-        setTimeout(() => {
-            router.push('/dashboard');
-        }, 500);
     };
 
     // Auto-save handler for health check
     const handleHealthCheckUpdate = useDebounceCallback((data: Record<string, any>) => {
         if (!id) return;
-        updateVisitMutation.mutate({
+        updateHealthCheckMutation.mutate({
             id: id as string,
             healthCheck: data,
         });
@@ -155,49 +161,21 @@ export default function VisitDetail() {
             <main className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100">
                 <div className="container mx-auto px-4 py-8 max-w-3xl">
                     {/* Header with back navigation */}
-                    <div className="mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <Link href="/dashboard">
-                                <Button variant="ghost" size="sm" className="-ml-2">
-                                    ← Back
-                                </Button>
-                            </Link>
-                            {visit.status === 'active' && (
-                                <Button
-                                    onClick={handleCompleteVisit}
-                                    disabled={updateVisitMutation.isPending}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    {updateVisitMutation.isPending ? 'Completing...' : 'Complete Visit'}
-                                </Button>
-                            )}
-                        </div>
+                    <VisitHeader
+                        visit={visit}
+                        readOnly={false}
+                        onCompleteVisit={handleCompleteVisit}
+                        isCompleting={completeVisitMutation.isPending}
+                        onShowCareInfo={() => setShowCareInfo(true)}
+                    />
 
-                        <div className="flex items-center justify-center gap-3 mb-6">
-                            <h1 className="text-3xl font-bold text-gray-900">
-                                {visit.child?.name}
-                            </h1>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 rounded-full border-blue-100 text-blue-600 bg-white shadow-sm hover:bg-blue-50"
-                                aria-label="View care information"
-                                onClick={() => setShowCareInfo(true)}
-                            >
-                                <Info className="w-4 h-4" />
-                            </Button>
-                        </div>
-
-
-                        {/* Health Check Section */}
-                        <div className="mb-8">
-                            <HealthCheck
-                                initialData={(visit.healthCheck as Record<string, any>) || {}}
-                                onUpdate={handleHealthCheckUpdate}
-                            />
-                        </div>
+                    {/* Health Check Section */}
+                    <div className="mb-8">
+                        <HealthCheck
+                            initialData={(visit.healthCheck as Record<string, any>) || {}}
+                            onUpdate={handleHealthCheckUpdate}
+                            readOnly={false}
+                        />
                     </div>
 
                     {/* Timeline + Quick Add */}

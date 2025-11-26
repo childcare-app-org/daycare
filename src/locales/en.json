@@ -1,0 +1,54 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "signIn": "Sign in",
+        "signOut": "Sign out",
+        "welcome": "Welcome, {name}",
+        "goToHome": "Go to Home",
+        "goToDashboard": "Go to Dashboard",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "close": "Close",
+        "submit": "Submit",
+        "search": "Search",
+        "noResults": "No results found"
+    },
+    "home": {
+        "title": "Daycare Management",
+        "description": "Hospital daycare management system",
+        "subtitle": "Manage hospitals, staff, parents, and children",
+        "pleaseSignIn": "Please sign in to manage the daycare system",
+        "hospital": {
+            "title": "Hospital",
+            "description": "Create and manage hospital locations"
+        },
+        "nurse": {
+            "title": "Nurse",
+            "description": "Register nurses for hospitals"
+        },
+        "parent": {
+            "title": "Parent",
+            "description": "Register parents and guardians"
+        },
+        "child": {
+            "title": "Child",
+            "description": "Register children for daycare"
+        },
+        "createParent": "Create Parent"
+    },
+    "dashboard": {
+        "title": "Dashboard - Daycare Management",
+        "description": "Your daycare management dashboard",
+        "pleaseSignIn": "Please sign in to access the dashboard"
+    },
+    "visit": {
+        "temperature": "Temperature",
+        "temperatureUnit": "°C",
+        "events": "Events",
+        "timeline": "Timeline",
+        "careInfo": "Care Information"
+    }
+}

@@ -1,0 +1,54 @@
+{
+    "common": {
+        "loading": "読み込み中...",
+        "signIn": "サインイン",
+        "signOut": "サインアウト",
+        "welcome": "{name}さん、ようこそ",
+        "goToHome": "ホームに戻る",
+        "goToDashboard": "ダッシュボードへ",
+        "save": "保存",
+        "cancel": "キャンセル",
+        "delete": "削除",
+        "edit": "編集",
+        "create": "作成",
+        "close": "閉じる",
+        "submit": "送信",
+        "search": "検索",
+        "noResults": "結果が見つかりません"
+    },
+    "home": {
+        "title": "保育園管理",
+        "description": "病院保育園管理システム",
+        "subtitle": "病院、スタッフ、保護者、子供を管理",
+        "pleaseSignIn": "保育園システムを管理するにはサインインしてください",
+        "hospital": {
+            "title": "病院",
+            "description": "病院の場所を作成・管理"
+        },
+        "nurse": {
+            "title": "看護師",
+            "description": "病院の看護師を登録"
+        },
+        "parent": {
+            "title": "保護者",
+            "description": "保護者と後見人を登録"
+        },
+        "child": {
+            "title": "子供",
+            "description": "保育園に子供を登録"
+        },
+        "createParent": "保護者を作成"
+    },
+    "dashboard": {
+        "title": "ダッシュボード - 保育園管理",
+        "description": "あなたの保育園管理ダッシュボード",
+        "pleaseSignIn": "ダッシュボードにアクセスするにはサインインしてください"
+    },
+    "visit": {
+        "temperature": "体温",
+        "temperatureUnit": "°C",
+        "events": "イベント",
+        "timeline": "タイムライン",
+        "careInfo": "ケア情報"
+    }
+}
