@@ -28,7 +28,8 @@
         "active": "Active",
         "pendingSignIn": "Pending Sign-In",
         "name": "Name",
-        "update": "Update"
+        "update": "Update",
+        "language": "Language"
     },
     "home": {
         "title": "Daycare Management",

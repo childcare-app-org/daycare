@@ -1,7 +1,7 @@
 import { useSession } from 'next-auth/react';
-import { HospitalList } from '~/components/HospitalList';
-import { LanguageSwitcher } from '~/components/shared/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
+import { HospitalList } from '~/components/HospitalList';
+import { DashboardHeader } from '~/components/shared/DashboardHeader';
 
 export function AdminDashboard() {
     const { data: session } = useSession();
@@ -16,7 +16,7 @@ export function AdminDashboard() {
                     </h1>
                     <p className="text-lg text-gray-600">{t('dashboard.admin.title')}</p>
                 </div>
-                <LanguageSwitcher />
+                <DashboardHeader />
             </div>
 
             <HospitalList />

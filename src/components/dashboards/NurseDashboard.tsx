@@ -1,16 +1,16 @@
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useState } from 'react';
 import { CreatePatientFlow } from '~/components/forms/CreatePatientFlow';
 import { VisitForm } from '~/components/forms/VisitForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
+import { DashboardHeader } from '~/components/shared/DashboardHeader';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
-import { LanguageSwitcher } from '~/components/shared/LanguageSwitcher';
 import { SearchComponent } from '~/components/shared/SearchComponent';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { useTranslations } from 'next-intl';
 import { api } from '~/utils/api';
 
 import type { VisitFormData } from '~/components/forms/VisitForm';
@@ -186,7 +186,7 @@ export function NurseDashboard() {
                     )}
                 </div>
                 <div className="flex flex-col items-end gap-4">
-                    <LanguageSwitcher />
+                    <DashboardHeader />
                     {accessCodeData && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
                             <p className="text-sm text-gray-600 mb-1">{t('dashboard.nurse.accessCode')}</p>

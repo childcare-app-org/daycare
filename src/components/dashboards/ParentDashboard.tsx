@@ -3,9 +3,9 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
 import { RegisterVisitForm } from '~/components/forms/RegisterVisitForm';
+import { DashboardHeader } from '~/components/shared/DashboardHeader';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
-import { LanguageSwitcher } from '~/components/shared/LanguageSwitcher';
 import { api } from '~/utils/api';
 
 import { ChildrenList } from './parent/ChildrenList';
@@ -136,7 +136,7 @@ export function ParentDashboard() {
                     </h1>
                     <p className="text-lg text-gray-600">{t('dashboard.parent.title')}</p>
                 </div>
-                <LanguageSwitcher />
+                <DashboardHeader />
             </div>
 
             {/* Children List */}

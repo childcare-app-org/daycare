@@ -28,7 +28,8 @@
         "active": "利用中",
         "pendingSignIn": "ログイン待ち",
         "name": "名前",
-        "update": "更新"
+        "update": "更新",
+        "language": "言語"
     },
     "home": {
         "title": "病児保育管理",
