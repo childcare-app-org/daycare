@@ -55,7 +55,16 @@
         "hero": {
             "title": "Peace of mind while you're away",
             "subtitle": "Professional sick-child daycare with real-time updates. Know your child is in good hands.",
-            "cta": "Get Started"
+            "cta": "Get Started",
+            "badge": "Modern sick-child daycare",
+            "headlinePrefix": "Keep your child",
+            "headlineSuffix": "",
+            "flipWords": [
+                "safe",
+                "connected",
+                "informed",
+                "happy"
+            ]
         },
         "features": {
             "title": "Everything you need",

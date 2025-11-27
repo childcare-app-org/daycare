@@ -20,14 +20,23 @@ function FlipWords({
     ...props
 }: FlipWordsProps) {
     const localRef = React.useRef<HTMLSpanElement>(null);
-    const [currentWord, setCurrentWord] = React.useState(words[0]);
+
+    // Safety check: if words array is empty or invalid, return fallback
+    if (!words || words.length === 0 || !words[0]) {
+        return <span className={className}>safe</span>;
+    }
+
+    const firstWord = words[0];
+    const [currentWord, setCurrentWord] = React.useState<string>(firstWord);
     const [isAnimating, setIsAnimating] = React.useState<boolean>(false);
 
     const startAnimation = React.useCallback(() => {
-        const word = words[words.indexOf(currentWord!) + 1] || words[0];
+        const currentIndex = words.indexOf(currentWord);
+        const nextIndex = currentIndex + 1;
+        const word = (nextIndex < words.length ? words[nextIndex] : words[0]) || firstWord;
         setCurrentWord(word);
         setIsAnimating(true);
-    }, [currentWord, words]);
+    }, [currentWord, words, firstWord]);
 
     React.useEffect(() => {
         if (!isAnimating) {
@@ -73,7 +82,7 @@ function FlipWords({
                     )}
                     key={currentWord}
                 >
-                    {currentWord?.split(' ').map((word, wordIndex) => (
+                    {currentWord.split(' ').map((word, wordIndex) => (
                         <motion.span
                             key={`${word}-${wordIndex}`}
                             initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}

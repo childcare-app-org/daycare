@@ -5,11 +5,11 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { LanguageSwitcher } from '~/components/shared/LanguageSwitcher';
-import { CardBody, CardContainer, CardItem } from '~/components/ui/3d-card';
-import { BackgroundBeamsWithCollision } from '~/components/ui/background-beams';
 import { Button } from '~/components/ui/button';
 import { FlipWords } from '~/components/ui/flip-words';
+import { GlowingEffect } from '~/components/ui/glowing-effect';
 import { Meteors } from '~/components/ui/meteors';
+import { SpotlightNew } from '~/components/ui/spotlight-new';
 
 export async function getServerSideProps(context: { locale: string }) {
   return {
@@ -44,9 +44,11 @@ export default function Home() {
     );
   }
 
-  const flipWordsEn = ["safe", "connected", "informed", "happy"];
-  const flipWordsJa = ["安心", "つながり", "安全", "幸せ"];
-  const flipWords = locale === 'ja' ? flipWordsJa : flipWordsEn;
+  // Get flip words from translations
+  // next-intl doesn't support direct array access, so we use locale-based lookup
+  const flipWords = locale === 'ja'
+    ? ["安心", "つながり", "安全", "幸せ"]
+    : ["safe", "connected", "informed", "happy"];
 
   const features = [
     {
@@ -144,8 +146,19 @@ export default function Home() {
           </div>
         </nav>
 
-        {/* Hero Section with Background Beams */}
-        <BackgroundBeamsWithCollision className="pt-16">
+        {/* Hero Section with Spotlight */}
+        <SpotlightNew
+          className="min-h-screen pt-16 bg-gradient-to-b from-violet-50 via-purple-50 to-white"
+          gradientFirst="radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(270, 100%, 85%, .12) 0, hsla(270, 100%, 55%, .04) 50%, hsla(270, 100%, 45%, 0) 80%)"
+          gradientSecond="radial-gradient(50% 50% at 50% 50%, hsla(270, 100%, 85%, .08) 0, hsla(270, 100%, 55%, .03) 80%, transparent 100%)"
+          gradientThird="radial-gradient(50% 50% at 50% 50%, hsla(270, 100%, 85%, .06) 0, hsla(270, 100%, 45%, .02) 80%, transparent 100%)"
+          translateY={-350}
+          width={560}
+          height={1380}
+          smallWidth={240}
+          duration={7}
+          xOffset={100}
+        >
           <div className="relative z-10 max-w-5xl mx-auto px-6 py-20 text-center">
             {/* Floating badge */}
             <motion.div
@@ -159,7 +172,7 @@ export default function Home() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
               </span>
               <span className="text-sm font-medium text-purple-700">
-                {locale === 'ja' ? '病児保育の新しいカタチ' : 'Modern sick-child daycare'}
+                {t('home.hero.badge')}
               </span>
             </motion.div>
 
@@ -170,22 +183,12 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 tracking-tight mb-6"
             >
-              {locale === 'ja' ? (
-                <>
-                  お子さまを
-                  <span className="bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                    <FlipWords words={flipWords} className="text-inherit" />
-                  </span>
-                  に
-                </>
-              ) : (
-                <>
-                  Keep your child
-                  <span className="bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                    <FlipWords words={flipWords} className="text-inherit" />
-                  </span>
-                </>
-              )}
+              {t('home.hero.headlinePrefix')}{' '}
+              <FlipWords
+                words={flipWords}
+                className="text-purple-600"
+              />
+              {t('home.hero.headlineSuffix') && ` ${t('home.hero.headlineSuffix')}`}
             </motion.h1>
 
             <motion.p
@@ -219,7 +222,7 @@ export default function Home() {
             <div className="absolute top-1/4 -left-32 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
             <div className="absolute top-1/3 -right-32 w-64 h-64 bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000"></div>
           </div>
-        </BackgroundBeamsWithCollision>
+        </SpotlightNew>
 
         {/* Features Section with 3D Cards */}
         <section className="py-24 px-6 bg-gradient-to-b from-white via-purple-50/30 to-white">
@@ -239,7 +242,7 @@ export default function Home() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
@@ -248,28 +251,29 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <CardContainer containerClassName="py-4">
-                    <CardBody className="bg-white relative group/card border border-purple-100 w-full h-auto rounded-2xl p-6 hover:shadow-2xl hover:shadow-purple-500/10 transition-shadow">
-                      <CardItem
-                        translateZ="50"
+                  <GlowingEffect
+                    className="h-full"
+                    blur={15}
+                    spread={25}
+                    inactiveZone={0.6}
+                    disabled={false}
+                    movementDuration={0.15}
+                    borderWidth={1}
+                  >
+                    <div className="bg-white relative border border-purple-100 w-full h-full rounded-2xl p-6 transition-all hover:border-purple-200">
+                      <div
                         className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-white mb-4 shadow-lg`}
                       >
                         {feature.icon}
-                      </CardItem>
-                      <CardItem
-                        translateZ="60"
-                        className="text-xl font-bold text-gray-900 mb-2"
-                      >
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
                         {feature.title}
-                      </CardItem>
-                      <CardItem
-                        translateZ="40"
-                        className="text-gray-600 text-sm leading-relaxed"
-                      >
+                      </h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
                         {feature.description}
-                      </CardItem>
-                    </CardBody>
-                  </CardContainer>
+                      </p>
+                    </div>
+                  </GlowingEffect>
                 </motion.div>
               ))}
             </div>
