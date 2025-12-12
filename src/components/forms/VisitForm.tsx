@@ -1,11 +1,9 @@
-import { Calendar, Clock, Timer } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { VisitTimeAndNotesFields } from '~/components/forms/VisitTimeAndNotesFields';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import { cn } from '~/lib/utils';
 
 export interface VisitFormData {
     dropOffTime: Date;
@@ -50,27 +48,6 @@ export function VisitForm({
         notes: defaultValues?.notes || '',
     });
 
-    const [duration, setDuration] = useState<string>('');
-
-    useEffect(() => {
-        if (formData.pickupTimeOnly && formData.dropOffTime) {
-            const [hours, minutes] = formData.pickupTimeOnly.split(':').map(Number);
-            const pickupDate = new Date(formData.dropOffTime);
-            pickupDate.setHours(hours || 0, minutes || 0, 0, 0);
-
-            const diffMs = pickupDate.getTime() - formData.dropOffTime.getTime();
-            if (diffMs > 0) {
-                const diffHrs = Math.floor(diffMs / 3600000);
-                const diffMins = Math.round((diffMs % 3600000) / 60000);
-                setDuration(`${diffHrs}h ${diffMins > 0 ? `${diffMins}m` : ''}`);
-            } else {
-                setDuration('');
-            }
-        } else {
-            setDuration('');
-        }
-    }, [formData.pickupTimeOnly, formData.dropOffTime]);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -94,24 +71,6 @@ export function VisitForm({
         });
     };
 
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const setQuickTime = (timeStr: string) => {
-        setFormData(prev => ({
-            ...prev,
-            pickupTimeOnly: timeStr
-        }));
-    };
-
-    const quickTimes = ['17:00', '18:00', '19:00', '20:00'];
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -141,57 +100,15 @@ export function VisitForm({
 
             </div>
 
-            <div className="space-y-3">
-                <Label htmlFor="pickupTime" className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {t('visit.pickUpTime')}
-                    {duration && (
-                        <span className="ml-auto text-xs font-normal text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
-                            <Timer className="w-3 h-3" />
-                            {t('visit.duration')}: {duration}
-                        </span>
-                    )}
-                </Label>
-                <Input
-                    id="pickupTimeOnly"
-                    name="pickupTimeOnly"
-                    type="time"
-                    value={formData.pickupTimeOnly}
-                    onChange={handleInputChange}
-                    className="text-lg"
-                />
-
-                {/* Quick Select Chips */}
-                <div className="flex flex-wrap gap-2">
-                    {quickTimes.map((time) => (
-                        <button
-                            key={time}
-                            type="button"
-                            onClick={() => setQuickTime(time)}
-                            className={cn(
-                                "px-3 py-1 text-sm rounded-full border transition-colors",
-                                formData.pickupTimeOnly === time
-                                    ? "bg-blue-600 text-white border-blue-600"
-                                    : "bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
-                            )}
-                        >
-                            {time}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="notes">{t('visit.notes')}</Label>
-                <textarea
-                    id="notes"
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleInputChange}
-                    placeholder={t('forms.visit.notesPlaceholder')}
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
-                />
-            </div>
+            <VisitTimeAndNotesFields
+                pickupTimeOnly={formData.pickupTimeOnly}
+                onPickupTimeChange={(time) => setFormData(prev => ({ ...prev, pickupTimeOnly: time }))}
+                notes={formData.notes}
+                onNotesChange={(notes) => setFormData(prev => ({ ...prev, notes }))}
+                quickTimes={['17:00', '18:00', '19:00', '20:00']}
+                showDuration={true}
+                dropOffTime={formData.dropOffTime}
+            />
 
             <DialogFooter>
                 {onCancel && (

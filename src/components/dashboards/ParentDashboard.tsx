@@ -120,6 +120,7 @@ export function ParentDashboard() {
             dropOffTime,
             pickupTime: data.pickupTime,
             accessCode: data.accessCode,
+            notes: data.notes,
         });
     };
 

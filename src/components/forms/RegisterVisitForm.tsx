@@ -1,9 +1,9 @@
-import { Building2, Check, Clock, MapPin } from 'lucide-react';
+import { Building2, Check, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { VisitTimeAndNotesFields } from '~/components/forms/VisitTimeAndNotesFields';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
-import { Input } from '~/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '~/components/ui/input-otp';
 import { Label } from '~/components/ui/label';
 import { useHospitalLocation } from '~/hooks/useHospitalLocation';
@@ -16,6 +16,7 @@ export interface RegisterVisitFormData {
     childId: string;
     accessCode: string;
     pickupTime: Date;
+    notes?: string;
 }
 
 type FormStep = 'form' | 'pin' | 'success';
@@ -53,11 +54,12 @@ export function RegisterVisitForm({
     const [selectedHospitalId, setSelectedHospitalId] = useState('');
     const [accessCode, setAccessCode] = useState('');
     const [pickupTimeOnly, setPickupTimeOnly] = useState('17:00'); // Default to 5 PM
+    const [notes, setNotes] = useState('');
     const [dropOffTime] = useState(new Date());
 
     // Multi-step form state
     const [currentStep, setCurrentStep] = useState<FormStep>('form');
-    const [formData, setFormData] = useState<{ hospitalId: string; childId: string; pickupTime: Date } | null>(null);
+    const [formData, setFormData] = useState<{ hospitalId: string; childId: string; pickupTime: Date; notes?: string } | null>(null);
     const [pinError, setPinError] = useState('');
     const [isValidatingPin, setIsValidatingPin] = useState(false);
 
@@ -94,7 +96,7 @@ export function RegisterVisitForm({
         const pickupTime = new Date(dropOffTime);
         pickupTime.setHours(hours || 17, minutes || 0, 0, 0);
 
-        setFormData({ hospitalId: selectedHospitalId, childId, pickupTime });
+        setFormData({ hospitalId: selectedHospitalId, childId, pickupTime, notes: notes || undefined });
         setCurrentStep('pin');
         setPinError('');
     };
@@ -119,6 +121,7 @@ export function RegisterVisitForm({
             childId: formData!.childId,
             accessCode,
             pickupTime: formData!.pickupTime,
+            notes: formData!.notes,
         });
     };
 
@@ -193,37 +196,13 @@ export function RegisterVisitForm({
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    <Label htmlFor="pickupTime" className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        {t('visit.pickUpTime')}
-                    </Label>
-                    <Input
-                        id="pickupTime"
-                        type="time"
-                        value={pickupTimeOnly}
-                        onChange={(e) => setPickupTimeOnly(e.target.value)}
-                        className="text-lg"
-                        required
-                    />
-                    <div className="flex flex-wrap gap-2">
-                        {['09:00', '12:00', '15:00', '17:00', '18:00'].map((time) => (
-                            <button
-                                key={time}
-                                type="button"
-                                onClick={() => setPickupTimeOnly(time)}
-                                className={cn(
-                                    "px-3 py-1 text-sm rounded-full border transition-colors",
-                                    pickupTimeOnly === time
-                                        ? "bg-blue-600 text-white border-blue-600"
-                                        : "bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
-                                )}
-                            >
-                                {time}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <VisitTimeAndNotesFields
+                    pickupTimeOnly={pickupTimeOnly}
+                    onPickupTimeChange={setPickupTimeOnly}
+                    notes={notes}
+                    onNotesChange={setNotes}
+                    quickTimes={['09:00', '12:00', '15:00', '17:00', '18:00']}
+                />
 
                 <DialogFooter>
                     {onCancel && (
