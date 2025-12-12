@@ -282,6 +282,7 @@
             "enterAccessCodeDescription": "Please enter the 4-digit code provided by {hospital}",
             "validatingCode": "Validating code...",
             "backToHospitalSelection": "Back to Hospital Selection",
+            "backToVisitDetails": "Back to Visit Details",
             "verificationSuccessful": "Verification Successful",
             "verificationSuccessfulDescription": "The access code has been verified. You can now proceed with the check-in.",
             "completeCheckIn": "Complete Check-in"

@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { HospitalForm } from '~/components/forms/HospitalForm';
 import { NurseForm } from '~/components/forms/NurseForm';
 import { ActionMenu } from '~/components/shared/ActionMenu';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
@@ -12,6 +13,7 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { api } from '~/utils/api';
 
+import type { HospitalFormData } from '~/components/forms/HospitalForm';
 import type { NurseFormData } from '~/components/forms/NurseForm';
 
 type Nurse = {
@@ -37,7 +39,7 @@ export default function HospitalDetail() {
     const { id } = router.query;
     const hospitalId = typeof id === 'string' ? id : '';
 
-    const { data: hospital, isLoading: hospitalLoading } = api.hospital.getById.useQuery(
+    const { data: hospital, isLoading: hospitalLoading, refetch: refetchHospital } = api.hospital.getById.useQuery(
         { id: hospitalId },
         { enabled: !!hospitalId }
     );
@@ -48,6 +50,7 @@ export default function HospitalDetail() {
     );
 
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [editingHospital, setEditingHospital] = useState(false);
     const [editingNurse, setEditingNurse] = useState<Nurse | null>(null);
     const [deletingNurse, setDeletingNurse] = useState<Nurse | null>(null);
     const [error, setError] = useState('');
@@ -78,6 +81,17 @@ export default function HospitalDetail() {
         onSuccess: () => {
             setDeletingNurse(null);
             refetchNurses();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
+
+    const updateHospitalMutation = api.hospital.update.useMutation({
+        onSuccess: () => {
+            setEditingHospital(false);
+            setError('');
+            refetchHospital();
         },
         onError: (error) => {
             setError(error.message);
@@ -119,6 +133,19 @@ export default function HospitalDetail() {
     const handleDeleteConfirm = () => {
         if (!deletingNurse) return;
         deleteNurseMutation.mutate({ id: deletingNurse.id });
+    };
+
+    const handleUpdateHospital = (data: HospitalFormData) => {
+        if (!hospital) return;
+        updateHospitalMutation.mutate({
+            id: hospital.id,
+            name: data.name,
+            address: data.address,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            capacity: data.capacity,
+            pricing: data.pricing,
+        });
     };
 
     // Check authentication
@@ -196,7 +223,15 @@ export default function HospitalDetail() {
                         {/* Hospital Info */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>{t('hospital.hospitalInformation')}</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle>{t('hospital.hospitalInformation')}</CardTitle>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setEditingHospital(true)}
+                                    >
+                                        {t('common.edit')}
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -269,6 +304,30 @@ export default function HospitalDetail() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Edit Hospital Dialog */}
+                    <EditDialog
+                        open={editingHospital}
+                        onOpenChange={() => setEditingHospital(false)}
+                        title={t('hospital.editHospital')}
+                        description={t('hospital.editHospitalDescription')}
+                        error={error}
+                    >
+                        <HospitalForm
+                            mode="edit"
+                            defaultValues={hospital ? {
+                                name: hospital.name,
+                                address: hospital.address,
+                                latitude: hospital.latitude ? parseFloat(hospital.latitude) : undefined,
+                                longitude: hospital.longitude ? parseFloat(hospital.longitude) : undefined,
+                                capacity: hospital.capacity,
+                                pricing: parseFloat(hospital.pricing),
+                            } : undefined}
+                            onSubmit={handleUpdateHospital}
+                            onCancel={() => setEditingHospital(false)}
+                            isLoading={updateHospitalMutation.isPending}
+                        />
+                    </EditDialog>
 
                     {/* Create Nurse Dialog */}
                     <EditDialog

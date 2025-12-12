@@ -18,6 +18,7 @@ interface VisitFormProps {
     onSubmit: (data: VisitFormData) => void;
     onCancel?: () => void;
     isLoading?: boolean;
+    submitButtonText?: string;
 }
 
 export function VisitForm({
@@ -26,6 +27,7 @@ export function VisitForm({
     onSubmit,
     onCancel,
     isLoading = false,
+    submitButtonText,
 }: VisitFormProps) {
     const t = useTranslations();
     // Extract just the time part (HH:mm) from a date string or Date object
@@ -97,7 +99,6 @@ export function VisitForm({
                         </p>
                     </div>
                 </div>
-
             </div>
 
             <VisitTimeAndNotesFields
@@ -121,9 +122,9 @@ export function VisitForm({
                         ? mode === 'create'
                             ? t('forms.visit.creating')
                             : t('forms.visit.updating')
-                        : mode === 'create'
+                        : submitButtonText || (mode === 'create'
                             ? t('forms.visit.checkInChild')
-                            : t('forms.visit.updateVisit')}
+                            : t('forms.visit.updateVisit'))}
                 </Button>
             </DialogFooter>
         </form>

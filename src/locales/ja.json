@@ -282,6 +282,7 @@
             "enterAccessCodeDescription": "{hospital}から発行された4桁のコードを入力してください",
             "validatingCode": "確認中...",
             "backToHospitalSelection": "病院選択に戻る",
+            "backToVisitDetails": "来院詳細に戻る",
             "verificationSuccessful": "認証完了",
             "verificationSuccessfulDescription": "コードが確認できました。受付手続きを続けてください。",
             "completeCheckIn": "受付を完了する"

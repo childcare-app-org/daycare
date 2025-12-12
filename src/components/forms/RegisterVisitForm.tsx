@@ -1,7 +1,7 @@
 import { Building2, Check, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { VisitTimeAndNotesFields } from '~/components/forms/VisitTimeAndNotesFields';
+import { VisitForm } from '~/components/forms/VisitForm';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '~/components/ui/input-otp';
@@ -11,6 +11,8 @@ import { cn } from '~/lib/utils';
 import { api } from '~/utils/api';
 import { formatDistance } from '~/utils/geolocation';
 
+import type { VisitFormData } from '~/components/forms/VisitForm';
+
 export interface RegisterVisitFormData {
     hospitalId: string;
     childId: string;
@@ -19,7 +21,7 @@ export interface RegisterVisitFormData {
     notes?: string;
 }
 
-type FormStep = 'form' | 'pin' | 'success';
+type FormStep = 'hospital' | 'visit-details' | 'pin' | 'success';
 
 interface Hospital {
     id: string;
@@ -53,13 +55,12 @@ export function RegisterVisitForm({
     const t = useTranslations();
     const [selectedHospitalId, setSelectedHospitalId] = useState('');
     const [accessCode, setAccessCode] = useState('');
-    const [pickupTimeOnly, setPickupTimeOnly] = useState('17:00'); // Default to 5 PM
-    const [notes, setNotes] = useState('');
     const [dropOffTime] = useState(new Date());
 
     // Multi-step form state
-    const [currentStep, setCurrentStep] = useState<FormStep>('form');
+    const [currentStep, setCurrentStep] = useState<FormStep>('hospital');
     const [formData, setFormData] = useState<{ hospitalId: string; childId: string; pickupTime: Date; notes?: string } | null>(null);
+    const [visitFormData, setVisitFormData] = useState<{ pickupTime: Date; notes?: string } | null>(null);
     const [pinError, setPinError] = useState('');
     const [isValidatingPin, setIsValidatingPin] = useState(false);
 
@@ -88,15 +89,18 @@ export function RegisterVisitForm({
         },
     });
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleHospitalSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!selectedHospitalId) return;
+        setFormData({ hospitalId: selectedHospitalId, childId, pickupTime: new Date(), notes: undefined });
+        setCurrentStep('visit-details');
+    };
 
-        // Calculate pickup time from time input
-        const [hours, minutes] = pickupTimeOnly.split(':').map(Number);
-        const pickupTime = new Date(dropOffTime);
-        pickupTime.setHours(hours || 17, minutes || 0, 0, 0);
-
-        setFormData({ hospitalId: selectedHospitalId, childId, pickupTime, notes: notes || undefined });
+    const handleVisitFormSubmit = (data: { dropOffTime: Date; pickupTime?: Date; status: 'active' | 'completed' | 'cancelled'; notes?: string }) => {
+        if (!formData) return;
+        const pickupTime = data.pickupTime || new Date();
+        setVisitFormData({ pickupTime, notes: data.notes });
+        setFormData({ ...formData, pickupTime, notes: data.notes });
         setCurrentStep('pin');
         setPinError('');
     };
@@ -116,26 +120,34 @@ export function RegisterVisitForm({
     };
 
     const handleSuccessSubmit = () => {
+        if (!formData || !visitFormData) return;
         onSubmit({
-            hospitalId: formData!.hospitalId,
-            childId: formData!.childId,
+            hospitalId: formData.hospitalId,
+            childId: formData.childId,
             accessCode,
-            pickupTime: formData!.pickupTime,
-            notes: formData!.notes,
+            pickupTime: visitFormData.pickupTime,
+            notes: visitFormData.notes,
         });
     };
 
-    const handleBackToForm = () => {
-        setCurrentStep('form');
+    const handleBackToHospital = () => {
+        setCurrentStep('hospital');
+        setAccessCode('');
+        setPinError('');
+        setIsValidatingPin(false);
+    };
+
+    const handleBackToVisitDetails = () => {
+        setCurrentStep('visit-details');
         setAccessCode('');
         setPinError('');
         setIsValidatingPin(false);
     };
 
     // Render different steps
-    if (currentStep === 'form') {
+    if (currentStep === 'hospital') {
         return (
-            <form onSubmit={handleFormSubmit} className="space-y-6">
+            <form onSubmit={handleHospitalSubmit} className="space-y-6">
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
                         <Label className="text-base">{t('forms.registerVisit.selectHospital')}</Label>
@@ -196,14 +208,6 @@ export function RegisterVisitForm({
                     </div>
                 </div>
 
-                <VisitTimeAndNotesFields
-                    pickupTimeOnly={pickupTimeOnly}
-                    onPickupTimeChange={setPickupTimeOnly}
-                    notes={notes}
-                    onNotesChange={setNotes}
-                    quickTimes={['09:00', '12:00', '15:00', '17:00', '18:00']}
-                />
-
                 <DialogFooter>
                     {onCancel && (
                         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
@@ -212,13 +216,31 @@ export function RegisterVisitForm({
                     )}
                     <Button
                         type="submit"
-                        disabled={isLoading || !selectedHospitalId || !pickupTimeOnly}
+                        disabled={isLoading || !selectedHospitalId}
                         className="bg-blue-600 hover:bg-blue-700"
                     >
                         {t('common.continue')}
                     </Button>
                 </DialogFooter>
             </form>
+        );
+    }
+
+    if (currentStep === 'visit-details') {
+        return (
+            <div className="space-y-6">
+                <VisitForm
+                    mode="create"
+                    defaultValues={{
+                        dropOffTime: dropOffTime,
+                        status: 'active',
+                    }}
+                    onSubmit={handleVisitFormSubmit}
+                    onCancel={handleBackToHospital}
+                    isLoading={false}
+                    submitButtonText={t('common.continue')}
+                />
+            </div>
         );
     }
 
@@ -273,8 +295,8 @@ export function RegisterVisitForm({
                 </div>
 
                 <DialogFooter className="gap-2 sm:gap-0">
-                    <Button type="button" variant="ghost" onClick={handleBackToForm}>
-                        {t('forms.registerVisit.backToHospitalSelection')}
+                    <Button type="button" variant="ghost" onClick={handleBackToVisitDetails}>
+                        {t('forms.registerVisit.backToVisitDetails')}
                     </Button>
                     {onCancel && (
                         <Button type="button" variant="outline" onClick={onCancel}>
