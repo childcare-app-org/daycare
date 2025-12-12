@@ -42,7 +42,7 @@ export function VisitTagSelector({
                             step="0.1"
                             inputMode="decimal"
                             className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            value={temperature}
+                            value={temperature || '36'}
                             onChange={(e) => onTemperatureChange(e.target.value)}
                             placeholder="36.0"
                         />

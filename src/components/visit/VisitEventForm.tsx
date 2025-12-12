@@ -46,6 +46,12 @@ export function VisitEventForm({
 
     useEffect(() => {
         setEventType(initialEventType || '');
+        // Set temperature to default when event type is Temperature
+        if (initialEventType?.toLowerCase() === 'temperature') {
+            setTemperature('36');
+        } else {
+            setTemperature('');
+        }
     }, [initialEventType]);
 
     useEffect(() => {
@@ -62,6 +68,7 @@ export function VisitEventForm({
         if (!isOpen) {
             setNotes('');
             setSelectedTags([]);
+            // Reset temperature to default for next time (will be set to '36' if Temperature event type is selected)
             setTemperature('');
         }
     }, [isOpen]);
