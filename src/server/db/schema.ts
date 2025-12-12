@@ -199,6 +199,8 @@ export const children = createTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: d.varchar({ length: 255 }).notNull(),
+    pronunciation: d.text(), // Optional pronunciation guide
+    gender: d.varchar({ length: 20 }), // Male, Female
     birthdate: d.timestamp({ withTimezone: true }).notNull(),
     allergies: d.text(), // JSON string or comma-separated
     preexistingConditions: d.text(), // JSON string or comma-separated
@@ -228,7 +230,7 @@ export const parentChildRelations = createTable(
     childId: d
       .varchar({ length: 255 })
       .notNull()
-      .references(() => children.id),
+      .references(() => children.id, { onDelete: "cascade" }),
     relationshipType: d.varchar({ length: 50 }).notNull(), // Mother, Father, Guardian, etc.
     createdAt: d
       .timestamp({ withTimezone: true })
@@ -257,7 +259,7 @@ export const visits = createTable(
     childId: d
       .varchar({ length: 255 })
       .notNull()
-      .references(() => children.id),
+      .references(() => children.id, { onDelete: "cascade" }),
     hospitalId: d
       .varchar({ length: 255 })
       .notNull()

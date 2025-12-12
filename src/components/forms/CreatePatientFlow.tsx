@@ -372,6 +372,8 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                             mode="create"
                             defaultValues={{
                                 name: '',
+                                pronunciation: '',
+                                gender: 'Male',
                                 birthdate: new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
                                 allergies: '',
                                 preexistingConditions: '',

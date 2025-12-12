@@ -182,6 +182,8 @@ export const visitRouter = createTRPCRouter({
         child: {
           id: children.id,
           name: children.name,
+          pronunciation: children.pronunciation,
+          gender: children.gender,
           birthdate: children.birthdate,
           allergies: children.allergies,
           preexistingConditions: children.preexistingConditions,
@@ -247,6 +249,8 @@ export const visitRouter = createTRPCRouter({
         child: {
           id: children.id,
           name: children.name,
+          pronunciation: children.pronunciation,
+          gender: children.gender,
           birthdate: children.birthdate,
           allergies: children.allergies,
           preexistingConditions: children.preexistingConditions,
@@ -311,6 +315,8 @@ export const visitRouter = createTRPCRouter({
           child: {
             id: children.id,
             name: children.name,
+            pronunciation: children.pronunciation,
+            gender: children.gender,
             birthdate: children.birthdate,
             allergies: children.allergies,
             preexistingConditions: children.preexistingConditions,
@@ -375,6 +381,8 @@ export const visitRouter = createTRPCRouter({
         child: {
           id: children.id,
           name: children.name,
+          pronunciation: children.pronunciation,
+          gender: children.gender,
           birthdate: children.birthdate,
           allergies: children.allergies,
           preexistingConditions: children.preexistingConditions,
@@ -503,6 +511,8 @@ export const visitRouter = createTRPCRouter({
           child: {
             id: children.id,
             name: children.name,
+            pronunciation: children.pronunciation,
+            gender: children.gender,
             birthdate: children.birthdate,
             allergies: children.allergies,
             preexistingConditions: children.preexistingConditions,

@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { HealthCheck } from '~/components/dashboards/HealthCheck';
 import { Button } from '~/components/ui/button';
+import { CompleteVisitModal } from '~/components/visit/CompleteVisitModal';
 import { VisitCareInfoModal } from '~/components/visit/VisitCareInfoModal';
 import { VisitEventForm } from '~/components/visit/VisitEventForm';
 import { VisitHeader } from '~/components/visit/VisitHeader';
@@ -43,6 +44,7 @@ export default function VisitDetail() {
     const [showEventForm, setShowEventForm] = useState(false);
     const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null);
     const [showCareInfo, setShowCareInfo] = useState(false);
+    const [showCompleteModal, setShowCompleteModal] = useState(false);
 
     const { data: visit, isLoading: visitLoading, refetch: refetchVisit } = api.visit.getById.useQuery(
         { id: id as string },
@@ -70,6 +72,7 @@ export default function VisitDetail() {
 
     const completeVisitMutation = api.visit.update.useMutation({
         onSuccess: () => {
+            setShowCompleteModal(false);
             refetchVisit();
             // Redirect to dashboard after completion
             setTimeout(() => {
@@ -78,11 +81,12 @@ export default function VisitDetail() {
         },
     });
 
-    const handleCompleteVisit = () => {
+    const handleCompleteVisit = (summary: string) => {
         if (!id) return;
         completeVisitMutation.mutate({
             id: id as string,
             status: 'completed',
+            notes: summary || undefined,
         });
     };
 
@@ -174,9 +178,8 @@ export default function VisitDetail() {
                     {/* Header with back navigation */}
                     <VisitHeader
                         visit={visit}
-                        readOnly={false}
-                        onCompleteVisit={handleCompleteVisit}
-                        isCompleting={completeVisitMutation.isPending}
+                        readOnly={visit.status === 'completed'}
+                        onShowCompleteModal={() => setShowCompleteModal(true)}
                         onShowCareInfo={() => setShowCareInfo(true)}
                     />
 
@@ -185,44 +188,56 @@ export default function VisitDetail() {
                         <HealthCheck
                             initialData={(visit.healthCheck as Record<string, any>) || {}}
                             onUpdate={handleHealthCheckUpdate}
-                            readOnly={false}
+                            readOnly={visit.status === 'completed'}
                         />
                     </div>
 
                     {/* Timeline + Quick Add */}
                     <div className="space-y-6 bg-white rounded-3xl p-6 shadow-sm">
                         {/* Quick Add Grid */}
-                        <VisitQuickAddGrid
-                            onSelect={(eventType) => {
-                                setSelectedEventType(eventType);
-                                setShowEventForm(true);
-                            }}
-                        />
+                        {visit.status === 'active' && (
+                            <VisitQuickAddGrid
+                                onSelect={(eventType) => {
+                                    setSelectedEventType(eventType);
+                                    setShowEventForm(true);
+                                }}
+                            />
+                        )}
 
                         {/* Timeline Component */}
                         <VisitTimelineView logs={logs || []} />
                     </div>
                 </div>
 
-                {/* Event Creation Modal */}
-                <VisitEventForm
-                    visitId={id as string}
-                    isOpen={showEventForm}
-                    onSubmit={handleCreateEvent}
-                    onCancel={() => {
-                        setShowEventForm(false);
-                        setSelectedEventType(null);
-                    }}
-                    isLoading={createLogMutation.isPending}
-                    initialEventType={selectedEventType || undefined}
-                    autoFocusNotes
-                />
+                {/* Event Creation Modal - Only show for active visits */}
+                {visit.status === 'active' && (
+                    <VisitEventForm
+                        visitId={id as string}
+                        isOpen={showEventForm}
+                        onSubmit={handleCreateEvent}
+                        onCancel={() => {
+                            setShowEventForm(false);
+                            setSelectedEventType(null);
+                        }}
+                        isLoading={createLogMutation.isPending}
+                        initialEventType={selectedEventType || undefined}
+                        autoFocusNotes
+                    />
+                )}
 
                 {/* Care Information Modal */}
                 <VisitCareInfoModal
                     isOpen={showCareInfo}
                     onClose={() => setShowCareInfo(false)}
                     visit={visit}
+                />
+
+                {/* Complete Visit Modal */}
+                <CompleteVisitModal
+                    isOpen={showCompleteModal}
+                    onClose={() => setShowCompleteModal(false)}
+                    onConfirm={handleCompleteVisit}
+                    isLoading={completeVisitMutation.isPending}
                 />
             </main>
         </>

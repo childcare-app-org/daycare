@@ -1,4 +1,4 @@
-import { and, eq, ilike, or } from 'drizzle-orm';
+import { and, eq, ilike, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
     createTRPCRouter, nurseProcedure, parentProcedure, protectedProcedure
@@ -18,6 +18,8 @@ export const patientRouter = createTRPCRouter({
         .select({
           id: children.id,
           name: children.name,
+          pronunciation: children.pronunciation,
+          gender: children.gender,
           birthdate: children.birthdate,
           parentId: parentChildRelations.parentId,
           parentName: parents.name,
@@ -35,6 +37,8 @@ export const patientRouter = createTRPCRouter({
       return childrenResults.map((child) => ({
         id: child.id,
         name: child.name,
+        pronunciation: child.pronunciation,
+        gender: child.gender,
         birthdate: child.birthdate,
         parentId: child.parentId,
         parentName: child.parentName,
@@ -42,7 +46,8 @@ export const patientRouter = createTRPCRouter({
       }));
     }),
 
-  // Search parents by name or phone (for nurses)
+  // Search parents by phone number only (for nurses)
+  // Strips non-digit characters from both stored phone numbers and search query for flexible matching
   searchParents: nurseProcedure
     .input(
       z.object({
@@ -50,6 +55,10 @@ export const patientRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      // Remove all non-digit characters from search query
+      const digitsOnlyQuery = input.query.replace(/\D/g, "");
+      const searchPattern = `%${digitsOnlyQuery}%`;
+
       const parentResults = await ctx.db
         .select({
           id: parents.id,
@@ -59,10 +68,7 @@ export const patientRouter = createTRPCRouter({
         })
         .from(parents)
         .where(
-          or(
-            ilike(parents.name, `%${input.query}%`),
-            ilike(parents.phoneNumber, `%${input.query}%`),
-          ),
+          sql`regexp_replace(${parents.phoneNumber}, '[^0-9]', '', 'g') LIKE ${searchPattern}`,
         )
         .limit(10);
 
@@ -127,6 +133,8 @@ export const patientRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(1, "Child name is required"),
+        pronunciation: z.string().optional(),
+        gender: z.enum(["Male", "Female"]),
         birthdate: z.date(),
         allergies: z.string().optional(),
         preexistingConditions: z.string().optional(),
@@ -182,6 +190,8 @@ export const patientRouter = createTRPCRouter({
         .insert(children)
         .values({
           name: input.name,
+          pronunciation: input.pronunciation || null,
+          gender: input.gender,
           birthdate: input.birthdate,
           allergies: input.allergies || null,
           preexistingConditions: input.preexistingConditions || null,
@@ -284,6 +294,8 @@ export const patientRouter = createTRPCRouter({
         .select({
           id: children.id,
           name: children.name,
+          pronunciation: children.pronunciation,
+          gender: children.gender,
           birthdate: children.birthdate,
           allergies: children.allergies,
           preexistingConditions: children.preexistingConditions,
@@ -314,6 +326,8 @@ export const patientRouter = createTRPCRouter({
       .select({
         id: children.id,
         name: children.name,
+        pronunciation: children.pronunciation,
+        gender: children.gender,
         birthdate: children.birthdate,
         allergies: children.allergies,
         preexistingConditions: children.preexistingConditions,
@@ -332,6 +346,8 @@ export const patientRouter = createTRPCRouter({
       z.object({
         id: z.string().min(1, "Child ID is required"),
         name: z.string().min(1, "Child name is required"),
+        pronunciation: z.string().optional(),
+        gender: z.enum(["Male", "Female"]),
         birthdate: z.date(),
         allergies: z.string().optional(),
         preexistingConditions: z.string().optional(),
@@ -371,6 +387,8 @@ export const patientRouter = createTRPCRouter({
         .update(children)
         .set({
           name: input.name,
+          pronunciation: input.pronunciation || null,
+          gender: input.gender,
           birthdate: input.birthdate,
           allergies: input.allergies,
           preexistingConditions: input.preexistingConditions,

@@ -1,4 +1,4 @@
-import { CheckCircle2, Info } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Button } from '~/components/ui/button';
@@ -10,16 +10,14 @@ type VisitDetail = RouterOutputs['visit']['getById'] | RouterOutputs['visit']['g
 type VisitHeaderProps = {
     visit: VisitDetail;
     readOnly?: boolean;
-    onCompleteVisit?: () => void;
-    isCompleting?: boolean;
+    onShowCompleteModal?: () => void;
     onShowCareInfo?: () => void;
 };
 
 export function VisitHeader({
     visit,
     readOnly = false,
-    onCompleteVisit,
-    isCompleting = false,
+    onShowCompleteModal,
     onShowCareInfo,
 }: VisitHeaderProps) {
     const t = useTranslations();
@@ -29,17 +27,17 @@ export function VisitHeader({
             <div className="flex items-center justify-between mb-4">
                 <Link href="/dashboard">
                     <Button variant="ghost" size="sm" className="-ml-2">
+                        <ArrowLeft className="w-4 h-4" />
                         {t('common.back')}
                     </Button>
                 </Link>
-                {!readOnly && visit.status === 'active' && onCompleteVisit && (
+                {!readOnly && visit.status === 'active' && onShowCompleteModal && (
                     <Button
-                        onClick={onCompleteVisit}
-                        disabled={isCompleting}
+                        onClick={onShowCompleteModal}
                         className="bg-green-600 hover:bg-green-700 text-white"
                     >
                         <CheckCircle2 className="w-4 h-4" />
-                        {isCompleting ? t('visit.completing') : t('visit.completeVisit')}
+                        {t('visit.completeVisit')}
                     </Button>
                 )}
             </div>

@@ -8,6 +8,8 @@ import { ChildVisitHistory } from './ChildVisitHistory';
 export type Child = {
     id?: string | null;
     name?: string | null;
+    pronunciation?: string | null;
+    gender?: string | null;
     birthdate?: Date | null;
     allergies?: string | null;
     preexistingConditions?: string | null;
@@ -51,10 +53,23 @@ export function ChildItem({ child, activeVisit, onEdit, onDelete, onRegisterVisi
                 <div className="flex-1 space-y-3 sm:space-y-4">
                     {/* Name - Primary Hierarchy */}
                     <div>
-                        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{child.name}</h3>
-                        <p className="text-sm text-gray-500">
-                            {t('dashboard.parent.yearsOld', { years: Math.floor(ageMonths / 12), months: ageMonths % 12 })}
-                        </p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{child.name}</h3>
+                            {child.pronunciation && (
+                                <span className="text-sm text-gray-500 italic">({child.pronunciation})</span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                            <span>
+                                {t('dashboard.parent.yearsOld', { years: Math.floor(ageMonths / 12), months: ageMonths % 12 })}
+                            </span>
+                            {child.gender && (
+                                <>
+                                    <span>•</span>
+                                    <span>{t('dashboard.parent.gender')}: {child.gender === 'Male' ? t('forms.child.genderMale') : t('forms.child.genderFemale')}</span>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {/* Medical Information - Secondary Hierarchy */}

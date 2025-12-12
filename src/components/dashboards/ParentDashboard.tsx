@@ -79,6 +79,12 @@ export function ParentDashboard() {
         setError('');
     };
 
+    // Helper function to check if a child has an active visit
+    const getChildActiveVisit = (childId: string | null | undefined) => {
+        if (!childId) return null;
+        return activeVisits?.find(visit => visit.childId === childId) || null;
+    };
+
     const handleDelete = (child: Child) => {
         setDeletingChild(child);
         setError('');
@@ -172,11 +178,24 @@ export function ParentDashboard() {
                 title={t('dashboard.parent.editChild')}
                 description={t('dashboard.parent.editChildDescription', { name: editingChild?.name || '' })}
                 error={error}
+                banner={editingChild && getChildActiveVisit(editingChild.id) ? (
+                    <div className="flex items-start gap-2">
+                        <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <div>
+                            <p className="font-semibold">{t('dashboard.parent.activeVisitWarning')}</p>
+                            <p className="mt-1">{t('dashboard.parent.activeVisitWarningDescription')}</p>
+                        </div>
+                    </div>
+                ) : undefined}
             >
                 <ChildForm
                     mode="edit"
                     defaultValues={editingChild ? {
                         name: editingChild.name || '',
+                        pronunciation: editingChild.pronunciation || '',
+                        gender: (editingChild.gender as 'Male' | 'Female') || 'Male',
                         birthdate: editingChild.birthdate || new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
                         allergies: editingChild.allergies || '',
                         preexistingConditions: editingChild.preexistingConditions || '',
@@ -186,6 +205,7 @@ export function ParentDashboard() {
                     onSubmit={handleUpdateSubmit}
                     onCancel={() => setEditingChild(null)}
                     isLoading={updateChildMutation.isPending}
+                    disabled={!!(editingChild && getChildActiveVisit(editingChild.id))}
                 />
             </EditDialog>
 

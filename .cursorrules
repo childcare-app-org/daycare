@@ -1,10 +1,35 @@
 # Daycare Project Cursor Rules
 
+## README as Project Index
+
+**IMPORTANT**: The `README.md` file serves as the primary index and documentation for this project. Before making changes or asking questions about the codebase:
+
+1. **Always consult the README first** - It contains comprehensive information about:
+   - Project architecture and structure
+   - Database schema and relationships
+   - API endpoints and tRPC routers
+   - User roles and permissions
+   - Feature descriptions
+   - Setup and development workflows
+   - Environment variables
+   - Tech stack details
+
+2. **Use README for context** - When working on features, refer to the README to understand:
+   - Where code should be located
+   - How features are implemented
+   - What the expected behavior is
+   - How components interact
+
+3. **Update README when needed** - If you add significant features or make architectural changes, update the README to reflect those changes.
+
+The README is maintained as the single source of truth for project structure and functionality.
+
 ## Internationalization (i18n) - Adding New Text
 
 This project uses `next-intl` for translations. All user-facing text must be translated.
 
 ### Supported Languages
+
 - English (en) - `src/locales/en.json`
 - Japanese (ja) - `src/locales/ja.json`
 
@@ -20,7 +45,7 @@ export default function MyComponent() {
     <div>
       {/* Simple usage */}
       <h1>{t("common.loading")}</h1>
-      
+
       {/* With interpolation */}
       <p>{t("common.welcome", { name: "John" })}</p>
     </div>
@@ -38,19 +63,19 @@ export default function MyComponent() {
 
 The translations are organized into logical sections:
 
-| Section | Purpose | Example |
-|---------|---------|---------|
-| `common.*` | Shared UI text (buttons, actions) | `common.save`, `common.cancel`, `common.loading` |
-| `home.*` | Home page content | `home.title`, `home.description` |
-| `dashboard.*` | Dashboard pages | `dashboard.admin.title`, `dashboard.nurse.createVisit` |
-| `visit.*` | Visit-related content | `visit.temperature`, `visit.timeline` |
-| `forms.*` | Form labels and placeholders | `forms.child.name`, `forms.hospital.address` |
-| `hospital.*` | Hospital management | `hospital.nurses`, `hospital.capacity` |
-| `eventTypes.*` | Event type names | `eventTypes.Pee`, `eventTypes.Sleep` |
-| `tags.*` | Tag names | `tags.clear`, `tags.normal` |
-| `healthCheck.*` | Health check labels | `healthCheck.cough`, `healthCheck.mood` |
-| `eventCategories.*` | Event categories | `eventCategories.intake`, `eventCategories.output` |
-| `timeline.*` | Timeline text | `timeline.by` |
+| Section             | Purpose                           | Example                                                |
+| ------------------- | --------------------------------- | ------------------------------------------------------ |
+| `common.*`          | Shared UI text (buttons, actions) | `common.save`, `common.cancel`, `common.loading`       |
+| `home.*`            | Home page content                 | `home.title`, `home.description`                       |
+| `dashboard.*`       | Dashboard pages                   | `dashboard.admin.title`, `dashboard.nurse.createVisit` |
+| `visit.*`           | Visit-related content             | `visit.temperature`, `visit.timeline`                  |
+| `forms.*`           | Form labels and placeholders      | `forms.child.name`, `forms.hospital.address`           |
+| `hospital.*`        | Hospital management               | `hospital.nurses`, `hospital.capacity`                 |
+| `eventTypes.*`      | Event type names                  | `eventTypes.Pee`, `eventTypes.Sleep`                   |
+| `tags.*`            | Tag names                         | `tags.clear`, `tags.normal`                            |
+| `healthCheck.*`     | Health check labels               | `healthCheck.cough`, `healthCheck.mood`                |
+| `eventCategories.*` | Event categories                  | `eventCategories.intake`, `eventCategories.output`     |
+| `timeline.*`        | Timeline text                     | `timeline.by`                                          |
 
 ### Interpolation Syntax
 
@@ -61,14 +86,14 @@ Use `{variableName}` in translations for dynamic values:
 "welcome": "Welcome, {name}"
 "yearsOld": "{years} years, {months} months old"
 
-// ja.json  
+// ja.json
 "welcome": "{name}さん、ようこそ"
 "yearsOld": "{years}歳{months}ヶ月"
 ```
 
 ```tsx
-t("common.welcome", { name: userName })
-t("dashboard.parent.yearsOld", { years: 3, months: 5 })
+t("common.welcome", { name: userName });
+t("dashboard.parent.yearsOld", { years: 3, months: 5 });
 ```
 
 ### Helper Functions for Dynamic Keys
@@ -108,4 +133,3 @@ const translatedTag = getTranslatedTag(t, tag); // "clear" → "透明"
 - ✅ Group related translations under logical sections
 - ✅ Reuse existing common translations when applicable
 - ✅ Keep Japanese translations natural (not literal translations)
-

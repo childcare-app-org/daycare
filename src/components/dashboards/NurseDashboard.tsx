@@ -8,7 +8,6 @@ import { ActionMenu } from '~/components/shared/ActionMenu';
 import { DashboardHeader } from '~/components/shared/DashboardHeader';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
-import { SearchComponent } from '~/components/shared/SearchComponent';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { api } from '~/utils/api';
@@ -79,20 +78,11 @@ export function NurseDashboard() {
     const [editingVisit, setEditingVisit] = useState<Visit | null>(null);
     const [deletingVisit, setDeletingVisit] = useState<Visit | null>(null);
     const [error, setError] = useState('');
-    const [showRegisterVisitModal, setShowRegisterVisitModal] = useState(false);
     const [showCreatePatientModal, setShowCreatePatientModal] = useState(false);
-    const [selectedChildForVisit, setSelectedChildForVisit] = useState<any>(null);
-    const [showVisitForm, setShowVisitForm] = useState(false);
-    const [childSearchQuery, setChildSearchQuery] = useState('');
 
     const { data: activeVisits, isLoading, refetch } = api.visit.getMyHospitalActiveVisits.useQuery();
     const { data: todaysCompletedVisits, isLoading: isLoadingTodaysVisits, refetch: refetchTodaysVisits } = api.visit.getMyHospitalTodaysCompletedVisits.useQuery();
     const { data: accessCodeData } = api.hospital.getAccessCode.useQuery();
-    const { data: nurseProfile } = api.nurse.getMyProfile.useQuery();
-    const { data: childSearchResults = [], isLoading: isSearchingChildren } = api.patient.searchChildren.useQuery(
-        { query: childSearchQuery },
-        { enabled: childSearchQuery.length >= 2 && showRegisterVisitModal }
-    );
 
     const updateVisitMutation = api.visit.update.useMutation({
         onSuccess: () => {
@@ -116,17 +106,6 @@ export function NurseDashboard() {
         },
     });
 
-    const createVisitMutation = api.visit.create.useMutation({
-        onSuccess: () => {
-            setShowVisitForm(false);
-            setSelectedChildForVisit(null);
-            setError('');
-            refetch();
-        },
-        onError: (error) => {
-            setError(error.message);
-        },
-    });
 
     const handleEdit = (visit: Visit) => {
         setEditingVisit(visit);
@@ -151,17 +130,6 @@ export function NurseDashboard() {
         deleteVisitMutation.mutate({ id: deletingVisit.id });
     };
 
-    const handleVisitSubmit = (data: VisitFormData) => {
-        if (!selectedChildForVisit || !data.pickupTime) return;
-
-        createVisitMutation.mutate({
-            childId: selectedChildForVisit.id,
-            hospitalId: nurseProfile?.hospitalId || '', // Use nurse's hospital
-            dropOffTime: data.dropOffTime,
-            pickupTime: data.pickupTime,
-            notes: data.notes,
-        });
-    };
 
     if (isLoading) {
         return (
@@ -204,21 +172,12 @@ export function NurseDashboard() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex gap-4">
-                        <Button
-                            onClick={() => setShowRegisterVisitModal(true)}
-                            className="flex-1"
-                        >
-                            {t('dashboard.nurse.returningPatient')}
-                        </Button>
-                        <Button
-                            onClick={() => setShowCreatePatientModal(true)}
-                            variant="outline"
-                            className="flex-1"
-                        >
-                            {t('dashboard.nurse.newPatient')}
-                        </Button>
-                    </div>
+                    <Button
+                        onClick={() => setShowCreatePatientModal(true)}
+                        className="w-full"
+                    >
+                        {t('dashboard.nurse.registerVisit')}
+                    </Button>
                 </CardContent>
             </Card>
 
@@ -311,55 +270,12 @@ export function NurseDashboard() {
                 error={error}
             />
 
-            {/* Register Visit Modal */}
-            <EditDialog
-                open={showRegisterVisitModal}
-                onOpenChange={() => {
-                    setShowRegisterVisitModal(false);
-                    setChildSearchQuery('');
-                }}
-                title={t('dashboard.nurse.registerVisit')}
-                description={t('dashboard.nurse.registerVisitDescription')}
-                error=""
-            >
-                <SearchComponent
-                    title=""
-                    placeholder={t('dashboard.nurse.searchByChildName')}
-                    searchQuery={childSearchQuery}
-                    onSearchQueryChange={setChildSearchQuery}
-                    searchResults={childSearchResults}
-                    isLoading={isSearchingChildren}
-                    emptyMessage={t('dashboard.nurse.noChildrenFound')}
-                    renderResult={(child) => (
-                        <div className="group space-y-2 py-1">
-                            <div className="flex items-start justify-between gap-3">
-                                <h3 className="font-semibold text-sm leading-tight">{child.name}</h3>
-                                <span className="text-xs text-muted-foreground shrink-0">
-                                    {new Date(child.birthdate).toLocaleDateString()}
-                                </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">{t('dashboard.nurse.parent')}: {child.parentName}</p>
-                        </div>
-                    )}
-                    onSelect={(child) => {
-                        setSelectedChildForVisit(child);
-                        setShowRegisterVisitModal(false);
-                        setShowVisitForm(true);
-                        setChildSearchQuery('');
-                    }}
-                    onCancel={() => {
-                        setShowRegisterVisitModal(false);
-                        setChildSearchQuery('');
-                    }}
-                />
-            </EditDialog>
-
             {/* Create Patient Modal */}
             <EditDialog
                 open={showCreatePatientModal}
                 onOpenChange={() => setShowCreatePatientModal(false)}
-                title={t('dashboard.nurse.createNewPatient')}
-                description={t('dashboard.nurse.createNewPatientDescription')}
+                title={t('dashboard.nurse.registerVisit')}
+                description={t('dashboard.nurse.registerVisitDescription')}
                 error=""
             >
                 <CreatePatientFlow
@@ -371,35 +287,6 @@ export function NurseDashboard() {
                 />
             </EditDialog>
 
-            {/* Visit Form Modal */}
-            {showVisitForm && selectedChildForVisit && (
-                <EditDialog
-                    open={showVisitForm}
-                    onOpenChange={() => {
-                        setShowVisitForm(false);
-                        setSelectedChildForVisit(null);
-                    }}
-                    title={t('dashboard.nurse.registerVisit')}
-                    description={t('dashboard.nurse.registerVisitFor', { name: selectedChildForVisit.name })}
-                    error={error}
-                >
-                    <VisitForm
-                        mode="create"
-                        defaultValues={{
-                            dropOffTime: new Date(),
-                            pickupTime: undefined,
-                            status: 'active' as const,
-                            notes: '',
-                        }}
-                        onSubmit={handleVisitSubmit}
-                        onCancel={() => {
-                            setShowVisitForm(false);
-                            setSelectedChildForVisit(null);
-                        }}
-                        isLoading={createVisitMutation.isPending}
-                    />
-                </EditDialog>
-            )}
         </div>
     );
 }

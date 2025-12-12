@@ -10,6 +10,7 @@ interface EditDialogProps {
     description?: string;
     children: ReactNode;
     error?: string;
+    banner?: ReactNode;
 }
 
 export function EditDialog({
@@ -19,6 +20,7 @@ export function EditDialog({
     description,
     children,
     error,
+    banner,
 }: EditDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -27,6 +29,11 @@ export function EditDialog({
                     <DialogTitle>{title}</DialogTitle>
                     {description && <DialogDescription>{description}</DialogDescription>}
                 </DialogHeader>
+                {banner && (
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
+                        {banner}
+                    </div>
+                )}
                 {error && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
                         {error}
