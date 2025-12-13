@@ -641,9 +641,19 @@ The system supports various event types organized by category:
 - **Output**: Pee, Poo, Puke
 - **Intake**: Eat, Drink, Medication
 - **Activity**: Sleep, Play, Tantrum
-- **Other**: Temperature, Note
+- **Other**: Temperature, Note, SIDS
 
 Each event type can have associated tags for more detailed logging.
+
+### SIDS Checks
+
+SIDS (Sudden Infant Death Syndrome) checks are handled specially:
+
+- **Auto-logging**: Clicking the SIDS button immediately logs without opening a modal
+- **Separate display**: SIDS logs are shown in a dedicated mini-timeline strip, not in the main timeline
+- **Compact view**: Shows dots for each check with count and last check time
+- **Expandable**: Click to see full list with timestamps and nurse names
+- **Conditional**: Only shows when there's at least one SIDS check logged
 
 ### Health Checks
 

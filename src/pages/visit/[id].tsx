@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { HealthCheck } from '~/components/dashboards/HealthCheck';
 import { Button } from '~/components/ui/button';
 import { CompleteVisitModal } from '~/components/visit/CompleteVisitModal';
+import { EventType } from '~/components/visit/eventTypes';
+import { SIDSTimeline } from '~/components/visit/SIDSTimeline';
 import { VisitCareInfoModal } from '~/components/visit/VisitCareInfoModal';
 import { VisitEventForm } from '~/components/visit/VisitEventForm';
 import { VisitHeader } from '~/components/visit/VisitHeader';
@@ -14,7 +16,6 @@ import { VisitQuickAddGrid } from '~/components/visit/VisitQuickAddGrid';
 import { VisitTimelineView } from '~/components/visit/VisitTimelineView';
 import { api } from '~/utils/api';
 
-import type { EventType } from '~/components/visit/eventTypes';
 import type { VisitEventFormData } from '~/components/visit/VisitEventForm';
 
 export async function getServerSideProps(context: { locale: string }) {
@@ -63,6 +64,17 @@ export default function VisitDetail() {
             refetchLogs();
         },
     });
+
+    // SIDS auto-log handler
+    const handleSIDSLog = () => {
+        if (!id) return;
+        createLogMutation.mutate({
+            visitId: id as string,
+            eventType: EventType.SIDS,
+            eventData: {},
+            notes: undefined,
+        });
+    };
 
     const updateHealthCheckMutation = api.visit.update.useMutation({
         onSuccess: () => {
@@ -198,6 +210,12 @@ export default function VisitDetail() {
                         />
                     </div>
 
+                    {/* SIDS Timeline - Only show if there are SIDS logs */}
+                    {(() => {
+                        const sidsLogs = (logs || []).filter(log => log.eventType === EventType.SIDS);
+                        return sidsLogs.length > 0 ? <SIDSTimeline logs={sidsLogs} /> : null;
+                    })()}
+
                     {/* Timeline + Quick Add */}
                     <div className="space-y-6 bg-white rounded-3xl p-6 shadow-sm">
                         {/* Quick Add Grid */}
@@ -207,11 +225,12 @@ export default function VisitDetail() {
                                     setSelectedEventType(eventType);
                                     setShowEventForm(true);
                                 }}
+                                onSIDSLog={handleSIDSLog}
                             />
                         )}
 
-                        {/* Timeline Component */}
-                        <VisitTimelineView logs={logs || []} />
+                        {/* Timeline Component - Filter out SIDS events */}
+                        <VisitTimelineView logs={(logs || []).filter(log => log.eventType !== EventType.SIDS)} />
                     </div>
                 </div>
 

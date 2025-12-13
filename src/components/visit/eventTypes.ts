@@ -12,6 +12,7 @@ export enum EventType {
   Tantrum = "Tantrum",
   Temperature = "Temperature",
   Note = "Note",
+  SIDS = "SIDS",
 }
 
 export type EventDefinition = {
@@ -78,6 +79,7 @@ export const EVENT_TYPES: EventDefinition[] = [
   },
   { label: EventType.Temperature, category: "Other", icon: "🌡️" },
   { label: EventType.Note, category: "Other", icon: "📝" },
+  { label: EventType.SIDS, category: "Other", icon: "🛡️" },
 ];
 
 // Helper function to get emoji for an event type

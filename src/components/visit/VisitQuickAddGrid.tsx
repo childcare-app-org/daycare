@@ -1,13 +1,14 @@
 import { useTranslations } from 'next-intl';
 import { getTranslatedEventType } from '~/utils/translations';
 
-import { EVENT_TYPES } from './eventTypes';
+import { EVENT_TYPES, EventType } from './eventTypes';
 
-import type { EventType, EventCategory } from './eventTypes';
+import type { EventCategory } from './eventTypes';
 
 
 type QuickAddGridProps = {
     onSelect: (eventType: EventType) => void;
+    onSIDSLog?: () => void;
 };
 
 function getCategoryMetadata(t: (path: string) => string): Record<
@@ -75,7 +76,7 @@ const getColumnStyles = (color: 'sky' | 'emerald' | 'indigo' | 'amber') => {
     }
 };
 
-export function VisitQuickAddGrid({ onSelect }: QuickAddGridProps) {
+export function VisitQuickAddGrid({ onSelect, onSIDSLog }: QuickAddGridProps) {
     const t = useTranslations();
     const CATEGORY_METADATA = getCategoryMetadata(t);
     // Derive column config from CATEGORY_METADATA
@@ -116,7 +117,13 @@ export function VisitQuickAddGrid({ onSelect }: QuickAddGridProps) {
                                         key={item.label}
                                         type="button"
                                         className={`w-full flex items-center gap-2 rounded-lg ${styles.buttonBg} ${styles.buttonHover} px-3 py-2 text-xs font-medium text-gray-800 dark:text-gray-200 active:scale-[0.98] transition`}
-                                        onClick={() => onSelect(item.label as EventType)}
+                                        onClick={() => {
+                                            if (item.label === EventType.SIDS && onSIDSLog) {
+                                                onSIDSLog();
+                                            } else {
+                                                onSelect(item.label as EventType);
+                                            }
+                                        }}
                                     >
                                         <div
                                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm border ${styles.iconBg} ${styles.iconBorder} ${styles.iconText}`}

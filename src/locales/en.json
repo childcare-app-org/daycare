@@ -200,6 +200,11 @@
         "addEventTitle": "Add {type} Event",
         "addEventDefault": "Add Event",
         "noEventsRecorded": "No events recorded yet",
+        "sidsChecks": "SIDS Checks",
+        "sidsCount": "{count} checks",
+        "sidsLastCheck": "Last: {time}",
+        "sidsMinutesAgo": "{minutes} min ago",
+        "sidsLogged": "SIDS check logged",
         "notes": "Notes",
         "notesPlaceholder": "Add any additional details...",
         "addEventButton": "Add Event",
@@ -379,7 +384,8 @@
         "Play": "Play",
         "Tantrum": "Tantrum",
         "Temperature": "Temperature",
-        "Note": "Note"
+        "Note": "Note",
+        "SIDS": "SIDS Check"
     },
     "tags": {
         "diaper": "Diaper",

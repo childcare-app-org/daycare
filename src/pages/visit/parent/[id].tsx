@@ -1,11 +1,13 @@
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { HealthCheck } from '~/components/dashboards/HealthCheck';
 import { Button } from '~/components/ui/button';
+import { EventType } from '~/components/visit/eventTypes';
+import { SIDSTimeline } from '~/components/visit/SIDSTimeline';
 import { TemperatureChart } from '~/components/visit/TemperatureChart';
 import { VisitCareInfoModal } from '~/components/visit/VisitCareInfoModal';
 import { VisitHeader } from '~/components/visit/VisitHeader';
@@ -13,11 +15,11 @@ import { VisitTimelineView } from '~/components/visit/VisitTimelineView';
 import { api } from '~/utils/api';
 
 export async function getServerSideProps(context: { locale: string }) {
-  return {
-    props: {
-      messages: (await import(`~/locales/${context.locale}.json`)).default
-    }
-  };
+    return {
+        props: {
+            messages: (await import(`~/locales/${context.locale}.json`)).default
+        }
+    };
 }
 
 export default function ParentVisitDetail() {
@@ -117,9 +119,15 @@ export default function ParentVisitDetail() {
                         />
                     </div>
 
-                    {/* Timeline View */}
+                    {/* SIDS Timeline - Only show if there are SIDS logs */}
+                    {(() => {
+                        const sidsLogs = (visit.logs || []).filter(log => log.eventType === EventType.SIDS);
+                        return sidsLogs.length > 0 ? <SIDSTimeline logs={sidsLogs} /> : null;
+                    })()}
+
+                    {/* Timeline View - Filter out SIDS events */}
                     <div className="space-y-6 bg-white rounded-3xl p-6 shadow-sm">
-                        <VisitTimelineView logs={visit.logs || []} />
+                        <VisitTimelineView logs={(visit.logs || []).filter(log => log.eventType !== EventType.SIDS)} />
                     </div>
                 </div>
 

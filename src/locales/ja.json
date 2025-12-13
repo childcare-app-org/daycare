@@ -200,6 +200,11 @@
         "addEventTitle": "{type}を記録",
         "addEventDefault": "記録を追加",
         "noEventsRecorded": "まだ記録がありません",
+        "sidsChecks": "SIDS確認",
+        "sidsCount": "{count}回",
+        "sidsLastCheck": "最終: {time}",
+        "sidsMinutesAgo": "{minutes}分前",
+        "sidsLogged": "SIDS確認を記録しました",
         "notes": "メモ",
         "notesPlaceholder": "補足があれば入力...",
         "addEventButton": "記録する",
@@ -379,7 +384,8 @@
         "Play": "遊び",
         "Tantrum": "ぐずり",
         "Temperature": "検温",
-        "Note": "メモ"
+        "Note": "メモ",
+        "SIDS": "SIDS確認"
     },
     "tags": {
         "diaper": "オムツ",

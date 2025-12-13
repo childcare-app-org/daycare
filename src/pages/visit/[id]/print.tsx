@@ -4,6 +4,8 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { HealthCheck } from '~/components/dashboards/HealthCheck';
+import { EventType } from '~/components/visit/eventTypes';
+import { SIDSTimeline } from '~/components/visit/SIDSTimeline';
 import { TemperatureChart } from '~/components/visit/TemperatureChart';
 import { VisitHeader } from '~/components/visit/VisitHeader';
 import { VisitTimelineView } from '~/components/visit/VisitTimelineView';
@@ -246,9 +248,15 @@ export default function VisitPrint() {
                         />
                     </div>
 
-                    {/* Timeline View */}
+                    {/* SIDS Timeline - Only show if there are SIDS logs */}
+                    {(() => {
+                        const sidsLogs = (logs || []).filter(log => log.eventType === EventType.SIDS);
+                        return sidsLogs.length > 0 ? <SIDSTimeline logs={sidsLogs} /> : null;
+                    })()}
+
+                    {/* Timeline View - Filter out SIDS events */}
                     <div className="space-y-6 bg-white rounded-3xl p-6 shadow-sm">
-                        <VisitTimelineView logs={logs || []} />
+                        <VisitTimelineView logs={(logs || []).filter(log => log.eventType !== EventType.SIDS)} />
                     </div>
                 </div>
             </main>
