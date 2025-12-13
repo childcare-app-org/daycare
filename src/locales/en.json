@@ -126,6 +126,8 @@
             "noCompletedVisits": "No completed visits today.",
             "editVisit": "Edit Visit",
             "editVisitDescription": "Update visit information for {name}",
+            "visitDetails": "Visit Details",
+            "childInfo": "Child Information",
             "deleteVisit": "Delete Visit",
             "deleteVisitDescription": "Are you sure you want to delete the visit for {name}? This action cannot be undone and will permanently remove this visit record and all associated logs from the database.",
             "registerVisit": "Register Visit",

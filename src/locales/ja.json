@@ -126,6 +126,8 @@
             "noCompletedVisits": "本日お帰りになったお子さまはいません",
             "editVisit": "来院情報の編集",
             "editVisitDescription": "{name}さんの来院情報を編集",
+            "visitDetails": "来院詳細",
+            "childInfo": "子供情報",
             "deleteVisit": "来院記録の削除",
             "deleteVisitDescription": "{name}さんの来院記録を削除しますか？この操作は取り消せません。関連するすべての記録が完全に削除されます。",
             "registerVisit": "来院受付",

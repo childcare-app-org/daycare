@@ -1,9 +1,17 @@
-import { and, eq, ilike, sql } from 'drizzle-orm';
-import { z } from 'zod';
+import { and, eq, ilike, sql } from "drizzle-orm";
+import { z } from "zod";
 import {
-    createTRPCRouter, nurseProcedure, parentProcedure, protectedProcedure
-} from '~/server/api/trpc';
-import { children, parentChildRelations, parents, users } from '~/server/db/schema';
+  createTRPCRouter,
+  nurseProcedure,
+  parentProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
+import {
+  children,
+  parentChildRelations,
+  parents,
+  users,
+} from "~/server/db/schema";
 
 export const patientRouter = createTRPCRouter({
   // Search children by name (for nurses)
@@ -340,8 +348,8 @@ export const patientRouter = createTRPCRouter({
       .where(eq(parentChildRelations.parentId, parent.id));
   }),
 
-  // Update child (Parent only)
-  updateChild: parentProcedure
+  // Update child (Parent, Nurse, Admin)
+  updateChild: protectedProcedure
     .input(
       z.object({
         id: z.string().min(1, "Child ID is required"),
@@ -356,33 +364,41 @@ export const patientRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Get the parent record for the current user
-      const [parent] = await ctx.db
-        .select()
-        .from(parents)
-        .where(eq(parents.userId, ctx.session.user.id))
-        .limit(1);
+      // If user is a parent, verify they own the child
+      if (ctx.session.user.role === "parent") {
+        const [parent] = await ctx.db
+          .select()
+          .from(parents)
+          .where(eq(parents.userId, ctx.session.user.id))
+          .limit(1);
 
-      if (!parent) {
-        throw new Error("Parent profile not found");
+        if (!parent) {
+          throw new Error("Parent profile not found");
+        }
+
+        // Verify the child belongs to this parent
+        const [relation] = await ctx.db
+          .select()
+          .from(parentChildRelations)
+          .where(
+            and(
+              eq(parentChildRelations.parentId, parent.id),
+              eq(parentChildRelations.childId, input.id),
+            ),
+          )
+          .limit(1);
+
+        if (!relation) {
+          throw new Error("Child not found or does not belong to this parent");
+        }
+      } else if (
+        ctx.session.user.role !== "nurse" &&
+        ctx.session.user.role !== "admin"
+      ) {
+        throw new Error("Unauthorized");
       }
 
-      // Verify the child belongs to this parent
-      const [relation] = await ctx.db
-        .select()
-        .from(parentChildRelations)
-        .where(
-          and(
-            eq(parentChildRelations.parentId, parent.id),
-            eq(parentChildRelations.childId, input.id),
-          ),
-        )
-        .limit(1);
-
-      if (!relation) {
-        throw new Error("Child not found or does not belong to this parent");
-      }
-
+      // Perform the update
       const [child] = await ctx.db
         .update(children)
         .set({

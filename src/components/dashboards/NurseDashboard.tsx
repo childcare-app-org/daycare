@@ -2,6 +2,7 @@ import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ChildItem } from '~/components/dashboards/parent/ChildItem';
+import { ChildForm } from '~/components/forms/ChildForm';
 import { CreatePatientFlow } from '~/components/forms/CreatePatientFlow';
 import { VisitForm } from '~/components/forms/VisitForm';
 import { DashboardHeader } from '~/components/shared/DashboardHeader';
@@ -9,8 +10,10 @@ import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { api } from '~/utils/api';
 
+import type { ChildFormData } from '~/components/forms/ChildForm';
 import type { VisitFormData } from '~/components/forms/VisitForm';
 import type { RouterOutputs } from '~/utils/api';
 
@@ -29,6 +32,18 @@ export function NurseDashboard() {
     const { data: accessCodeData } = api.hospital.getAccessCode.useQuery();
 
     const updateVisitMutation = api.visit.update.useMutation({
+        onSuccess: () => {
+            setEditingVisit(null);
+            setError('');
+            refetch();
+            refetchTodaysVisits();
+        },
+        onError: (error) => {
+            setError(error.message);
+        },
+    });
+
+    const updateChildMutation = api.patient.updateChild.useMutation({
         onSuccess: () => {
             setEditingVisit(null);
             setError('');
@@ -65,6 +80,14 @@ export function NurseDashboard() {
         if (!editingVisit) return;
         updateVisitMutation.mutate({
             id: editingVisit.id,
+            ...data,
+        });
+    };
+
+    const handleChildUpdateSubmit = (data: ChildFormData) => {
+        if (!editingVisit || !editingVisit.childId) return;
+        updateChildMutation.mutate({
+            id: editingVisit.childId,
             ...data,
         });
     };
@@ -191,18 +214,47 @@ export function NurseDashboard() {
                 description={t('dashboard.nurse.editVisitDescription', { name: editingVisit?.child?.name || '' })}
                 error={error}
             >
-                <VisitForm
-                    mode="edit"
-                    defaultValues={editingVisit ? {
-                        dropOffTime: editingVisit.dropOffTime,
-                        pickupTime: editingVisit.pickupTime || undefined,
-                        status: editingVisit.status as 'active' | 'completed' | 'cancelled',
-                        notes: editingVisit.notes || '',
-                    } : undefined}
-                    onSubmit={handleUpdateSubmit}
-                    onCancel={() => setEditingVisit(null)}
-                    isLoading={updateVisitMutation.isPending}
-                />
+                <Tabs defaultValue="visit" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="visit">{t('dashboard.nurse.visitDetails')}</TabsTrigger>
+                        <TabsTrigger value="child">{t('dashboard.nurse.childInfo')}</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="visit">
+                        <VisitForm
+                            mode="edit"
+                            defaultValues={editingVisit ? {
+                                dropOffTime: editingVisit.dropOffTime,
+                                pickupTime: editingVisit.pickupTime || undefined,
+                                status: editingVisit.status as 'active' | 'completed' | 'cancelled',
+                                reason: editingVisit.reason || '',
+                                notes: editingVisit.notes || '',
+                            } : undefined}
+                            onSubmit={handleUpdateSubmit}
+                            onCancel={() => setEditingVisit(null)}
+                            isLoading={updateVisitMutation.isPending}
+                        />
+                    </TabsContent>
+                    <TabsContent value="child">
+                        {editingVisit?.child && (
+                            <ChildForm
+                                mode="edit"
+                                defaultValues={{
+                                    name: editingVisit.child.name || '',
+                                    pronunciation: editingVisit.child.pronunciation || '',
+                                    gender: (editingVisit.child.gender as 'Male' | 'Female') || 'Male',
+                                    birthdate: editingVisit.child.birthdate || new Date(),
+                                    allergies: editingVisit.child.allergies || '',
+                                    preexistingConditions: editingVisit.child.preexistingConditions || '',
+                                    familyDoctorName: editingVisit.child.familyDoctorName || '',
+                                    familyDoctorPhone: editingVisit.child.familyDoctorPhone || '',
+                                }}
+                                onSubmit={handleChildUpdateSubmit}
+                                onCancel={() => setEditingVisit(null)}
+                                isLoading={updateChildMutation.isPending}
+                            />
+                        )}
+                    </TabsContent>
+                </Tabs>
             </EditDialog>
 
             {/* Delete Visit Confirmation Dialog */}
