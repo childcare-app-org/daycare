@@ -207,7 +207,16 @@
         "careInformationDescription": "Visit details and contact information",
         "duration": "Duration",
         "accessDeniedParent": "Access denied. Parent access required.",
-        "tags": "Tags"
+        "tags": "Tags",
+        "reasonForVisit": "Reason for Visit",
+        "customReasonPlaceholder": "Other reason (optional)...",
+        "reasons": {
+            "fever": "Fever",
+            "asthmaRash": "Asthma/Rash",
+            "infectiousDisease": "Infectious Disease",
+            "undiagnosed": "Undiagnosed",
+            "other": "Other"
+        }
     },
     "healthCheck": {
         "cough": "Cough",

@@ -147,6 +147,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
             hospitalId: nurseProfile.hospitalId,
             dropOffTime: data.dropOffTime,
             pickupTime: data.pickupTime!,
+            reason: data.reason,
             notes: data.notes,
         });
     };

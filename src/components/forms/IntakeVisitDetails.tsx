@@ -1,28 +1,40 @@
-import { Clock, Timer } from 'lucide-react';
+import { Clock, FileText, Stethoscope, Timer } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { cn } from '~/lib/utils';
 
-interface VisitTimeAndNotesFieldsProps {
+// Predefined reasons for visit that can be quick-selected
+const REASON_OPTIONS = ['fever', 'asthmaRash', 'infectiousDisease', 'undiagnosed', 'other'] as const;
+type ReasonOption = typeof REASON_OPTIONS[number];
+
+interface IntakeVisitDetailsProps {
     pickupTimeOnly: string;
     onPickupTimeChange: (time: string) => void;
     notes: string;
     onNotesChange: (notes: string) => void;
+    selectedReasons: ReasonOption[];
+    onSelectedReasonsChange: (reasons: ReasonOption[]) => void;
+    customReason: string;
+    onCustomReasonChange: (reason: string) => void;
     quickTimes?: string[];
     showDuration?: boolean;
     dropOffTime?: Date;
 }
 
-export function VisitTimeAndNotesFields({
+export function IntakeVisitDetails({
     pickupTimeOnly,
     onPickupTimeChange,
     notes,
     onNotesChange,
+    selectedReasons,
+    onSelectedReasonsChange,
+    customReason,
+    onCustomReasonChange,
     quickTimes = ['09:00', '12:00', '15:00', '17:00', '18:00'],
     showDuration = false,
     dropOffTime,
-}: VisitTimeAndNotesFieldsProps) {
+}: IntakeVisitDetailsProps) {
     const t = useTranslations();
 
     // Calculate duration if needed
@@ -39,8 +51,52 @@ export function VisitTimeAndNotesFields({
         return '';
     })() : '';
 
+    const toggleReason = (reason: ReasonOption) => {
+        if (selectedReasons.includes(reason)) {
+            onSelectedReasonsChange(selectedReasons.filter(r => r !== reason));
+        } else {
+            onSelectedReasonsChange([...selectedReasons, reason]);
+        }
+    };
+
     return (
         <>
+            {/* Reason for Visit */}
+            <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4" />
+                    {t('visit.reasonForVisit')}
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                    {REASON_OPTIONS.map((reason) => (
+                        <button
+                            key={reason}
+                            type="button"
+                            onClick={() => toggleReason(reason)}
+                            className={cn(
+                                "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                                selectedReasons.includes(reason)
+                                    ? "bg-orange-600 text-white border-orange-600"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:bg-orange-50"
+                            )}
+                        >
+                            {t(`visit.reasons.${reason}`)}
+                        </button>
+                    ))}
+                </div>
+                {selectedReasons.includes('other') && (
+                    <Input
+                        type="text"
+                        value={customReason}
+                        onChange={(e) => onCustomReasonChange(e.target.value)}
+                        placeholder={t('visit.customReasonPlaceholder')}
+                        className="mt-2"
+                        autoFocus
+                    />
+                )}
+            </div>
+
+            {/* Pickup Time */}
             <div className="space-y-3">
                 <Label htmlFor="pickupTime" className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
@@ -79,8 +135,12 @@ export function VisitTimeAndNotesFields({
                 </div>
             </div>
 
+            {/* Notes */}
             <div className="space-y-2">
-                <Label htmlFor="notes">{t('visit.notes')}</Label>
+                <Label htmlFor="notes" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    {t('visit.notes')}
+                </Label>
                 <textarea
                     id="notes"
                     name="notes"
@@ -94,3 +154,7 @@ export function VisitTimeAndNotesFields({
         </>
     );
 }
+
+// Export the reason options for use in other components
+export { REASON_OPTIONS };
+export type { ReasonOption };

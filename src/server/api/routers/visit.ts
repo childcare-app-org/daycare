@@ -17,6 +17,7 @@ export const visitRouter = createTRPCRouter({
         hospitalId: z.string().min(1, "Hospital ID is required"),
         dropOffTime: z.date(),
         pickupTime: z.date(),
+        reason: z.string().optional(),
         notes: z.string().optional(),
         accessCode: z
           .string()
@@ -139,6 +140,7 @@ export const visitRouter = createTRPCRouter({
           dropOffTime: input.dropOffTime,
           pickupTime: input.pickupTime,
           status: "active",
+          reason: input.reason || null,
           notes: input.notes || null,
         })
         .returning();
@@ -171,6 +173,7 @@ export const visitRouter = createTRPCRouter({
         pickupTime: visits.pickupTime,
         status: visits.status,
         healthCheck: visits.healthCheck,
+        reason: visits.reason,
         notes: visits.notes,
         createdAt: visits.createdAt,
         updatedAt: visits.updatedAt,
@@ -237,6 +240,7 @@ export const visitRouter = createTRPCRouter({
         dropOffTime: visits.dropOffTime,
         pickupTime: visits.pickupTime,
         status: visits.status,
+        reason: visits.reason,
         notes: visits.notes,
         healthCheck: visits.healthCheck,
         createdAt: visits.createdAt,
@@ -303,6 +307,7 @@ export const visitRouter = createTRPCRouter({
           dropOffTime: visits.dropOffTime,
           pickupTime: visits.pickupTime,
           status: visits.status,
+          reason: visits.reason,
           notes: visits.notes,
           healthCheck: visits.healthCheck,
           createdAt: visits.createdAt,
@@ -370,6 +375,7 @@ export const visitRouter = createTRPCRouter({
         pickupTime: visits.pickupTime,
         status: visits.status,
         healthCheck: visits.healthCheck,
+        reason: visits.reason,
         notes: visits.notes,
         createdAt: visits.createdAt,
         updatedAt: visits.updatedAt,
@@ -499,6 +505,7 @@ export const visitRouter = createTRPCRouter({
           dropOffTime: visits.dropOffTime,
           pickupTime: visits.pickupTime,
           status: visits.status,
+          reason: visits.reason,
           notes: visits.notes,
           healthCheck: visits.healthCheck,
           createdAt: visits.createdAt,

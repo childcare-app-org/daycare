@@ -162,8 +162,9 @@ This is a full-stack daycare management system designed for hospitals to provide
 #### `daycare_visit`
 
 - Daycare visit records
-- Fields: `id`, `parentId`, `childId`, `hospitalId`, `dropOffTime`, `pickupTime`, `status`, `healthCheck` (JSONB), `notes`
+- Fields: `id`, `parentId`, `childId`, `hospitalId`, `dropOffTime`, `pickupTime`, `status`, `healthCheck` (JSONB), `reason`, `notes`
 - Status: `active`, `completed`, `cancelled`
+- Reason: Optional text field for visit reason (e.g., "Fever, Asthma/Rash")
 
 #### `daycare_log`
 
@@ -195,7 +196,9 @@ This is a full-stack daycare management system designed for hospitals to provide
 
 - View active visits at their assigned hospital
 - View today's completed visits
-- Create new visits (for new or returning patients)
+- Create new visits (for new or returning patients) with:
+  - Reason for visit (quick-select pills: Fever, Asthma/Rash, Infectious Disease, Undiagnosed + custom text)
+  - Pickup time and notes
 - Register new patients (parent + child)
 - Log care events during visits:
   - Output events (Pee, Poo, Puke) with tags
@@ -212,7 +215,9 @@ This is a full-stack daycare management system designed for hospitals to provide
 
 - Register children with medical information
 - View all their children
-- Register visits at hospitals (with access code)
+- Register visits at hospitals (with access code) including:
+  - Reason for visit (quick-select pills + custom text)
+  - Pickup time and notes
 - View active visits for their children
 - View visit history for each child
 - View detailed visit information with:
@@ -381,6 +386,7 @@ daycare/
 │   │   ├── forms/              # Form components
 │   │   │   ├── ChildForm.tsx
 │   │   │   ├── HospitalForm.tsx
+│   │   │   ├── IntakeVisitDetails.tsx  # Reason/pickup/notes for visits
 │   │   │   ├── NurseForm.tsx
 │   │   │   ├── VisitForm.tsx
 │   │   │   └── RegisterVisitForm.tsx
@@ -456,7 +462,9 @@ daycare/
 │   ├── 0004_add_cascade_delete_logs.sql
 │   ├── 0005_add_health_check.sql
 │   ├── 0006_replace_age_with_birthdate.sql
-│   └── 0007_add_pronunciation_and_gender.sql
+│   ├── 0007_add_pronunciation_and_gender.sql
+│   ├── 0008_add_cascade_delete_children.sql
+│   └── 0009_add_visit_reason.sql
 ├── public/                      # Static assets
 ├── .cursorrules                 # Cursor IDE rules
 ├── drizzle.config.ts            # Drizzle configuration
@@ -639,6 +647,16 @@ Each event type can have associated tags for more detailed logging.
 ### Health Checks
 
 Health checks are stored as JSONB in the `visits` table, allowing flexible health indicator tracking (cough, mood, appetite, etc.).
+
+### Visit Reasons
+
+When creating a visit, users can specify a reason using:
+
+- **Quick-select pills**: Fever, Asthma/Rash, Infectious Disease, Undiagnosed
+- **Custom text field**: For other reasons not covered by pills
+- **Multi-select**: Multiple pills can be selected and combined with custom text
+
+The combined reason is stored as a comma-separated string (e.g., "Fever, Asthma/Rash, stomach pain").
 
 ---
 

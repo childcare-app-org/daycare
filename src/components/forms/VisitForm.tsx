@@ -1,14 +1,18 @@
 import { Calendar } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { VisitTimeAndNotesFields } from '~/components/forms/VisitTimeAndNotesFields';
+import { IntakeVisitDetails, REASON_OPTIONS } from '~/components/forms/IntakeVisitDetails';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
 
+import type {
+    ReasonOption
+} from '~/components/forms/IntakeVisitDetails';
 export interface VisitFormData {
     dropOffTime: Date;
     pickupTime?: Date;
     status: 'active' | 'completed' | 'cancelled';
+    reason?: string;
     notes?: string;
 }
 
@@ -19,6 +23,46 @@ interface VisitFormProps {
     onCancel?: () => void;
     isLoading?: boolean;
     submitButtonText?: string;
+}
+
+// Helper to parse reason string back into selected reasons and custom reason
+function parseReasonString(reason?: string): { selectedReasons: ReasonOption[]; customReason: string } {
+    if (!reason) {
+        return { selectedReasons: [], customReason: '' };
+    }
+
+    const parts = reason.split(', ').map(s => s.trim()).filter(Boolean);
+    const selectedReasons: ReasonOption[] = [];
+    const customParts: string[] = [];
+
+    // Known reason options (excluding 'other' which is just a UI trigger)
+    const knownReasons = ['fever', 'asthmaRash', 'infectiousDisease', 'undiagnosed'];
+
+    for (const part of parts) {
+        if (knownReasons.includes(part)) {
+            selectedReasons.push(part as ReasonOption);
+        } else {
+            customParts.push(part);
+        }
+    }
+
+    const customReason = customParts.join(', ');
+    // If there's a custom reason, add 'other' to show the textbox
+    if (customReason) {
+        selectedReasons.push('other');
+    }
+
+    return { selectedReasons, customReason };
+}
+
+// Helper to combine selected reasons and custom reason into a single string
+function buildReasonString(selectedReasons: ReasonOption[], customReason: string): string {
+    // Filter out 'other' as it's just a UI trigger, not a stored value
+    const parts: string[] = selectedReasons.filter(r => r !== 'other');
+    if (customReason.trim()) {
+        parts.push(customReason.trim());
+    }
+    return parts.join(', ');
 }
 
 export function VisitForm({
@@ -39,6 +83,8 @@ export function VisitForm({
         return `${hours}:${minutes}`;
     };
 
+    const parsedReason = parseReasonString(defaultValues?.reason);
+
     const [formData, setFormData] = useState({
         dropOffTime: defaultValues?.dropOffTime
             ? new Date(defaultValues.dropOffTime)
@@ -48,6 +94,8 @@ export function VisitForm({
             : '',
         status: defaultValues?.status || 'active',
         notes: defaultValues?.notes || '',
+        selectedReasons: parsedReason.selectedReasons,
+        customReason: parsedReason.customReason,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -65,10 +113,14 @@ export function VisitForm({
             pickupTime.setHours(hours || 0, minutes || 0, 0, 0);
         }
 
+        // Build reason string from selected reasons and custom reason
+        const reason = buildReasonString(formData.selectedReasons, formData.customReason);
+
         onSubmit({
             dropOffTime,
             pickupTime,
             status: formData.status as 'active' | 'completed' | 'cancelled',
+            reason: reason || undefined,
             notes: formData.notes || undefined,
         });
     };
@@ -101,11 +153,15 @@ export function VisitForm({
                 </div>
             </div>
 
-            <VisitTimeAndNotesFields
+            <IntakeVisitDetails
                 pickupTimeOnly={formData.pickupTimeOnly}
                 onPickupTimeChange={(time) => setFormData(prev => ({ ...prev, pickupTimeOnly: time }))}
                 notes={formData.notes}
                 onNotesChange={(notes) => setFormData(prev => ({ ...prev, notes }))}
+                selectedReasons={formData.selectedReasons}
+                onSelectedReasonsChange={(reasons) => setFormData(prev => ({ ...prev, selectedReasons: reasons }))}
+                customReason={formData.customReason}
+                onCustomReasonChange={(reason) => setFormData(prev => ({ ...prev, customReason: reason }))}
                 quickTimes={['17:00', '18:00', '19:00', '20:00']}
                 showDuration={true}
                 dropOffTime={formData.dropOffTime}

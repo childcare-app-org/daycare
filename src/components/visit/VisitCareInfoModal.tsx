@@ -74,6 +74,16 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                         )}
                     </div>
 
+                    {/* Reason for Visit */}
+                    {visit.reason && (
+                        <div className="mt-4 rounded-lg border bg-orange-50/50 p-4">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                                {t('visit.reasonForVisit')}
+                            </p>
+                            <p className="text-sm font-medium text-orange-900">{visit.reason}</p>
+                        </div>
+                    )}
+
                     {/* Parent Contact Information */}
                     {visit.parent && (
                         <div className="mt-4 rounded-lg border bg-muted/30 p-4">

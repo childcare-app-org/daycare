@@ -155,6 +155,14 @@ export default function VisitPrint() {
                                     </div>
                                 )}
 
+                                {/* Reason for Visit */}
+                                {visit.reason && (
+                                    <div className="col-span-2">
+                                        <span className="text-gray-500">{t('visit.reasonForVisit')}:</span>{' '}
+                                        <span className="font-medium">{visit.reason}</span>
+                                    </div>
+                                )}
+
                                 {/* Drop-off Time */}
                                 <div>
                                     <span className="text-gray-500">{t('visit.dropOffTime')}:</span>{' '}

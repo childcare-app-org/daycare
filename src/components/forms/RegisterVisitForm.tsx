@@ -18,6 +18,7 @@ export interface RegisterVisitFormData {
     childId: string;
     accessCode: string;
     pickupTime: Date;
+    reason?: string;
     notes?: string;
 }
 
@@ -59,8 +60,8 @@ export function RegisterVisitForm({
 
     // Multi-step form state
     const [currentStep, setCurrentStep] = useState<FormStep>('hospital');
-    const [formData, setFormData] = useState<{ hospitalId: string; childId: string; pickupTime: Date; notes?: string } | null>(null);
-    const [visitFormData, setVisitFormData] = useState<{ pickupTime: Date; notes?: string } | null>(null);
+    const [formData, setFormData] = useState<{ hospitalId: string; childId: string; pickupTime: Date; reason?: string; notes?: string } | null>(null);
+    const [visitFormData, setVisitFormData] = useState<{ pickupTime: Date; reason?: string; notes?: string } | null>(null);
     const [pinError, setPinError] = useState('');
     const [isValidatingPin, setIsValidatingPin] = useState(false);
 
@@ -96,11 +97,11 @@ export function RegisterVisitForm({
         setCurrentStep('visit-details');
     };
 
-    const handleVisitFormSubmit = (data: { dropOffTime: Date; pickupTime?: Date; status: 'active' | 'completed' | 'cancelled'; notes?: string }) => {
+    const handleVisitFormSubmit = (data: { dropOffTime: Date; pickupTime?: Date; status: 'active' | 'completed' | 'cancelled'; reason?: string; notes?: string }) => {
         if (!formData) return;
         const pickupTime = data.pickupTime || new Date();
-        setVisitFormData({ pickupTime, notes: data.notes });
-        setFormData({ ...formData, pickupTime, notes: data.notes });
+        setVisitFormData({ pickupTime, reason: data.reason, notes: data.notes });
+        setFormData({ ...formData, pickupTime, reason: data.reason, notes: data.notes });
         setCurrentStep('pin');
         setPinError('');
     };
@@ -126,6 +127,7 @@ export function RegisterVisitForm({
             childId: formData.childId,
             accessCode,
             pickupTime: visitFormData.pickupTime,
+            reason: visitFormData.reason,
             notes: visitFormData.notes,
         });
     };

@@ -268,6 +268,7 @@ export const visits = createTable(
     pickupTime: d.timestamp({ withTimezone: true }),
     status: d.varchar({ length: 20 }).notNull().default("active"), // active, completed, cancelled
     healthCheck: d.jsonb(), // Flexible JSON for dynamic health indicators (cough, mood, etc.)
+    reason: d.text(), // Reason for visit (e.g., "Fever, Asthma/Rash" or custom text)
     notes: d.text(),
     createdAt: d
       .timestamp({ withTimezone: true })
