@@ -196,6 +196,7 @@ This is a full-stack daycare management system designed for hospitals to provide
 
 - View active visits at their assigned hospital
 - View today's completed visits
+- View child information with reason for visit and expandable visit history
 - Create new visits (for new or returning patients) with:
   - Reason for visit (quick-select pills: Fever, Asthma/Rash, Infectious Disease, Undiagnosed + custom text)
   - Pickup time and notes
@@ -214,7 +215,7 @@ This is a full-stack daycare management system designed for hospitals to provide
 ### Parent Features
 
 - Register children with medical information
-- View all their children
+- View all their children with reason for visit displayed
 - Register visits at hospitals (with access code) including:
   - Reason for visit (quick-select pills + custom text)
   - Pickup time and notes
@@ -277,7 +278,7 @@ All API endpoints are type-safe via tRPC. Routers are located in `src/server/api
 - `getMyHospitalTodaysCompletedVisits` (nurse) - Get today's completed visits
 - `getById` (nurse) - Get visit details (nurse view)
 - `getMyChildrenActiveVisits` (parent) - Get active visits for parent's children
-- `getChildVisitHistory` (parent) - Get visit history for a child
+- `getChildVisitHistory` (protected) - Get visit history for a child (parent sees all, nurse sees their hospital only)
 - `getByIdForParent` (parent) - Get visit details with logs (parent view)
 - `update` (nurse) - Update visit
 - `delete` (nurse) - Delete visit
@@ -390,10 +391,10 @@ daycare/
 │   │   │   ├── NurseForm.tsx
 │   │   │   ├── VisitForm.tsx
 │   │   │   └── RegisterVisitForm.tsx
-│   │   ├── parent/             # Parent-specific components
+│   │   ├── parent/             # Child/visit display components (shared)
 │   │   │   ├── ChildrenList.tsx
-│   │   │   ├── ChildItem.tsx
-│   │   │   └── ChildVisitHistory.tsx
+│   │   │   ├── ChildItem.tsx       # Reusable for parent & nurse views
+│   │   │   └── ChildVisitHistory.tsx  # Expandable visit history
 │   │   ├── visit/              # Visit-related components
 │   │   │   ├── VisitTimelineView.tsx
 │   │   │   ├── VisitHeader.tsx

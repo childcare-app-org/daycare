@@ -382,6 +382,7 @@
         "Note": "Note"
     },
     "tags": {
+        "diaper": "Diaper",
         "clear": "Clear",
         "yellow": "Yellow",
         "dark yellow": "Dark Yellow",

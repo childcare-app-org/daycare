@@ -26,13 +26,13 @@ export const EVENT_TYPES: EventDefinition[] = [
     label: EventType.Pee,
     category: "Output",
     icon: "💧",
-    tags: ["clear", "yellow", "dark yellow"],
+    tags: ["diaper", "clear", "yellow", "dark yellow"],
   },
   {
     label: EventType.Poo,
     category: "Output",
     icon: "💩",
-    tags: ["normal", "diarrhea", "constipation", "blood present"],
+    tags: ["diaper", "normal", "diarrhea", "constipation", "blood present"],
   },
   {
     label: EventType.Puke,
