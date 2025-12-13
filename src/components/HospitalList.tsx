@@ -15,6 +15,7 @@ type Hospital = {
     id: string;
     name: string;
     address: string;
+    phoneNumber: string;
     capacity: number;
     pricing: string;
 };
@@ -132,7 +133,10 @@ export function HospitalList() {
                                     <Link href={`/hospital/${hospital.id}`} className="flex-1">
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-lg mb-1">{hospital.name}</h3>
-                                            <p className="text-sm text-gray-600 mb-2">{hospital.address}</p>
+                                            <div className="text-sm text-gray-600 mb-2 space-y-1">
+                                                <p>{hospital.address}</p>
+                                                <p>{hospital.phoneNumber}</p>
+                                            </div>
                                             <div className="flex gap-4 text-sm text-gray-500">
                                                 <span>
                                                     <span className="font-medium">{t('hospital.capacity')}:</span> {hospital.capacity} {t('hospital.children')}
@@ -188,6 +192,7 @@ export function HospitalList() {
                     defaultValues={editingHospital ? {
                         name: editingHospital.name,
                         address: editingHospital.address,
+                        phoneNumber: editingHospital.phoneNumber,
                         capacity: editingHospital.capacity,
                         pricing: parseFloat(editingHospital.pricing),
                     } : undefined}

@@ -1,5 +1,6 @@
 import { signOut, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
@@ -93,6 +94,12 @@ export function DashboardHeader() {
                             </DropdownMenuItem>
                         );
                     })}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                        <Link href="/profile" className="cursor-pointer">
+                            {t('common.profile')}
+                        </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
                         {t('common.signOut')}

@@ -11,6 +11,7 @@ import type { AddressData } from './GoogleAddressAutocompleteNew';
 export interface HospitalFormData {
     name: string;
     address: string;
+    phoneNumber: string;
     latitude?: number;
     longitude?: number;
     capacity: number;
@@ -36,6 +37,7 @@ export function HospitalForm({
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
         address: defaultValues?.address || '',
+        phoneNumber: defaultValues?.phoneNumber || '',
         latitude: defaultValues?.latitude,
         longitude: defaultValues?.longitude,
         capacity: defaultValues?.capacity?.toString() || '20',
@@ -47,6 +49,7 @@ export function HospitalForm({
         onSubmit({
             name: formData.name,
             address: formData.address,
+            phoneNumber: formData.phoneNumber,
             latitude: formData.latitude,
             longitude: formData.longitude,
             capacity: parseInt(formData.capacity),
@@ -96,6 +99,19 @@ export function HospitalForm({
                 helperText={t('forms.hospital.addressHelperText')}
                 country="JP"
             />
+
+            <div className="space-y-2">
+                <Label htmlFor="phoneNumber">{t('forms.hospital.phoneNumber')}</Label>
+                <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    placeholder={t('forms.hospital.phoneNumberPlaceholder')}
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    required
+                />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

@@ -137,10 +137,20 @@ export default function HospitalDetail() {
 
     const handleUpdateHospital = (data: HospitalFormData) => {
         if (!hospital) return;
+
+        // Ensure phoneNumber is always a non-empty string
+        const phoneNumber = String(data.phoneNumber || '').trim();
+
+        if (!phoneNumber) {
+            setError('Phone number is required');
+            return;
+        }
+
         updateHospitalMutation.mutate({
             id: hospital.id,
             name: data.name,
             address: data.address,
+            phoneNumber: phoneNumber,
             latitude: data.latitude,
             longitude: data.longitude,
             capacity: data.capacity,
@@ -217,6 +227,9 @@ export default function HospitalDetail() {
                         </Link>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">{hospital.name}</h1>
                         <p className="text-lg text-gray-600">{hospital.address}</p>
+                        {hospital.phoneNumber && (
+                            <p className="text-lg text-gray-600">{hospital.phoneNumber}</p>
+                        )}
                     </div>
 
                     <div className="space-y-6">
@@ -242,6 +255,12 @@ export default function HospitalDetail() {
                                     <p className="text-sm text-gray-500">{t('hospital.dailyRate')}</p>
                                     <p className="text-lg font-semibold">{t('common.currencySymbol')}{Math.round(parseFloat(hospital.pricing))}</p>
                                 </div>
+                                {hospital.phoneNumber && (
+                                    <div>
+                                        <p className="text-sm text-gray-500">{t('forms.hospital.phoneNumber')}</p>
+                                        <p className="text-lg font-semibold">{hospital.phoneNumber}</p>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
@@ -318,6 +337,7 @@ export default function HospitalDetail() {
                             defaultValues={hospital ? {
                                 name: hospital.name,
                                 address: hospital.address,
+                                phoneNumber: hospital.phoneNumber || '',
                                 latitude: hospital.latitude ? parseFloat(hospital.latitude) : undefined,
                                 longitude: hospital.longitude ? parseFloat(hospital.longitude) : undefined,
                                 capacity: hospital.capacity,

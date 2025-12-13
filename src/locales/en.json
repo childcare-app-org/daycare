@@ -27,9 +27,11 @@
         "backTo": "Back to {item}",
         "active": "Active",
         "pendingSignIn": "Pending Sign-In",
+        "none": "None",
         "name": "Name",
         "update": "Update",
-        "language": "Language"
+        "language": "Language",
+        "profile": "Profile"
     },
     "home": {
         "title": "Daycare Management",
@@ -270,6 +272,8 @@
             "address": "Address",
             "addressPlaceholder": "Enter the hospital address",
             "addressHelperText": "Suggestions will appear as you type the address",
+            "phoneNumber": "Phone Number",
+            "phoneNumberPlaceholder": "090-1234-5678",
             "capacity": "Capacity *",
             "capacityPlaceholder": "20",
             "capacityHelperText": "Maximum number of children",
@@ -427,5 +431,26 @@
     },
     "timeline": {
         "by": "by {name}"
+    },
+    "profile": {
+        "title": "Profile",
+        "description": "View and edit your profile information",
+        "editProfile": "Edit Profile",
+        "editProfileDescription": "Update your personal information",
+        "email": "Email",
+        "emailCannotChange": "Email cannot be changed",
+        "name": "Name",
+        "namePlaceholder": "Enter your name",
+        "role": "Role",
+        "imageUrl": "Profile Image URL",
+        "imageUrlPlaceholder": "https://example.com/avatar.jpg",
+        "imageUrlHelper": "Optional: URL to your profile image",
+        "phoneNumber": "Phone Number",
+        "phoneNumberPlaceholder": "090-1234-5678",
+        "homeAddress": "Home Address",
+        "homeAddressPlaceholder": "Start typing an address...",
+        "homeAddressHelper": "Suggestions will appear as you type the address",
+        "nurseInformation": "Nurse Information",
+        "parentInformation": "Parent Information"
     }
 }

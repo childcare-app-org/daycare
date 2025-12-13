@@ -1,5 +1,5 @@
-import { relations, sql } from 'drizzle-orm';
-import { index, pgTableCreator, primaryKey } from 'drizzle-orm/pg-core';
+import { relations, sql } from "drizzle-orm";
+import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 
 import type { AdapterAccount } from "next-auth/adapters";
 
@@ -121,6 +121,7 @@ export const hospitals = createTable(
       .$defaultFn(() => crypto.randomUUID()),
     name: d.varchar({ length: 255 }).notNull(),
     address: d.text().notNull(),
+    phoneNumber: d.varchar({ length: 20 }).notNull(),
     latitude: d.numeric({ precision: 10, scale: 7 }),
     longitude: d.numeric({ precision: 10, scale: 7 }),
     capacity: d.integer().notNull().default(20), // Default capacity of 20 kids

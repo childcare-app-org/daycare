@@ -1,10 +1,13 @@
-import { eq } from 'drizzle-orm';
-import { z } from 'zod';
-import { generateHospitalAccessCode } from '~/lib/access-code';
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { generateHospitalAccessCode } from "~/lib/access-code";
 import {
-    adminProcedure, createTRPCRouter, nurseProcedure, protectedProcedure
-} from '~/server/api/trpc';
-import { hospitals, nurses } from '~/server/db/schema';
+  adminProcedure,
+  createTRPCRouter,
+  nurseProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
+import { hospitals, nurses } from "~/server/db/schema";
 
 export const hospitalRouter = createTRPCRouter({
   // Create a new hospital (Admin only)
@@ -13,6 +16,7 @@ export const hospitalRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1, "Hospital name is required"),
         address: z.string().min(1, "Address is required"),
+        phoneNumber: z.string().min(1, "Phone number is required"),
         latitude: z.number().optional(),
         longitude: z.number().optional(),
         capacity: z.number().int().min(1, "Capacity must be at least 1"),
@@ -27,6 +31,7 @@ export const hospitalRouter = createTRPCRouter({
         .values({
           name: input.name,
           address: input.address,
+          phoneNumber: input.phoneNumber,
           latitude: input.latitude?.toString(),
           longitude: input.longitude?.toString(),
           capacity: input.capacity,
@@ -76,6 +81,7 @@ export const hospitalRouter = createTRPCRouter({
         id: z.string().min(1, "Hospital ID is required"),
         name: z.string().min(1, "Hospital name is required"),
         address: z.string().min(1, "Address is required"),
+        phoneNumber: z.string().min(1, "Phone number is required"),
         latitude: z.number().optional(),
         longitude: z.number().optional(),
         capacity: z.number().int().min(1, "Capacity must be at least 1"),
@@ -88,6 +94,7 @@ export const hospitalRouter = createTRPCRouter({
         .set({
           name: input.name,
           address: input.address,
+          phoneNumber: input.phoneNumber,
           latitude: input.latitude?.toString(),
           longitude: input.longitude?.toString(),
           capacity: input.capacity,

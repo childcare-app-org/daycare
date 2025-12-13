@@ -341,6 +341,7 @@ export const visitRouter = createTRPCRouter({
             id: hospitals.id,
             name: hospitals.name,
             address: hospitals.address,
+            phoneNumber: hospitals.phoneNumber,
           },
         })
         .from(visits)
@@ -567,6 +568,7 @@ export const visitRouter = createTRPCRouter({
             id: hospitals.id,
             name: hospitals.name,
             address: hospitals.address,
+            phoneNumber: hospitals.phoneNumber,
           },
         })
         .from(visits)

@@ -1,7 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { z } from 'zod';
-import { adminProcedure, createTRPCRouter, nurseProcedure } from '~/server/api/trpc';
-import { hospitals, nurses, users } from '~/server/db/schema';
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  nurseProcedure,
+} from "~/server/api/trpc";
+import { hospitals, nurses, users } from "~/server/db/schema";
 
 export const nurseRouter = createTRPCRouter({
   // Get nurse profile (Nurse only)
@@ -183,5 +187,38 @@ export const nurseRouter = createTRPCRouter({
       }
 
       return nurse;
+    }),
+
+  // Update nurse profile (Nurse only - can only update name)
+  updateMyProfile: nurseProcedure
+    .input(
+      z.object({
+        name: z.string().min(1, "Nurse name is required"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the nurse record for the current user
+      const [nurse] = await ctx.db
+        .select()
+        .from(nurses)
+        .where(eq(nurses.userId, ctx.session.user.id))
+        .limit(1);
+
+      if (!nurse) {
+        throw new Error("Nurse profile not found");
+      }
+
+      // Update the nurse name
+      const [updatedNurse] = await ctx.db
+        .update(nurses)
+        .set({ name: input.name })
+        .where(eq(nurses.id, nurse.id))
+        .returning();
+
+      if (!updatedNurse) {
+        throw new Error("Failed to update nurse profile");
+      }
+
+      return updatedNurse;
     }),
 });

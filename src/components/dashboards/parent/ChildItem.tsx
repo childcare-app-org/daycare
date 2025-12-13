@@ -1,5 +1,5 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import { Stethoscope } from 'lucide-react';
+import { AlertTriangle, Info, Stethoscope } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { ActionMenu } from '~/components/shared/ActionMenu';
@@ -21,7 +21,10 @@ export type Child = {
     familyDoctorPhone?: string | null;
 };
 
-export type Visit = InferSelectModel<typeof visits>;
+export type Visit = InferSelectModel<typeof visits> & {
+    parent?: { name: string | null; phoneNumber: string; id: string };
+    hospital?: { name: string; phoneNumber?: string | null; id: string; address?: string };
+};
 
 // Helper function to calculate age in months from birthdate
 const calculateAgeInMonths = (birthdate: Date | null | undefined): number => {
@@ -83,39 +86,62 @@ export function ChildItem(props: ChildItemProps) {
                         </div>
                     </div>
 
-                    {/* Medical Information - Secondary Hierarchy */}
-                    {(child.allergies || child.preexistingConditions) && (
-                        <div className="flex flex-wrap gap-2 sm:gap-3">
-                            {child.allergies && (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
-                                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
-                                        {t('dashboard.parent.allergies')}: {child.allergies}
-                                    </span>
-                                </div>
-                            )}
-                            {child.preexistingConditions && (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
-                                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                        </svg>
-                                        {t('dashboard.parent.conditions')}: {child.preexistingConditions}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    {/* Tags Section: Reason, Allergies, Conditions */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {/* Reason for Visit */}
+                        {activeVisit?.reason && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200">
+                                <Stethoscope className="w-3.5 h-3.5 text-purple-600" />
+                                <span className="text-xs font-medium text-purple-700">{activeVisit.reason}</span>
+                            </div>
+                        )}
 
-                    {/* Reason for Visit */}
-                    {activeVisit?.reason && (
-                        <div className="flex items-center gap-2">
-                            <Stethoscope className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                            <span className="text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
-                                {activeVisit.reason}
+                        {/* Medical Information */}
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 border border-red-200">
+                            <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+                            <span className="text-xs font-medium text-red-700">
+                                {t('dashboard.parent.allergies')}: {child.allergies || t('common.none')}
                             </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200">
+                            <Info className="w-3.5 h-3.5 text-orange-600" />
+                            <span className="text-xs font-medium text-orange-700">
+                                {t('dashboard.parent.conditions')}: {child.preexistingConditions || t('common.none')}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Contact Info (Context-dependent) */}
+                    {activeVisit && (
+                        <div className="mt-3 text-sm text-gray-600">
+                            {isNurseView && activeVisit.parent ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-gray-900">{t('dashboard.nurse.parent')}:</span>
+                                    <span>{activeVisit.parent.name}</span>
+                                    {activeVisit.parent.phoneNumber && (
+                                        <>
+                                            <span className="text-gray-300">•</span>
+                                            <a href={`tel:${activeVisit.parent.phoneNumber}`} className="text-blue-600 hover:underline">
+                                                {activeVisit.parent.phoneNumber}
+                                            </a>
+                                        </>
+                                    )}
+                                </div>
+                            ) : !isNurseView && activeVisit.hospital ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-gray-900">{t('dashboard.nurse.hospital')}:</span>
+                                    <span>{activeVisit.hospital.name}</span>
+                                    {activeVisit.hospital.phoneNumber && (
+                                        <>
+                                            <span className="text-gray-300">•</span>
+                                            <a href={`tel:${activeVisit.hospital.phoneNumber}`} className="text-blue-600 hover:underline">
+                                                {activeVisit.hospital.phoneNumber}
+                                            </a>
+                                        </>
+                                    )}
+                                </div>
+                            ) : null}
                         </div>
                     )}
                 </div>

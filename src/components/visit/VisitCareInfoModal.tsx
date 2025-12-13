@@ -74,6 +74,16 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                         )}
                     </div>
 
+                    {/* Visit Notes */}
+                    {visit.notes && (
+                        <div className="mt-4 rounded-lg border bg-blue-50/50 p-4">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                                {t('visit.notes')}
+                            </p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{visit.notes}</p>
+                        </div>
+                    )}
+
                     {/* Parent Contact Information */}
                     {visit.parent && (
                         <div className="mt-4 rounded-lg border bg-muted/30 p-4">
@@ -91,6 +101,31 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                                             className="text-primary hover:underline transition-colors font-medium"
                                         >
                                             {visit.parent.phoneNumber}
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Hospital Information */}
+                    {visit.hospital && (
+                        <div className="mt-4 rounded-lg border bg-muted/30 p-4">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                                {t('hospital.hospitalInformation')}
+                            </p>
+                            <div className="space-y-2">
+                                <p className="text-base font-semibold">{visit.hospital.name}</p>
+                                {visit.hospital.address && (
+                                    <p className="text-sm text-gray-600">{visit.hospital.address}</p>
+                                )}
+                                {visit.hospital.phoneNumber && (
+                                    <p className="text-sm">
+                                        <a
+                                            href={`tel:${visit.hospital.phoneNumber}`}
+                                            className="text-primary hover:underline transition-colors font-medium"
+                                        >
+                                            {visit.hospital.phoneNumber}
                                         </a>
                                     </p>
                                 )}
