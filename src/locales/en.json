@@ -261,10 +261,20 @@
             "familyDoctorNamePlaceholder": "Dr. Smith",
             "familyDoctorPhone": "Family Doctor Phone",
             "familyDoctorPhonePlaceholder": "(555) 123-4567",
+            "image": "Child's Photo",
             "createChild": "Create Child",
             "update": "Update",
             "creating": "Creating...",
             "updating": "Updating..."
+        },
+        "imageCapture": {
+            "imagePreview": "Image preview",
+            "uploadImage": "Upload Image",
+            "takePhoto": "Take Photo",
+            "capture": "Capture",
+            "uploading": "Uploading...",
+            "cameraError": "Unable to access camera. Please check your permissions.",
+            "uploadError": "Failed to upload image. Please try again."
         },
         "hospital": {
             "name": "Hospital Name *",

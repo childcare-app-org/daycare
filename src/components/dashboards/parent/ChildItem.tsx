@@ -1,5 +1,5 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import { AlertTriangle, Info, Stethoscope } from 'lucide-react';
+import { AlertTriangle, Info, Stethoscope, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { ActionMenu } from '~/components/shared/ActionMenu';
@@ -19,6 +19,7 @@ export type Child = {
     preexistingConditions?: string | null;
     familyDoctorName?: string | null;
     familyDoctorPhone?: string | null;
+    imageUrl?: string | null;
 };
 
 export type Visit = InferSelectModel<typeof visits> & {
@@ -66,23 +67,36 @@ export function ChildItem(props: ChildItemProps) {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div className="flex-1 space-y-3 sm:space-y-4">
                     {/* Name - Primary Hierarchy */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{child.name}</h3>
-                            {child.pronunciation && (
-                                <span className="text-sm text-gray-500 italic">({child.pronunciation})</span>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                            <span>
-                                {t('dashboard.parent.yearsOld', { years: Math.floor(ageMonths / 12), months: ageMonths % 12 })}
-                            </span>
-                            {child.gender && (
-                                <>
-                                    <span>•</span>
-                                    <span>{t('dashboard.parent.gender')}: {child.gender === 'Male' ? t('forms.child.genderMale') : t('forms.child.genderFemale')}</span>
-                                </>
-                            )}
+                    <div className="flex items-start gap-3">
+                        {child.imageUrl ? (
+                            <img
+                                src={child.imageUrl}
+                                alt={child.name || ''}
+                                className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+                            />
+                        ) : (
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white flex-shrink-0">
+                                <User className="w-8 h-8" />
+                            </div>
+                        )}
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{child.name}</h3>
+                                {child.pronunciation && (
+                                    <span className="text-sm text-gray-500 italic">({child.pronunciation})</span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-500">
+                                <span>
+                                    {t('dashboard.parent.yearsOld', { years: Math.floor(ageMonths / 12), months: ageMonths % 12 })}
+                                </span>
+                                {child.gender && (
+                                    <>
+                                        <span>•</span>
+                                        <span>{t('dashboard.parent.gender')}: {child.gender === 'Male' ? t('forms.child.genderMale') : t('forms.child.genderFemale')}</span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 

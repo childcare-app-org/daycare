@@ -29,6 +29,7 @@ export const patientRouter = createTRPCRouter({
           pronunciation: children.pronunciation,
           gender: children.gender,
           birthdate: children.birthdate,
+          imageUrl: children.imageUrl,
           parentId: parentChildRelations.parentId,
           parentName: parents.name,
           parentPhone: parents.phoneNumber,
@@ -148,6 +149,7 @@ export const patientRouter = createTRPCRouter({
         preexistingConditions: z.string().optional(),
         familyDoctorName: z.string().optional(),
         familyDoctorPhone: z.string().optional(),
+        imageUrl: z.string().url().optional().or(z.literal("")), // UploadThing URL
         parentId: z.string().optional(), // Optional for parents (auto-determined)
       }),
     )
@@ -205,6 +207,7 @@ export const patientRouter = createTRPCRouter({
           preexistingConditions: input.preexistingConditions || null,
           familyDoctorName: input.familyDoctorName || null,
           familyDoctorPhone: input.familyDoctorPhone || null,
+          imageUrl: input.imageUrl || null,
         })
         .returning();
 
@@ -309,6 +312,7 @@ export const patientRouter = createTRPCRouter({
           preexistingConditions: children.preexistingConditions,
           familyDoctorName: children.familyDoctorName,
           familyDoctorPhone: children.familyDoctorPhone,
+          imageUrl: children.imageUrl,
           parentId: parentChildRelations.parentId,
         })
         .from(parentChildRelations)
@@ -341,6 +345,7 @@ export const patientRouter = createTRPCRouter({
         preexistingConditions: children.preexistingConditions,
         familyDoctorName: children.familyDoctorName,
         familyDoctorPhone: children.familyDoctorPhone,
+        imageUrl: children.imageUrl,
         createdAt: children.createdAt,
       })
       .from(parentChildRelations)
@@ -361,6 +366,7 @@ export const patientRouter = createTRPCRouter({
         preexistingConditions: z.string().optional(),
         familyDoctorName: z.string().optional(),
         familyDoctorPhone: z.string().optional(),
+        imageUrl: z.string().url().optional().or(z.literal("")), // UploadThing URL
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -410,6 +416,7 @@ export const patientRouter = createTRPCRouter({
           preexistingConditions: input.preexistingConditions,
           familyDoctorName: input.familyDoctorName,
           familyDoctorPhone: input.familyDoctorPhone,
+          imageUrl: input.imageUrl || null,
         })
         .where(eq(children.id, input.id))
         .returning();

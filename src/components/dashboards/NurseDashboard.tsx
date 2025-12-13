@@ -247,6 +247,7 @@ export function NurseDashboard() {
                                     preexistingConditions: editingVisit.child.preexistingConditions || '',
                                     familyDoctorName: editingVisit.child.familyDoctorName || '',
                                     familyDoctorPhone: editingVisit.child.familyDoctorPhone || '',
+                                    imageUrl: editingVisit.child.imageUrl || '',
                                 }}
                                 onSubmit={handleChildUpdateSubmit}
                                 onCancel={() => setEditingVisit(null)}

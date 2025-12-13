@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { ImageCapture } from '~/components/shared/ImageCapture';
 import { Button } from '~/components/ui/button';
 import { DialogFooter } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
@@ -14,6 +15,7 @@ export interface ChildFormData {
     preexistingConditions?: string;
     familyDoctorName?: string;
     familyDoctorPhone?: string;
+    imageUrl?: string;
 }
 
 interface ChildFormProps {
@@ -57,6 +59,7 @@ export function ChildForm({
         preexistingConditions: defaultValues?.preexistingConditions || '',
         familyDoctorName: defaultValues?.familyDoctorName || '',
         familyDoctorPhone: defaultValues?.familyDoctorPhone || '',
+        imageUrl: defaultValues?.imageUrl || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -74,6 +77,7 @@ export function ChildForm({
             preexistingConditions: formData.preexistingConditions || undefined,
             familyDoctorName: formData.familyDoctorName || undefined,
             familyDoctorPhone: formData.familyDoctorPhone || undefined,
+            imageUrl: formData.imageUrl || undefined,
         });
     };
 
@@ -96,6 +100,14 @@ export function ChildForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Image Capture */}
+            <ImageCapture
+                label={t('forms.child.image')}
+                value={formData.imageUrl}
+                onChange={(imageUrl) => setFormData((prev) => ({ ...prev, imageUrl: imageUrl || '' }))}
+                disabled={disabled}
+            />
+
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">{t('forms.child.name')}</Label>

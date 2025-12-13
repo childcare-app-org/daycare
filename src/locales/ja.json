@@ -261,10 +261,20 @@
             "familyDoctorNamePlaceholder": "○○医院 山田先生",
             "familyDoctorPhone": "かかりつけ医の電話番号",
             "familyDoctorPhonePlaceholder": "03-1234-5678",
+            "image": "お子さまの写真",
             "createChild": "登録する",
             "update": "更新する",
             "creating": "登録中...",
             "updating": "更新中..."
+        },
+        "imageCapture": {
+            "imagePreview": "画像プレビュー",
+            "uploadImage": "画像をアップロード",
+            "takePhoto": "写真を撮る",
+            "capture": "撮影",
+            "uploading": "アップロード中...",
+            "cameraError": "カメラにアクセスできません。権限を確認してください。",
+            "uploadError": "画像のアップロードに失敗しました。もう一度お試しください。"
         },
         "hospital": {
             "name": "病院名",

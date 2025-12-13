@@ -203,6 +203,7 @@ export function ParentDashboard() {
                         preexistingConditions: editingChild.preexistingConditions || '',
                         familyDoctorName: editingChild.familyDoctorName || '',
                         familyDoctorPhone: editingChild.familyDoctorPhone || '',
+                        imageUrl: editingChild.imageUrl || '',
                     } : undefined}
                     onSubmit={handleUpdateSubmit}
                     onCancel={() => setEditingChild(null)}

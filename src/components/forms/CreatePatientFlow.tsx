@@ -35,6 +35,7 @@ interface ChildData {
     name: string;
     birthdate: Date;
     parentId: string;
+    imageUrl?: string | null;
 }
 
 export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowProps) {
@@ -202,8 +203,8 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                         emptyMessage={t('forms.createPatientFlow.noParentsFound')}
                         renderResult={(parent) => (
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                                    {parent.name.charAt(0)}
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <User className="w-4 h-4" />
                                 </div>
                                 <div>
                                     <p className="font-medium text-gray-900">{parent.name}</p>
@@ -335,9 +336,17 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                         className="group cursor-pointer border rounded-xl p-4 hover:border-blue-200 hover:bg-blue-50 transition-all flex items-center justify-between"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-lg group-hover:bg-white group-hover:text-blue-600 transition-colors">
-                                                {child.name.charAt(0)}
-                                            </div>
+                                            {child.imageUrl ? (
+                                                <img
+                                                    src={child.imageUrl}
+                                                    alt={child.name}
+                                                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-300 transition-colors"
+                                                />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 group-hover:bg-white group-hover:text-blue-600 transition-colors">
+                                                    <User className="w-5 h-5" />
+                                                </div>
+                                            )}
                                             <div>
                                                 <p className="font-medium text-gray-900">{child.name}</p>
                                                 <p className="text-sm text-gray-500">
