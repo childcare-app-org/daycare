@@ -145,6 +145,11 @@
 
 /* Print styles for visit page */
 @media print {
+  /* Show print-only elements */
+  .print\:block {
+    display: block !important;
+  }
+  
   /* Hide buttons, navigation, modals, and interactive elements */
   button,
   a[href],

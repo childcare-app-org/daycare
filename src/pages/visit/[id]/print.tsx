@@ -107,6 +107,123 @@ export default function VisitPrint() {
                         readOnly={true}
                     />
 
+                    {/* Child Details - Print Only */}
+                    <div className="mb-8 hidden print:block">
+                        <div className="bg-white rounded-xl border border-gray-300 p-4">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('visit.childDetails')}</h2>
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                {/* Child Name & Pronunciation */}
+                                <div>
+                                    <span className="text-gray-500">{t('common.name')}:</span>{' '}
+                                    <span className="font-medium">{visit.child?.name}</span>
+                                    {visit.child?.pronunciation && (
+                                        <span className="text-gray-500 italic"> ({visit.child.pronunciation})</span>
+                                    )}
+                                </div>
+
+                                {/* Gender */}
+                                {visit.child?.gender && (
+                                    <div>
+                                        <span className="text-gray-500">{t('dashboard.parent.gender')}:</span>{' '}
+                                        <span className="font-medium">{visit.child.gender}</span>
+                                    </div>
+                                )}
+
+                                {/* Age */}
+                                {visit.child?.birthdate && (
+                                    <div>
+                                        <span className="text-gray-500">{t('visit.age')}:</span>{' '}
+                                        <span className="font-medium">
+                                            {(() => {
+                                                const birthdate = new Date(visit.child.birthdate);
+                                                const today = new Date();
+                                                const years = today.getFullYear() - birthdate.getFullYear();
+                                                const months = today.getMonth() - birthdate.getMonth();
+                                                const adjustedMonths = months < 0 ? months + 12 : months;
+                                                const adjustedYears = months < 0 ? years - 1 : years;
+                                                return `${adjustedYears}y ${adjustedMonths}m`;
+                                            })()}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Hospital */}
+                                {visit.hospital?.name && (
+                                    <div>
+                                        <span className="text-gray-500">{t('visit.hospital')}:</span>{' '}
+                                        <span className="font-medium">{visit.hospital.name}</span>
+                                    </div>
+                                )}
+
+                                {/* Drop-off Time */}
+                                <div>
+                                    <span className="text-gray-500">{t('visit.dropOffTime')}:</span>{' '}
+                                    <span className="font-medium">
+                                        {new Date(visit.dropOffTime).toLocaleString([], {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        })}
+                                    </span>
+                                </div>
+
+                                {/* Pick-up Time */}
+                                {visit.pickupTime && (
+                                    <div>
+                                        <span className="text-gray-500">{t('visit.pickUpTime')}:</span>{' '}
+                                        <span className="font-medium">
+                                            {new Date(visit.pickupTime).toLocaleString([], {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Parent Contact */}
+                                {visit.parent && (
+                                    <div>
+                                        <span className="text-gray-500">{t('visit.parentContact')}:</span>{' '}
+                                        <span className="font-medium">
+                                            {visit.parent.name} {visit.parent.phoneNumber && `(${visit.parent.phoneNumber})`}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Family Doctor */}
+                                {visit.child?.familyDoctorName && (
+                                    <div>
+                                        <span className="text-gray-500">{t('forms.child.familyDoctorName')}:</span>{' '}
+                                        <span className="font-medium">
+                                            {visit.child.familyDoctorName} {visit.child.familyDoctorPhone && `(${visit.child.familyDoctorPhone})`}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Medical Info - Full Width */}
+                            {(visit.child?.allergies || visit.child?.preexistingConditions) && (
+                                <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-4 text-sm">
+                                    {visit.child?.allergies && (
+                                        <div className="bg-amber-50 rounded p-2">
+                                            <span className="text-amber-800 font-medium">{t('dashboard.parent.allergies')}:</span>{' '}
+                                            <span className="text-amber-900">{visit.child.allergies}</span>
+                                        </div>
+                                    )}
+                                    {visit.child?.preexistingConditions && (
+                                        <div className="bg-amber-50 rounded p-2">
+                                            <span className="text-amber-800 font-medium">{t('dashboard.parent.conditions')}:</span>{' '}
+                                            <span className="text-amber-900">{visit.child.preexistingConditions}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Temperature Chart */}
                     <div className="mb-8">
                         <TemperatureChart logs={logs || []} />
