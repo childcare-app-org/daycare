@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, Info } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Info, Printer } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Button } from '~/components/ui/button';
@@ -12,6 +12,7 @@ type VisitHeaderProps = {
     readOnly?: boolean;
     onShowCompleteModal?: () => void;
     onShowCareInfo?: () => void;
+    onPrint?: () => void;
 };
 
 export function VisitHeader({
@@ -19,11 +20,12 @@ export function VisitHeader({
     readOnly = false,
     onShowCompleteModal,
     onShowCareInfo,
+    onPrint,
 }: VisitHeaderProps) {
     const t = useTranslations();
     return (
         <div className="mb-6">
-            {/* Back button and Complete Visit button */}
+            {/* Back button and Complete Visit / Print button */}
             <div className="flex items-center justify-between mb-4 no-print">
                 <Link href="/dashboard">
                     <Button variant="ghost" size="sm" className="-ml-2">
@@ -38,6 +40,16 @@ export function VisitHeader({
                     >
                         <CheckCircle2 className="w-4 h-4" />
                         {t('visit.completeVisit')}
+                    </Button>
+                )}
+                {visit.status === 'completed' && onPrint && (
+                    <Button
+                        onClick={onPrint}
+                        variant="outline"
+                        className="border-gray-300"
+                    >
+                        <Printer className="w-4 h-4" />
+                        {t('visit.print')}
                     </Button>
                 )}
             </div>

@@ -185,6 +185,7 @@
         "visitNotFound": "来院記録が見つかりません",
         "loadingVisitDetails": "読み込み中...",
         "completeVisit": "お迎え完了",
+        "print": "印刷",
         "completeVisitDescription": "完了する前に、利用の要約を入力してください。",
         "confirmComplete": "完了を確認",
         "completing": "処理中...",

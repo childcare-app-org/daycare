@@ -251,7 +251,9 @@ export default function VisitPrint() {
                     {/* SIDS Timeline - Only show if there are SIDS logs */}
                     {(() => {
                         const sidsLogs = (logs || []).filter(log => log.eventType === EventType.SIDS);
-                        return sidsLogs.length > 0 ? <SIDSTimeline logs={sidsLogs} /> : null;
+                        return sidsLogs.length > 0 ? (
+                            <SIDSTimeline logs={sidsLogs} showMinutesAgo={false} />
+                        ) : null;
                     })()}
 
                     {/* Timeline View - Filter out SIDS events */}

@@ -199,6 +199,7 @@ export default function VisitDetail() {
                         readOnly={visit.status === 'completed'}
                         onShowCompleteModal={() => setShowCompleteModal(true)}
                         onShowCareInfo={() => setShowCareInfo(true)}
+                        onPrint={handlePrint}
                     />
 
                     {/* Health Check Section */}
@@ -213,7 +214,12 @@ export default function VisitDetail() {
                     {/* SIDS Timeline - Only show if there are SIDS logs */}
                     {(() => {
                         const sidsLogs = (logs || []).filter(log => log.eventType === EventType.SIDS);
-                        return sidsLogs.length > 0 ? <SIDSTimeline logs={sidsLogs} /> : null;
+                        return sidsLogs.length > 0 ? (
+                            <SIDSTimeline
+                                logs={sidsLogs}
+                                showMinutesAgo={visit.status === 'active'}
+                            />
+                        ) : null;
                     })()}
 
                     {/* Timeline + Quick Add */}

@@ -185,6 +185,7 @@
         "visitNotFound": "Visit not found",
         "loadingVisitDetails": "Loading visit details...",
         "completeVisit": "Complete Visit",
+        "print": "Print",
         "completeVisitDescription": "Please provide a summary of the visit before completing.",
         "confirmComplete": "Confirm Complete",
         "completing": "Completing...",

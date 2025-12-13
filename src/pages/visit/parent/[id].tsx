@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { HealthCheck } from '~/components/dashboards/HealthCheck';
 import { Button } from '~/components/ui/button';
 import { EventType } from '~/components/visit/eventTypes';
-import { SIDSTimeline } from '~/components/visit/SIDSTimeline';
 import { TemperatureChart } from '~/components/visit/TemperatureChart';
 import { VisitCareInfoModal } from '~/components/visit/VisitCareInfoModal';
 import { VisitHeader } from '~/components/visit/VisitHeader';
@@ -118,12 +117,6 @@ export default function ParentVisitDetail() {
                             readOnly={true}
                         />
                     </div>
-
-                    {/* SIDS Timeline - Only show if there are SIDS logs */}
-                    {(() => {
-                        const sidsLogs = (visit.logs || []).filter(log => log.eventType === EventType.SIDS);
-                        return sidsLogs.length > 0 ? <SIDSTimeline logs={sidsLogs} /> : null;
-                    })()}
 
                     {/* Timeline View - Filter out SIDS events */}
                     <div className="space-y-6 bg-white rounded-3xl p-6 shadow-sm">

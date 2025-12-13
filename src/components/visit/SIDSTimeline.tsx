@@ -12,9 +12,10 @@ interface SIDSLog {
 
 interface SIDSTimelineProps {
     logs: SIDSLog[];
+    showMinutesAgo?: boolean;
 }
 
-export function SIDSTimeline({ logs }: SIDSTimelineProps) {
+export function SIDSTimeline({ logs, showMinutesAgo = true }: SIDSTimelineProps) {
     const t = useTranslations();
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -44,67 +45,55 @@ export function SIDSTimeline({ logs }: SIDSTimelineProps) {
     const minutesAgo = lastCheckTime ? getMinutesAgo(lastCheckTime) : null;
 
     return (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
-            {/* Compact View - Mini Timeline Strip */}
-            <button
+        <div className="bg-white rounded-xl border border-gray-300 p-6 shadow-lg mb-6">
+            {/* Header with Expand/Collapse */}
+            <div
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full flex items-center justify-between"
+                className="w-full flex items-center justify-between cursor-pointer"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setIsExpanded(!isExpanded)}
             >
                 <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-emerald-600" />
-                    <span className="font-medium text-emerald-800">
+                    <Shield className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">
                         {t('visit.sidsChecks')} ({logs.length})
                     </span>
-                    <div className="flex items-center gap-1">
-                        {/* Mini dots for each check (show up to 20) */}
-                        {sortedLogs.slice(0, 20).map((log) => (
-                            <div
-                                key={log.id}
-                                className="w-2 h-2 rounded-full bg-emerald-500"
-                                title={formatTime(new Date(log.timestamp))}
-                            />
-                        ))}
-                        {sortedLogs.length > 20 && (
-                            <span className="text-xs text-emerald-600 ml-1">+{sortedLogs.length - 20}</span>
-                        )}
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    {minutesAgo !== null && (
-                        <span className="text-sm text-emerald-600">
-                            {t('visit.sidsMinutesAgo', { minutes: minutesAgo })}
+                    {showMinutesAgo && minutesAgo !== null && (
+                        <span className="text-sm text-gray-500 print:hidden">
+                            · {t('visit.sidsMinutesAgo', { minutes: minutesAgo })}
                         </span>
                     )}
+                </div>
+                <div className="flex items-center print:hidden">
                     {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-emerald-600" />
+                        <ChevronUp className="w-4 h-4 text-gray-500" />
                     ) : (
-                        <ChevronDown className="w-4 h-4 text-emerald-600" />
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
                     )}
                 </div>
-            </button>
+            </div>
 
-            {/* Expanded View - Full List */}
-            {isExpanded && (
-                <div className="mt-4 pt-4 border-t border-emerald-200">
-                    <div className="max-h-48 overflow-y-auto space-y-2">
-                        {sortedLogs.map((log) => (
-                            <div
-                                key={log.id}
-                                className="flex items-center justify-between text-sm py-1 px-2 rounded bg-emerald-100/50"
-                            >
-                                <span className="text-emerald-800 font-medium">
-                                    {formatTime(new Date(log.timestamp))}
+            {/* Expanded View - Full List (always show in print) */}
+            <div className={`mt-4 pt-4 border-t border-gray-200 ${isExpanded ? 'block' : 'hidden print:block'}`}>
+                <div className="max-h-48 overflow-y-auto space-y-2 print:max-h-none">
+                    {sortedLogs.map((log) => (
+                        <div
+                            key={log.id}
+                            className="flex items-center justify-between text-sm py-2 px-3 rounded-lg bg-gray-50"
+                        >
+                            <span className="text-gray-800 font-medium">
+                                {formatTime(new Date(log.timestamp))}
+                            </span>
+                            {log.nurse?.name && (
+                                <span className="text-gray-500">
+                                    {log.nurse.name}
                                 </span>
-                                {log.nurse?.name && (
-                                    <span className="text-emerald-600">
-                                        {log.nurse.name}
-                                    </span>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
-            )}
+            </div>
         </div>
     );
 }
