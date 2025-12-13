@@ -24,7 +24,7 @@ export function VisitHeader({
     return (
         <div className="mb-6">
             {/* Back button and Complete Visit button */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 no-print">
                 <Link href="/dashboard">
                     <Button variant="ghost" size="sm" className="-ml-2">
                         <ArrowLeft className="w-4 h-4" />
@@ -52,7 +52,7 @@ export function VisitHeader({
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8 rounded-full border-blue-100 text-blue-600 bg-white shadow-sm hover:bg-blue-50"
+                        className="h-8 w-8 rounded-full border-blue-100 text-blue-600 bg-white shadow-sm hover:bg-blue-50 no-print"
                         aria-label={t('visit.viewCareInformation')}
                         onClick={onShowCareInfo}
                     >

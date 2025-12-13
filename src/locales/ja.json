@@ -187,6 +187,7 @@
         "completing": "処理中...",
         "visitSummary": "利用の要約",
         "visitSummaryPlaceholder": "利用の要約を入力...",
+        "printVisit": "印刷",
         "viewCareInformation": "お預かり情報を見る",
         "healthStatus": "健康状態",
         "addEvent": "記録を追加",

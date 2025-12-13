@@ -1,8 +1,9 @@
+import { Printer, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import {
-    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
+    Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
 } from '~/components/ui/dialog';
 import { Label } from '~/components/ui/label';
 
@@ -10,6 +11,7 @@ interface CompleteVisitModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: (summary: string) => void;
+    onPrint?: () => void;
     isLoading?: boolean;
 }
 
@@ -17,6 +19,7 @@ export function CompleteVisitModal({
     isOpen,
     onClose,
     onConfirm,
+    onPrint,
     isLoading = false,
 }: CompleteVisitModalProps) {
     const t = useTranslations();
@@ -36,10 +39,26 @@ export function CompleteVisitModal({
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{t('visit.completeVisit')}</DialogTitle>
-                    <DialogDescription>
-                        {t('visit.completeVisitDescription')}
-                    </DialogDescription>
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <DialogTitle>{t('visit.completeVisit')}</DialogTitle>
+                            <DialogDescription>
+                                {t('visit.completeVisitDescription')}
+                            </DialogDescription>
+                        </div>
+                        <DialogClose asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 rounded-full"
+                                onClick={handleClose}
+                                disabled={isLoading}
+                            >
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">{t('common.close')}</span>
+                            </Button>
+                        </DialogClose>
+                    </div>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
@@ -54,15 +73,19 @@ export function CompleteVisitModal({
                         />
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleClose}
-                        disabled={isLoading}
-                    >
-                        {t('common.cancel')}
-                    </Button>
+                <DialogFooter className="flex items-center gap-2">
+                    {onPrint && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onPrint}
+                            disabled={isLoading}
+                            className="flex items-center gap-2"
+                        >
+                            <Printer className="w-4 h-4" />
+                            {t('visit.printVisit')}
+                        </Button>
+                    )}
                     <Button
                         type="button"
                         onClick={handleConfirm}

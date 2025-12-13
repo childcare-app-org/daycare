@@ -90,6 +90,12 @@ export default function VisitDetail() {
         });
     };
 
+    const handlePrint = () => {
+        // Open print view in a new window
+        if (!id) return;
+        window.open(`/visit/${id}/print`, '_blank');
+    };
+
     // Auto-save handler for health check
     const handleHealthCheckUpdate = useDebounceCallback((data: Record<string, any>) => {
         if (!id) return;
@@ -237,6 +243,7 @@ export default function VisitDetail() {
                     isOpen={showCompleteModal}
                     onClose={() => setShowCompleteModal(false)}
                     onConfirm={handleCompleteVisit}
+                    onPrint={handlePrint}
                     isLoading={completeVisitMutation.isPending}
                 />
             </main>

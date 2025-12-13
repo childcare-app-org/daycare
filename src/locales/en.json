@@ -187,6 +187,7 @@
         "completing": "Completing...",
         "visitSummary": "Visit Summary",
         "visitSummaryPlaceholder": "Enter a summary of the visit...",
+        "printVisit": "Print Visit",
         "viewCareInformation": "View care information",
         "healthStatus": "Health Status",
         "addEvent": "Add Event",
