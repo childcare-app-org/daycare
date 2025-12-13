@@ -208,8 +208,9 @@ This is a full-stack daycare management system designed for hospitals to provide
   - Temperature readings
   - General notes
 - Update visit information
-- Complete visits
+- Complete visits with optional summary notes
 - View visit details with timeline
+- Print completed visit reports
 - Generate and view access code for their hospital
 
 ### Parent Features
@@ -400,6 +401,7 @@ daycare/
 │   │   │   ├── VisitHeader.tsx
 │   │   │   ├── VisitQuickAddGrid.tsx
 │   │   │   ├── TemperatureChart.tsx
+│   │   │   ├── SIDSTimeline.tsx    # SIDS check display component
 │   │   │   └── eventTypes.ts
 │   │   ├── shared/             # Shared components
 │   │   │   ├── DashboardHeader.tsx
@@ -426,6 +428,8 @@ daycare/
 │   │   │   └── [id].tsx        # Hospital detail page
 │   │   ├── visit/
 │   │   │   ├── [id].tsx        # Visit detail (nurse)
+│   │   │   ├── [id]/
+│   │   │   │   └── print.tsx   # Printable visit report (nurse)
 │   │   │   └── parent/
 │   │   │       └── [id].tsx    # Visit detail (parent)
 │   │   └── api/
@@ -650,10 +654,13 @@ Each event type can have associated tags for more detailed logging.
 SIDS (Sudden Infant Death Syndrome) checks are handled specially:
 
 - **Auto-logging**: Clicking the SIDS button immediately logs without opening a modal
-- **Separate display**: SIDS logs are shown in a dedicated mini-timeline strip, not in the main timeline
-- **Compact view**: Shows dots for each check with count and last check time
+- **Separate display**: SIDS logs are shown in a dedicated card, not in the main timeline
+- **Consistent styling**: Uses same white card with gray border styling as other sections
+- **Compact header**: Shows "SIDS Checks (count)" with "x minutes ago" for active visits
 - **Expandable**: Click to see full list with timestamps and nurse names
 - **Conditional**: Only shows when there's at least one SIDS check logged
+- **Nurse-only**: Not displayed in parent view
+- **Print support**: Automatically expanded in print view
 
 ### Health Checks
 

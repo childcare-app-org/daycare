@@ -74,16 +74,6 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                         )}
                     </div>
 
-                    {/* Reason for Visit */}
-                    {visit.reason && (
-                        <div className="mt-4 rounded-lg border bg-orange-50/50 p-4">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                {t('visit.reasonForVisit')}
-                            </p>
-                            <p className="text-sm font-medium text-orange-900">{visit.reason}</p>
-                        </div>
-                    )}
-
                     {/* Parent Contact Information */}
                     {visit.parent && (
                         <div className="mt-4 rounded-lg border bg-muted/30 p-4">
@@ -105,28 +95,6 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                                     </p>
                                 )}
                             </div>
-                        </div>
-                    )}
-
-                    {/* Child Medical Information - Grid Layout */}
-                    {(visit.child?.allergies || visit.child?.preexistingConditions) && (
-                        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            {visit.child?.allergies && (
-                                <div className="rounded-lg border bg-amber-50/50 p-4">
-                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                        {t('dashboard.parent.allergies')}
-                                    </p>
-                                    <p className="text-sm font-medium text-amber-900">{visit.child.allergies}</p>
-                                </div>
-                            )}
-                            {visit.child?.preexistingConditions && (
-                                <div className="rounded-lg border bg-amber-50/50 p-4">
-                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                        {t('dashboard.parent.conditions')}
-                                    </p>
-                                    <p className="text-sm font-medium text-amber-900">{visit.child.preexistingConditions}</p>
-                                </div>
-                            )}
                         </div>
                     )}
                 </div>

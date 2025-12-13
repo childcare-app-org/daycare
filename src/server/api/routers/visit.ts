@@ -1,12 +1,21 @@
-import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
-import { z } from 'zod';
-import { validateHospitalAccessCode } from '~/lib/access-code';
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { z } from "zod";
+import { validateHospitalAccessCode } from "~/lib/access-code";
 import {
-    createTRPCRouter, nurseProcedure, parentProcedure, protectedProcedure
-} from '~/server/api/trpc';
+  createTRPCRouter,
+  nurseProcedure,
+  parentProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import {
-    children, hospitals, logs, nurses, parentChildRelations, parents, visits
-} from '~/server/db/schema';
+  children,
+  hospitals,
+  logs,
+  nurses,
+  parentChildRelations,
+  parents,
+  visits,
+} from "~/server/db/schema";
 
 export const visitRouter = createTRPCRouter({
   // Create a new visit (for parents, nurses, and admins)
@@ -603,6 +612,7 @@ export const visitRouter = createTRPCRouter({
         dropOffTime: z.date().optional(),
         pickupTime: z.date().optional(),
         status: z.enum(["active", "completed", "cancelled"]).optional(),
+        reason: z.string().optional(),
         notes: z.string().optional(),
         healthCheck: z.record(z.string(), z.any()).optional(),
       }),
@@ -640,6 +650,7 @@ export const visitRouter = createTRPCRouter({
       if (input.pickupTime !== undefined)
         updateData.pickupTime = input.pickupTime;
       if (input.status !== undefined) updateData.status = input.status;
+      if (input.reason !== undefined) updateData.reason = input.reason;
       if (input.notes !== undefined) updateData.notes = input.notes;
       if (input.healthCheck !== undefined)
         updateData.healthCheck = input.healthCheck;
