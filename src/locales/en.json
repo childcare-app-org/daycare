@@ -134,7 +134,10 @@
             "parent": "Parent",
             "droppedOff": "Dropped off",
             "searchByChildName": "Search by child name...",
-            "noChildrenFound": "No children found."
+            "noChildrenFound": "No children found.",
+            "completed": "Completed",
+            "viewVisit": "View Visit",
+            "noOtherVisits": "No other visits at this hospital"
         },
         "parent": {
             "title": "Parent Dashboard",

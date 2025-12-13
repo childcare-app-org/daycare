@@ -408,8 +408,8 @@ export const visitRouter = createTRPCRouter({
       .where(and(eq(visits.parentId, parent.id), eq(visits.status, "active")));
   }),
 
-  // Get visit history for a specific child (Parent only)
-  getChildVisitHistory: parentProcedure
+  // Get visit history for a specific child (Parent and Nurse)
+  getChildVisitHistory: protectedProcedure
     .input(
       z.object({
         childId: z.string(),
@@ -418,48 +418,76 @@ export const visitRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Get the parent record for the current user
-      const [parent] = await ctx.db
-        .select()
-        .from(parents)
-        .where(eq(parents.userId, ctx.session.user.id))
-        .limit(1);
+      const role = ctx.session.user.role;
+      let whereCondition;
 
-      if (!parent) {
-        throw new Error("Parent profile not found");
+      if (role === "parent") {
+        // Get the parent record for the current user
+        const [parent] = await ctx.db
+          .select()
+          .from(parents)
+          .where(eq(parents.userId, ctx.session.user.id))
+          .limit(1);
+
+        if (!parent) {
+          throw new Error("Parent profile not found");
+        }
+
+        // Verify the child belongs to this parent
+        const [relation] = await ctx.db
+          .select()
+          .from(parentChildRelations)
+          .where(
+            and(
+              eq(parentChildRelations.parentId, parent.id),
+              eq(parentChildRelations.childId, input.childId),
+            ),
+          )
+          .limit(1);
+
+        if (!relation) {
+          throw new Error("Child not found or does not belong to this parent");
+        }
+
+        // Parents see all visits for their child
+        whereCondition = eq(visits.childId, input.childId);
+      } else if (role === "nurse") {
+        // Get the nurse record for the current user
+        const [nurse] = await ctx.db
+          .select()
+          .from(nurses)
+          .where(eq(nurses.userId, ctx.session.user.id))
+          .limit(1);
+
+        if (!nurse) {
+          throw new Error("Nurse profile not found");
+        }
+
+        // Nurses see visits for this child at their hospital only
+        whereCondition = and(
+          eq(visits.childId, input.childId),
+          eq(visits.hospitalId, nurse.hospitalId),
+        );
+      } else {
+        throw new Error("Unauthorized: Invalid role for viewing visit history");
       }
 
-      // Verify the child belongs to this parent
-      const [relation] = await ctx.db
-        .select()
-        .from(parentChildRelations)
-        .where(
-          and(
-            eq(parentChildRelations.parentId, parent.id),
-            eq(parentChildRelations.childId, input.childId),
-          ),
-        )
-        .limit(1);
-
-      if (!relation) {
-        throw new Error("Child not found or does not belong to this parent");
-      }
-
-      // Get total count of visits for this child
+      // Get total count of visits
       const [countResult] = await ctx.db
         .select({ count: sql<number>`count(*)` })
         .from(visits)
-        .where(eq(visits.childId, input.childId));
+        .where(whereCondition);
 
       const totalCount = Number(countResult?.count || 0);
 
-      // Get visits for this child with limit and offset
+      // Get visits with limit and offset
       const visitHistory = await ctx.db
         .select({
           id: visits.id,
           dropOffTime: visits.dropOffTime,
           pickupTime: visits.pickupTime,
           status: visits.status,
+          reason: visits.reason,
           updatedAt: visits.updatedAt,
           hospital: {
             id: hospitals.id,
@@ -468,7 +496,7 @@ export const visitRouter = createTRPCRouter({
         })
         .from(visits)
         .leftJoin(hospitals, eq(visits.hospitalId, hospitals.id))
-        .where(eq(visits.childId, input.childId))
+        .where(whereCondition)
         .orderBy(desc(visits.dropOffTime))
         .limit(input.limit)
         .offset(input.offset);

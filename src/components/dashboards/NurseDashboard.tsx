@@ -1,10 +1,9 @@
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useState } from 'react';
+import { ChildItem } from '~/components/dashboards/parent/ChildItem';
 import { CreatePatientFlow } from '~/components/forms/CreatePatientFlow';
 import { VisitForm } from '~/components/forms/VisitForm';
-import { ActionMenu } from '~/components/shared/ActionMenu';
 import { DashboardHeader } from '~/components/shared/DashboardHeader';
 import { DeleteDialog } from '~/components/shared/DeleteDialog';
 import { EditDialog } from '~/components/shared/EditDialog';
@@ -15,62 +14,7 @@ import { api } from '~/utils/api';
 import type { VisitFormData } from '~/components/forms/VisitForm';
 import type { RouterOutputs } from '~/utils/api';
 
-type Visit = {
-    id: string;
-    dropOffTime: Date;
-    pickupTime: Date | null;
-    status: string;
-    notes: string | null;
-    child?: { name?: string | null } | null;
-    parent?: { name?: string | null } | null;
-};
-
-type VisitListItemProps = {
-    visit: RouterOutputs['visit']['getMyHospitalActiveVisits'][number] | RouterOutputs['visit']['getMyHospitalTodaysCompletedVisits'][number];
-    showActions?: boolean;
-    onEdit?: () => void;
-    onDelete?: () => void;
-};
-
-function VisitListItem({ visit, showActions = false, onEdit, onDelete }: VisitListItemProps) {
-    const t = useTranslations();
-    const isCompleted = visit.status === 'completed';
-    const avatarBg = isCompleted ? 'bg-green-100' : 'bg-blue-100';
-    const avatarText = isCompleted ? 'text-green-600' : 'text-blue-600';
-
-    return (
-        <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start">
-                <Link href={`/visit/${visit.id}`} className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full ${avatarBg} flex items-center justify-center ${avatarText} font-bold text-lg shrink-0`}>
-                            {visit.child?.name?.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className={`font-semibold ${isCompleted ? 'text-gray-900' : 'text-blue-600 hover:text-blue-800'}`}>
-                                {visit.child?.name}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                                {t('dashboard.nurse.parent')}: {visit.parent?.name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                                {t('dashboard.nurse.droppedOff')}: {new Date(visit.dropOffTime).toLocaleString()}
-                            </p>
-                        </div>
-                    </div>
-                </Link>
-                {showActions && (
-                    <div className="flex items-center gap-2 ml-4 my-auto shrink-0">
-                        <ActionMenu
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                        />
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
+type Visit = RouterOutputs['visit']['getMyHospitalActiveVisits'][number];
 
 export function NurseDashboard() {
     const { data: session } = useSession();
@@ -193,12 +137,13 @@ export function NurseDashboard() {
                     {activeVisits && activeVisits.length > 0 ? (
                         <div className="space-y-4">
                             {activeVisits.map((visit) => (
-                                <VisitListItem
+                                <ChildItem
                                     key={visit.id}
-                                    visit={visit}
-                                    showActions
-                                    onEdit={() => handleEdit(visit)}
-                                    onDelete={() => handleDelete(visit)}
+                                    variant="nurse"
+                                    child={visit.child || {}}
+                                    activeVisit={visit}
+                                    onEditVisit={() => handleEdit(visit)}
+                                    onDeleteVisit={() => handleDelete(visit)}
                                 />
                             ))}
                         </div>
@@ -222,12 +167,13 @@ export function NurseDashboard() {
                     ) : todaysCompletedVisits && todaysCompletedVisits.length > 0 ? (
                         <div className="space-y-4">
                             {todaysCompletedVisits.map((visit) => (
-                                <VisitListItem
+                                <ChildItem
                                     key={visit.id}
-                                    visit={visit}
-                                    showActions
-                                    onEdit={() => handleEdit(visit)}
-                                    onDelete={() => handleDelete(visit)}
+                                    variant="nurse"
+                                    child={visit.child || {}}
+                                    activeVisit={visit}
+                                    onEditVisit={() => handleEdit(visit)}
+                                    onDeleteVisit={() => handleDelete(visit)}
                                 />
                             ))}
                         </div>

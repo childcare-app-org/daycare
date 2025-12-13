@@ -134,7 +134,10 @@
             "parent": "保護者",
             "droppedOff": "預かり開始",
             "searchByChildName": "お子さまの名前で検索...",
-            "noChildrenFound": "該当するお子さまが見つかりませんでした"
+            "noChildrenFound": "該当するお子さまが見つかりませんでした",
+            "completed": "完了",
+            "viewVisit": "詳細を見る",
+            "noOtherVisits": "この病院での他の利用履歴はありません"
         },
         "parent": {
             "title": "保護者ダッシュボード",

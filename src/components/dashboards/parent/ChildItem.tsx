@@ -1,9 +1,13 @@
+import type { InferSelectModel } from 'drizzle-orm';
+import { Stethoscope } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { ActionMenu } from '~/components/shared/ActionMenu';
 import { Button } from '~/components/ui/button';
 
 import { ChildVisitHistory } from './ChildVisitHistory';
+
+import type { visits } from '~/server/db/schema';
 
 export type Child = {
     id?: string | null;
@@ -17,14 +21,7 @@ export type Child = {
     familyDoctorPhone?: string | null;
 };
 
-export type ActiveVisit = {
-    id: string;
-    childId: string;
-    dropOffTime: Date;
-    hospital?: {
-        name: string;
-    } | null;
-};
+export type Visit = InferSelectModel<typeof visits>;
 
 // Helper function to calculate age in months from birthdate
 const calculateAgeInMonths = (birthdate: Date | null | undefined): number => {
@@ -35,15 +32,29 @@ const calculateAgeInMonths = (birthdate: Date | null | undefined): number => {
     return years * 12 + months;
 };
 
-interface ChildItemProps {
+interface ChildItemBaseProps {
     child: Child;
-    activeVisit?: ActiveVisit;
+    activeVisit?: Visit;
+}
+
+interface ParentViewProps extends ChildItemBaseProps {
+    variant?: 'parent';
     onEdit: (child: Child) => void;
     onDelete: (child: Child) => void;
     onRegisterVisit: (child: Child) => void;
 }
 
-export function ChildItem({ child, activeVisit, onEdit, onDelete, onRegisterVisit }: ChildItemProps) {
+interface NurseViewProps extends ChildItemBaseProps {
+    variant: 'nurse';
+    onEditVisit?: () => void;
+    onDeleteVisit?: () => void;
+}
+
+type ChildItemProps = ParentViewProps | NurseViewProps;
+
+export function ChildItem(props: ChildItemProps) {
+    const { child, activeVisit, variant = 'parent' } = props;
+    const isNurseView = variant === 'nurse';
     const t = useTranslations();
     const ageMonths = calculateAgeInMonths(child.birthdate);
 
@@ -97,33 +108,65 @@ export function ChildItem({ child, activeVisit, onEdit, onDelete, onRegisterVisi
                             )}
                         </div>
                     )}
+
+                    {/* Reason for Visit */}
+                    {activeVisit?.reason && (
+                        <div className="flex items-center gap-2">
+                            <Stethoscope className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                            <span className="text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
+                                {activeVisit.reason}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Side - Visit Details & Actions */}
                 <div className="flex flex-col items-stretch sm:items-end gap-3 flex-shrink-0 w-full sm:w-auto">
                     {/* Action Buttons */}
                     <div className="flex items-stretch sm:items-start gap-2 w-full sm:w-auto">
-                        {activeVisit ? (
-                            <Link href={`/visit/parent/${activeVisit.id}`} className="flex-1 sm:flex-initial">
-                                <Button variant="outline" className="w-full sm:w-auto whitespace-nowrap">
-                                    {t('dashboard.parent.viewVisit')}
-                                </Button>
-                            </Link>
+                        {isNurseView ? (
+                            // Nurse view actions
+                            <>
+                                {activeVisit && (
+                                    <Link href={`/visit/${activeVisit.id}`} className="flex-1 sm:flex-initial">
+                                        <Button variant="outline" className="w-full sm:w-auto whitespace-nowrap">
+                                            {t('dashboard.nurse.viewVisit')}
+                                        </Button>
+                                    </Link>
+                                )}
+                                {(props as NurseViewProps).onEditVisit && (props as NurseViewProps).onDeleteVisit && (
+                                    <ActionMenu
+                                        onEdit={(props as NurseViewProps).onEditVisit}
+                                        onDelete={(props as NurseViewProps).onDeleteVisit}
+                                    />
+                                )}
+                            </>
                         ) : (
-                            <Button onClick={() => onRegisterVisit(child)} className="flex-1 sm:flex-initial whitespace-nowrap">
-                                {t('dashboard.parent.registerForVisit')}
-                            </Button>
+                            // Parent view actions
+                            <>
+                                {activeVisit ? (
+                                    <Link href={`/visit/parent/${activeVisit.id}`} className="flex-1 sm:flex-initial">
+                                        <Button variant="outline" className="w-full sm:w-auto whitespace-nowrap">
+                                            {t('dashboard.parent.viewVisit')}
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <Button onClick={() => (props as ParentViewProps).onRegisterVisit(child)} className="flex-1 sm:flex-initial whitespace-nowrap">
+                                        {t('dashboard.parent.registerForVisit')}
+                                    </Button>
+                                )}
+                                <ActionMenu
+                                    onEdit={() => (props as ParentViewProps).onEdit(child)}
+                                    onDelete={() => (props as ParentViewProps).onDelete(child)}
+                                />
+                            </>
                         )}
-                        <ActionMenu
-                            onEdit={() => onEdit(child)}
-                            onDelete={() => onDelete(child)}
-                        />
                     </div>
                 </div>
             </div>
 
             {/* Visit History */}
-            <ChildVisitHistory childId={child.id || ''} />
+            <ChildVisitHistory childId={child.id || ''} variant={variant} />
         </div>
     );
 }

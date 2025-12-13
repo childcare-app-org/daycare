@@ -4,11 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/com
 
 import { ChildItem } from './ChildItem';
 
-import type { ActiveVisit, Child } from './ChildItem';
+import type { Child, Visit } from './ChildItem';
 
 interface ChildrenListProps {
     children: Child[];
-    activeVisits: ActiveVisit[];
+    activeVisits: Visit[];
     onAddChild: () => void;
     onEditChild: (child: Child) => void;
     onDeleteChild: (child: Child) => void;
