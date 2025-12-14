@@ -1,4 +1,4 @@
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, User, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { ImageModal } from '~/components/shared/ImageModal';
@@ -177,51 +177,60 @@ export function ImageCapture({
                             <button
                                 type="button"
                                 onClick={handleRemoveImage}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         )}
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-3">
                         {!isCapturing ? (
-                            <div className="flex gap-2">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileSelect}
-                                    className="hidden"
-                                    id="image-upload-input"
-                                    disabled={disabled || isUploading}
-                                />
-                                <label htmlFor="image-upload-input">
+                            <div className="flex flex-row items-start gap-4">
+                                {/* Placeholder Avatar */}
+                                <div className="w-32 h-32 rounded-lg bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 flex-shrink-0">
+                                    <User className="w-12 h-12 text-gray-400" />
+                                </div>
+
+                                <div className="flex flex-col gap-2 pt-1">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                        className="hidden"
+                                        id="image-upload-input"
+                                        disabled={disabled || isUploading}
+                                    />
+                                    <label htmlFor="image-upload-input" className="w-full">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={disabled || isUploading}
+                                            className="w-full flex items-center justify-start gap-2 cursor-pointer whitespace-nowrap"
+                                            asChild
+                                        >
+                                            <span>
+                                                <Upload className="w-4 h-4" />
+                                                {isUploading
+                                                    ? t('forms.imageCapture.uploading')
+                                                    : t('forms.imageCapture.uploadImage')}
+                                            </span>
+                                        </Button>
+                                    </label>
                                     <Button
                                         type="button"
                                         variant="outline"
+                                        size="sm"
+                                        onClick={handleStartCamera}
                                         disabled={disabled || isUploading}
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        asChild
+                                        className="w-full flex items-center justify-start gap-2 whitespace-nowrap"
                                     >
-                                        <span>
-                                            <Upload className="w-4 h-4" />
-                                            {isUploading
-                                                ? t('forms.imageCapture.uploading')
-                                                : t('forms.imageCapture.uploadImage')}
-                                        </span>
+                                        <Camera className="w-4 h-4" />
+                                        {t('forms.imageCapture.takePhoto')}
                                     </Button>
-                                </label>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleStartCamera}
-                                    disabled={disabled || isUploading}
-                                    className="flex items-center gap-2"
-                                >
-                                    <Camera className="w-4 h-4" />
-                                    {t('forms.imageCapture.takePhoto')}
-                                </Button>
+                                </div>
                             </div>
                         ) : (
                             <div className="space-y-2">

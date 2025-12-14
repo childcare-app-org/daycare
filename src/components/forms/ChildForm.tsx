@@ -99,39 +99,45 @@ export function ChildForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Image Capture */}
-            <ImageCapture
-                label={t('forms.child.image')}
-                value={formData.imageUrl}
-                onChange={(imageUrl) => setFormData((prev) => ({ ...prev, imageUrl: imageUrl || '' }))}
-                disabled={disabled}
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Top Section: Photo + Basic Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+                {/* Left Column: Name & Pronunciation */}
+                <div className="space-y-4 w-full">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">{t('forms.child.name')}</Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            type="text"
+                            placeholder={t('forms.child.namePlaceholder')}
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            required
+                            disabled={disabled}
+                        />
+                    </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="name">{t('forms.child.name')}</Label>
-                    <Input
-                        id="name"
-                        name="name"
-                        type="text"
-                        placeholder={t('forms.child.namePlaceholder')}
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        disabled={disabled}
-                    />
+                    <div className="space-y-2">
+                        <Label htmlFor="pronunciation">{t('forms.child.pronunciation')}</Label>
+                        <Input
+                            id="pronunciation"
+                            name="pronunciation"
+                            type="text"
+                            placeholder={t('forms.child.pronunciationPlaceholder')}
+                            value={formData.pronunciation}
+                            onChange={handleInputChange}
+                            disabled={disabled}
+                        />
+                    </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="pronunciation">{t('forms.child.pronunciation')}</Label>
-                    <Input
-                        id="pronunciation"
-                        name="pronunciation"
-                        type="text"
-                        placeholder={t('forms.child.pronunciationPlaceholder')}
-                        value={formData.pronunciation}
-                        onChange={handleInputChange}
+                {/* Right Column: Photo */}
+                <div className="w-full">
+                    <ImageCapture
+                        label={t('forms.child.image')}
+                        value={formData.imageUrl}
+                        onChange={(imageUrl) => setFormData((prev) => ({ ...prev, imageUrl: imageUrl || '' }))}
                         disabled={disabled}
                     />
                 </div>
