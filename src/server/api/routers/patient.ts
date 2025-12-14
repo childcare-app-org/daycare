@@ -149,7 +149,7 @@ export const patientRouter = createTRPCRouter({
         preexistingConditions: z.string().optional(),
         familyDoctorName: z.string().optional(),
         familyDoctorPhone: z.string().optional(),
-        imageUrl: z.string().url().optional().or(z.literal("")), // UploadThing URL
+        imageUrl: z.string().url().optional().or(z.literal("")), // S3/CDN image URL
         parentId: z.string().optional(), // Optional for parents (auto-determined)
       }),
     )
@@ -366,7 +366,7 @@ export const patientRouter = createTRPCRouter({
         preexistingConditions: z.string().optional(),
         familyDoctorName: z.string().optional(),
         familyDoctorPhone: z.string().optional(),
-        imageUrl: z.string().url().optional().or(z.literal("")), // UploadThing URL
+        imageUrl: z.string().url().optional().or(z.literal("")), // S3/CDN image URL
       }),
     )
     .mutation(async ({ ctx, input }) => {

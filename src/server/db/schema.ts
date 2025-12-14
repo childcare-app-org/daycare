@@ -207,7 +207,7 @@ export const children = createTable(
     preexistingConditions: d.text(), // JSON string or comma-separated
     familyDoctorName: d.varchar({ length: 255 }),
     familyDoctorPhone: d.varchar({ length: 20 }),
-    imageUrl: d.text(), // UploadThing image URL
+    imageUrl: d.text(), // S3/CDN image URL
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)

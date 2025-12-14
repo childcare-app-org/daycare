@@ -3,7 +3,6 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
-import { useUploadThing } from '~/utils/uploadthing';
 
 interface ImageCaptureProps {
     label?: string;
@@ -25,23 +24,69 @@ export function ImageCapture({
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isCapturing, setIsCapturing] = useState(false);
     const [stream, setStream] = useState<MediaStream | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
-    const { startUpload, isUploading } = useUploadThing('imageUploader', {
-        onClientUploadComplete: (res) => {
-            if (res?.[0]?.url) {
-                onChange(res[0].url);
+    const uploadToS3 = async (file: File) => {
+        setIsUploading(true);
+        try {
+            // Get presigned URL from our API
+            const response = await fetch('/api/s3/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    contentType: file.type || 'image/jpeg', // Fallback for camera captures
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                console.error('API Error:', errorData);
+                throw new Error(errorData.error || `Failed to get upload URL: ${response.status}`);
             }
-        },
-        onUploadError: (error: Error) => {
+
+            const { uploadUrl, fileUrl } = await response.json();
+
+            if (!uploadUrl) {
+                throw new Error('No upload URL received from server');
+            }
+
+            // Upload file directly to S3 using presigned URL
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': file.type || 'image/jpeg',
+                },
+                body: file,
+            });
+
+            if (!uploadResponse.ok) {
+                const errorText = await uploadResponse.text();
+                console.error('S3 Upload Error:', {
+                    status: uploadResponse.status,
+                    statusText: uploadResponse.statusText,
+                    body: errorText,
+                });
+                throw new Error(`Failed to upload to S3: ${uploadResponse.status} ${uploadResponse.statusText}`);
+            }
+
+            // Return the CDN URL (fileUrl) to be stored in database
+            onChange(fileUrl);
+        } catch (error) {
             console.error('Upload error:', error);
-            alert(t('forms.imageCapture.uploadError'));
-        },
-    });
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert(`${t('forms.imageCapture.uploadError')}\n\n${errorMessage}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && file.type.startsWith('image/')) {
-            await startUpload([file]);
+            await uploadToS3(file);
         }
     };
 
@@ -101,7 +146,7 @@ export function ImageCapture({
                             type: 'image/jpeg',
                         });
                         // Upload the captured photo
-                        await startUpload([file]);
+                        await uploadToS3(file);
                         handleStopCamera();
                     }
                 }, 'image/jpeg', 0.8);
