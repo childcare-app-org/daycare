@@ -29,8 +29,10 @@ This is a full-stack daycare management system designed for hospitals to provide
 - **Patient Management**: Nurses and parents can register children and their medical information
 - **Visit Management**: Parents can register visits with location-based access codes, nurses can track care
 - **Real-time Logging**: Nurses can log events (meals, medication, temperature, activities) during visits
+- **AI Visit Summaries**: Automatically generates daily summaries using AI based on logged events
 - **Visit History**: Parents can view complete visit history and care timelines
 - **Multi-language Support**: English and Japanese translations
+- **Image Management**: S3-backed secure photo storage for child profiles
 
 ## Tech Stack
 
@@ -65,6 +67,9 @@ This is a full-stack daycare management system designed for hospitals to provide
 
 - **React Hook Form 7.65.0** - Form management
 - **@tanstack/react-query 5.69.0** - Data fetching and caching
+- **openai 4.28.0** - AI summary generation
+- **@aws-sdk/client-s3** - AWS S3 integration for image storage
+- **@aws-sdk/s3-request-presigner** - Secure upload URL generation
 - **@react-google-maps/api** - Google Maps integration
 - **use-places-autocomplete** - Address autocomplete
 - **node-timezone** - Timezone calculations for access codes
@@ -208,9 +213,9 @@ This is a full-stack daycare management system designed for hospitals to provide
   - Temperature readings
   - General notes
 - Update visit information
-- Complete visits with optional summary notes
-- View visit details with timeline
-- Print completed visit reports
+- Complete visits with AI-assisted summary generation
+- View visit details with timeline, health checks, and nurse notes
+- Print completed visit reports (streamlined layout with summary)
 - Generate and view access code for their hospital
 
 ### Parent Features
@@ -610,6 +615,12 @@ Required environment variables (defined in `src/env.js`):
 - `AUTH_GOOGLE_SECRET` - Google OAuth client secret
 - `DATABASE_URL` - PostgreSQL connection string
 - `NODE_ENV` - Environment (development/test/production)
+- `OPENAI_API_KEY` - OpenAI API Key for summary generation
+- `AWS_REGION` - AWS Region (e.g., us-east-1)
+- `AWS_ACCESS_KEY_ID` - AWS Access Key ID
+- `AWS_SECRET_ACCESS_KEY` - AWS Secret Access Key
+- `AWS_S3_BUCKET_NAME` - S3 Bucket Name
+- `AWS_CLOUDFRONT_URL` - (Optional) CloudFront Distribution URL for image CDN
 
 ### Client Variables
 
@@ -624,6 +635,12 @@ AUTH_GOOGLE_SECRET=your-google-client-secret
 DATABASE_URL=postgresql://user:password@localhost:5432/daycare
 NODE_ENV=development
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-api-key
+OPENAI_API_KEY=sk-your-openai-key
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-aws-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret
+AWS_S3_BUCKET_NAME=your-bucket-name
+AWS_CLOUDFRONT_URL=https://your-distribution.cloudfront.net
 ```
 
 ## Additional Notes
@@ -675,6 +692,34 @@ When creating a visit, users can specify a reason using:
 - **Multi-select**: Multiple pills can be selected and combined with custom text
 
 The combined reason is stored as a comma-separated string (e.g., "Fever, Asthma/Rash, stomach pain").
+
+### AI Summaries
+
+When completing a visit, the system uses OpenAI to generate a short, friendly summary of the day's events.
+It takes into account:
+
+- Child's age and name
+- Health check data (mood, appetite, etc.) mapped to human-readable text
+- All logged events (meals, naps, diaper changes)
+- The user's locale (generates in English or Japanese accordingly)
+
+### Visit Completion Workflow
+
+The visit completion process is designed to be efficient and informative:
+
+1.  **Summary Generation**: Nurse clicks "Complete Visit" and can use AI to generate a summary based on the day's logs and health data.
+2.  **Status Update**: Visit status changes to `completed`, locking editable fields (health check, logs).
+3.  **Visual Indicators**: A "Completed" badge appears in the header, and the summary note is displayed in a dedicated section below the child's details.
+4.  **Print Redirection**: Upon completion, the system automatically redirects to the print view for easy report generation.
+
+### Image Storage
+
+Images (child profiles) are stored in AWS S3 and served via CloudFront CDN.
+
+- **Direct Upload**: Browser uploads directly to S3 using presigned URLs
+- **Secure**: Uses server-side authentication to generate upload signatures
+- **Optimized**: Served via CDN for fast global access
+- **UI**: Modern drag-and-drop interface with camera support
 
 ---
 

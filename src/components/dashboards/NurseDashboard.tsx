@@ -29,6 +29,7 @@ export function NurseDashboard() {
 
     const { data: activeVisits, isLoading, refetch } = api.visit.getMyHospitalActiveVisits.useQuery();
     const { data: todaysCompletedVisits, isLoading: isLoadingTodaysVisits, refetch: refetchTodaysVisits } = api.visit.getMyHospitalTodaysCompletedVisits.useQuery();
+    const { data: nurseProfile } = api.nurse.getMyProfile.useQuery();
     const { data: accessCodeData } = api.hospital.getAccessCode.useQuery();
 
     const updateVisitMutation = api.visit.update.useMutation({
@@ -116,37 +117,29 @@ export function NurseDashboard() {
                         {t('common.welcome', { name: session?.user?.name || '' })}
                     </h1>
                     <p className="text-lg text-gray-600 mb-2">{t('dashboard.nurse.title')}</p>
-                    {accessCodeData && (
-                        <p className="text-gray-600">{t('dashboard.nurse.hospital')}: {accessCodeData.hospitalName}</p>
+                    {nurseProfile && (
+                        <p className="text-gray-600">{t('dashboard.nurse.hospital')}: {nurseProfile.hospitalName}</p>
                     )}
                 </div>
                 <div className="flex flex-col items-end gap-4">
                     <DashboardHeader />
-                    {accessCodeData && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-                            <p className="text-sm text-gray-600 mb-1">{t('dashboard.nurse.accessCode')}</p>
-                            <p className="text-2xl font-bold text-blue-600">{accessCodeData.accessCode}</p>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-3">
+                        {accessCodeData && (
+                            <div className="bg-white/50 border border-blue-200/60 rounded-md px-3 py-1 flex flex-col items-center backdrop-blur-sm">
+                                <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider leading-none mb-0.5">{t('dashboard.nurse.accessCode')}</span>
+                                <span className="text-lg font-mono font-bold text-blue-600 leading-none">{accessCodeData.accessCode}</span>
+                            </div>
+                        )}
+                        <Button
+                            onClick={() => setShowCreatePatientModal(true)}
+                            size="lg"
+                            className="shadow-sm"
+                        >
+                            {t('dashboard.nurse.registerVisit')}
+                        </Button>
+                    </div>
                 </div>
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('dashboard.nurse.createVisit')}</CardTitle>
-                    <CardDescription>
-                        {t('dashboard.nurse.createVisitDescription')}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button
-                        onClick={() => setShowCreatePatientModal(true)}
-                        className="w-full"
-                    >
-                        {t('dashboard.nurse.registerVisit')}
-                    </Button>
-                </CardContent>
-            </Card>
 
             {/* Active Visits List */}
             <Card className="mb-8">

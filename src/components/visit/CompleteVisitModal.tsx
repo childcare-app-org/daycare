@@ -11,19 +11,28 @@ interface CompleteVisitModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: (summary: string) => void;
-    onPrint?: () => void;
+    onGenerateSummary?: () => Promise<string>;
     isLoading?: boolean;
+    isGeneratingSummary?: boolean;
 }
 
 export function CompleteVisitModal({
     isOpen,
     onClose,
     onConfirm,
-    onPrint,
+    onGenerateSummary,
     isLoading = false,
+    isGeneratingSummary = false,
 }: CompleteVisitModalProps) {
     const t = useTranslations();
     const [summary, setSummary] = useState('');
+
+    const handleGenerateSummary = async () => {
+        if (onGenerateSummary) {
+            const generated = await onGenerateSummary();
+            setSummary(generated);
+        }
+    };
 
     const handleConfirm = () => {
         onConfirm(summary);
@@ -62,30 +71,40 @@ export function CompleteVisitModal({
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="summary">{t('visit.visitSummary')}</Label>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="summary">{t('visit.visitSummary')}</Label>
+                            {onGenerateSummary && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleGenerateSummary}
+                                    disabled={isLoading || isGeneratingSummary}
+                                    className="h-7 text-xs"
+                                >
+                                    {isGeneratingSummary ? (
+                                        <>
+                                            <span className="animate-spin mr-2">⏳</span>
+                                            {t('common.generating')}
+                                        </>
+                                    ) : (
+                                        <>✨ {t('visit.generateSummary')}</>
+                                    )}
+                                </Button>
+                            )}
+                        </div>
                         <textarea
                             id="summary"
                             value={summary}
                             onChange={(e) => setSummary(e.target.value)}
                             placeholder={t('visit.visitSummaryPlaceholder')}
                             rows={6}
-                            className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            disabled={isLoading || isGeneratingSummary}
+                            className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         />
                     </div>
                 </div>
                 <DialogFooter className="flex items-center gap-2">
-                    {onPrint && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={onPrint}
-                            disabled={isLoading}
-                            className="flex items-center gap-2"
-                        >
-                            <Printer className="w-4 h-4" />
-                            {t('visit.printVisit')}
-                        </Button>
-                    )}
                     <Button
                         type="button"
                         onClick={handleConfirm}

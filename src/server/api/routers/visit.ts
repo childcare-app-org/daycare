@@ -1,5 +1,7 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import OpenAI from "openai";
 import { z } from "zod";
+import { env } from "~/env";
 import { validateHospitalAccessCode } from "~/lib/access-code";
 import {
   createTRPCRouter,
@@ -16,6 +18,7 @@ import {
   parents,
   visits,
 } from "~/server/db/schema";
+import { getHealthCheckKey, getHealthCheckLabel } from "~/utils/translations";
 
 export const visitRouter = createTRPCRouter({
   // Create a new visit (for parents, nurses, and admins)
@@ -715,5 +718,112 @@ export const visitRouter = createTRPCRouter({
       }
 
       return visit;
+    }),
+
+  // Generate visit summary using AI (Nurse only)
+  generateSummary: nurseProcedure
+    .input(z.object({ id: z.string(), locale: z.string().default("en") }))
+    .mutation(async ({ ctx, input }) => {
+      if (!env.OPENAI_API_KEY) {
+        throw new Error(
+          "AI summary generation is not configured (missing API key)",
+        );
+      }
+
+      const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+
+      // Get visit details with child and logs
+      const [visit] = await ctx.db
+        .select({
+          id: visits.id,
+          healthCheck: visits.healthCheck,
+          reason: visits.reason,
+          child: {
+            name: children.name,
+            birthdate: children.birthdate,
+            gender: children.gender,
+          },
+        })
+        .from(visits)
+        .leftJoin(children, eq(visits.childId, children.id))
+        .where(eq(visits.id, input.id))
+        .limit(1);
+
+      if (!visit || !visit.child) {
+        throw new Error("Visit or child not found");
+      }
+
+      // Get logs
+      const visitLogs = await ctx.db
+        .select({
+          timestamp: logs.timestamp,
+          eventType: logs.eventType,
+          eventData: logs.eventData,
+          notes: logs.notes,
+        })
+        .from(logs)
+        .where(eq(logs.visitId, input.id))
+        .orderBy(desc(logs.timestamp));
+
+      // Construct prompt
+      const childAge = visit.child.birthdate
+        ? `${new Date().getFullYear() - visit.child.birthdate.getFullYear()} years old`
+        : "Unknown age";
+
+      // Transform health check data
+      const healthCheckData = visit.healthCheck as Record<string, number>;
+      const healthCheckText = Object.entries(healthCheckData || {})
+        .map(([key, value]) => {
+          const displayKey = getHealthCheckKey(key, input.locale);
+          const displayValue = getHealthCheckLabel(key, value, input.locale);
+          return `${displayKey}: ${displayValue}`;
+        })
+        .join(", ");
+
+      const logsText = visitLogs
+        .map(
+          (log) =>
+            `- ${log.timestamp.toLocaleTimeString()}: ${log.eventType} ${
+              log.notes ? `(${log.notes})` : ""
+            } ${JSON.stringify(log.eventData)}`,
+        )
+        .join("\n");
+
+      const prompt = `
+        Create a short, friendly daily summary for a parent about their child's day at daycare.
+        
+        Child: ${visit.child.name} (${childAge}, ${visit.child.gender})
+        Reason for visit: ${visit.reason || "Standard care"}
+        Health Check Data: ${healthCheckText || "No data"}
+        
+        Activities/Logs:
+        ${logsText}
+        
+        The summary should be:
+        1. Friendly and reassuring.
+        2. Highlight key activities (meals, naps, diaper changes, mood).
+        3. Mention any specific notes from logs if relevant.
+        4. Keep it to 2-3 sentences.
+        5. Use the child's name.
+        6. IMPORTANT: Write the summary in ${input.locale === "ja" ? "Japanese (日本語)" : "English"}.
+        7. STRICTLY BASED ON PROVIDED DATA. Do not hallucinate or make up details not present in the logs or health check.
+      `;
+
+      console.log(prompt);
+
+      try {
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 150,
+        });
+
+        return {
+          summary: response.choices[0]?.message?.content?.trim() || "",
+        };
+      } catch (error) {
+        console.error("Error generating summary:", error);
+        throw new Error("Failed to generate summary via AI");
+      }
     }),
 });

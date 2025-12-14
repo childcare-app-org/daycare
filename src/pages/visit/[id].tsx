@@ -86,12 +86,24 @@ export default function VisitDetail() {
         onSuccess: () => {
             setShowCompleteModal(false);
             refetchVisit();
-            // Redirect to dashboard after completion
-            setTimeout(() => {
-                router.push('/dashboard');
-            }, 500);
         },
     });
+
+    const generateSummaryMutation = api.visit.generateSummary.useMutation();
+
+    const handleGenerateSummary = async () => {
+        if (!id) return '';
+        try {
+            const result = await generateSummaryMutation.mutateAsync({
+                id: id as string,
+                locale: router.locale || 'en'
+            });
+            return result.summary;
+        } catch (error) {
+            console.error('Failed to generate summary:', error);
+            return '';
+        }
+    };
 
     const handleCompleteVisit = (summary: string) => {
         if (!id) return;
@@ -268,8 +280,9 @@ export default function VisitDetail() {
                     isOpen={showCompleteModal}
                     onClose={() => setShowCompleteModal(false)}
                     onConfirm={handleCompleteVisit}
-                    onPrint={handlePrint}
                     isLoading={completeVisitMutation.isPending}
+                    onGenerateSummary={handleGenerateSummary}
+                    isGeneratingSummary={generateSummaryMutation.isPending}
                 />
             </main>
         </>

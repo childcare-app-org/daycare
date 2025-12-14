@@ -1,6 +1,8 @@
 /**
  * Translation utility functions for event types and tags
  */
+import en from "../locales/en.json";
+import ja from "../locales/ja.json";
 
 type TranslationFunction = (
   key: string,
@@ -47,4 +49,55 @@ export function getTranslatedTag(t: TranslationFunction, tag: string): string {
 
   // If no translation found, return original
   return tag;
+}
+
+/**
+ * Maps a health check numeric value to its localized string representation.
+ * Can be used on both client and server (does not require hooks).
+ */
+export function getHealthCheckLabel(
+  key: string,
+  value: number,
+  locale: string,
+): string | undefined {
+  const messages = locale === "ja" ? ja : en;
+  const t = messages.healthCheck as Record<string, string>;
+
+  const isMoodOrAppetite = key === "mood" || key === "appetite";
+
+  if (isMoodOrAppetite) {
+    switch (value) {
+      case -1:
+        return t.terrible;
+      case 0:
+        return t.normal;
+      case 1:
+        return t.excellent;
+      default:
+        return locale === "ja" ? "不明" : "Unknown";
+    }
+  } else {
+    // cough, nasal, wheezing
+    switch (value) {
+      case 0:
+        return t.normal;
+      case 1:
+        return t.mild;
+      case 2:
+        return t.severe;
+      default:
+        return locale === "ja" ? "不明" : "Unknown";
+    }
+  }
+}
+
+/**
+ * Gets the localized label for a health check key (e.g. "cough" -> "Cough" / "咳")
+ */
+export function getHealthCheckKey(key: string, locale: string): string {
+  const messages = locale === "ja" ? ja : en;
+  const t = messages.healthCheck as Record<string, string>;
+
+  // Direct lookup in healthCheck object
+  return t[key] || key;
 }

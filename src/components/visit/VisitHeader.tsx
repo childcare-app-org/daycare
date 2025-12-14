@@ -1,5 +1,5 @@
 import {
-    AlertTriangle, ArrowLeft, CheckCircle2, Info, Printer, Stethoscope, User
+    AlertTriangle, ArrowLeft, CheckCircle2, FileText, Info, Printer, Stethoscope, User
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -166,8 +166,22 @@ export function VisitHeader({
                             </>
                         )}
                     </div>
+
                 </div>
             </div>
+
+            {/* Nurse Note / Summary */}
+            {visit.status === 'completed' && visit.notes && (
+                <div className="mt-6 p-5 rounded-2xl bg-white/60 border border-purple-100 shadow-sm backdrop-blur-md">
+                    <div className="flex items-center gap-2 mb-3 text-purple-900 font-bold text-base">
+                        <FileText className="w-5 h-5" />
+                        <span>{t('visit.visitSummary')}</span>
+                    </div>
+                    <p className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+                        {visit.notes}
+                    </p>
+                </div>
+            )}
         </div>
     );
 }

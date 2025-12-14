@@ -131,37 +131,11 @@ export default function VisitPrint() {
                                     </div>
                                 )}
 
-                                {/* Age */}
-                                {visit.child?.birthdate && (
-                                    <div>
-                                        <span className="text-gray-500">{t('visit.age')}:</span>{' '}
-                                        <span className="font-medium">
-                                            {(() => {
-                                                const birthdate = new Date(visit.child.birthdate);
-                                                const today = new Date();
-                                                const years = today.getFullYear() - birthdate.getFullYear();
-                                                const months = today.getMonth() - birthdate.getMonth();
-                                                const adjustedMonths = months < 0 ? months + 12 : months;
-                                                const adjustedYears = months < 0 ? years - 1 : years;
-                                                return `${adjustedYears}y ${adjustedMonths}m`;
-                                            })()}
-                                        </span>
-                                    </div>
-                                )}
-
                                 {/* Hospital */}
                                 {visit.hospital?.name && (
                                     <div>
                                         <span className="text-gray-500">{t('visit.hospital')}:</span>{' '}
                                         <span className="font-medium">{visit.hospital.name}</span>
-                                    </div>
-                                )}
-
-                                {/* Reason for Visit */}
-                                {visit.reason && (
-                                    <div className="col-span-2">
-                                        <span className="text-gray-500">{t('visit.reasonForVisit')}:</span>{' '}
-                                        <span className="font-medium">{visit.reason}</span>
                                     </div>
                                 )}
 
@@ -214,21 +188,11 @@ export default function VisitPrint() {
                                 )}
                             </div>
 
-                            {/* Medical Info - Full Width */}
-                            {(visit.child?.allergies || visit.child?.preexistingConditions) && (
-                                <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-4 text-sm">
-                                    {visit.child?.allergies && (
-                                        <div className="bg-amber-50 rounded p-2">
-                                            <span className="text-amber-800 font-medium">{t('dashboard.parent.allergies')}:</span>{' '}
-                                            <span className="text-amber-900">{visit.child.allergies}</span>
-                                        </div>
-                                    )}
-                                    {visit.child?.preexistingConditions && (
-                                        <div className="bg-amber-50 rounded p-2">
-                                            <span className="text-amber-800 font-medium">{t('dashboard.parent.conditions')}:</span>{' '}
-                                            <span className="text-amber-900">{visit.child.preexistingConditions}</span>
-                                        </div>
-                                    )}
+                            {/* Visit Notes / Summary */}
+                            {visit.notes && (
+                                <div className="mt-4 pt-3 border-t border-gray-200">
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-1">{t('visit.notes')}:</h3>
+                                    <p className="text-gray-800 whitespace-pre-wrap">{visit.notes}</p>
                                 </div>
                             )}
                         </div>
