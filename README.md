@@ -45,7 +45,7 @@ This is a full-stack daycare management system designed for hospitals to provide
 ### Backend & API
 
 - **tRPC 11.0.0** - End-to-end typesafe APIs
-- **NextAuth.js 5.0.0-beta.29** - Authentication with Google OAuth
+- **NextAuth.js 5.0.0-beta.29** - Authentication with multiple OAuth providers (Google, LINE, Yahoo! Japan)
 - **Drizzle ORM 0.41.0** - TypeScript ORM for PostgreSQL
 - **PostgreSQL** - Database (via `postgres` package)
 - **Zod 3.25.76** - Schema validation
@@ -111,12 +111,19 @@ This is a full-stack daycare management system designed for hospitals to provide
 
 ### Authentication Flow
 
-1. User signs in with Google OAuth via NextAuth
+1. User signs in with one of the supported OAuth providers (Google or LINE) via NextAuth
 2. NextAuth callback checks if user email matches:
    - Nurse record → Sets role to "nurse" and links userId
    - Parent record → Sets role to "parent" and links userId
    - New user → Creates parent record and sets role to "parent"
 3. Session includes user role for authorization
+
+#### Supported Authentication Providers
+
+- **Google OAuth** - Default provider, always enabled
+- **LINE Login** - Popular in Japan (~70% of population), requires LINE Developer account and email permission approval
+
+Providers are automatically enabled when their credentials are configured in environment variables.
 
 ### Access Code System
 
@@ -611,8 +618,10 @@ Required environment variables (defined in `src/env.js`):
 ### Server Variables
 
 - `AUTH_SECRET` - NextAuth secret (required in production)
-- `AUTH_GOOGLE_ID` - Google OAuth client ID
-- `AUTH_GOOGLE_SECRET` - Google OAuth client secret
+- `AUTH_GOOGLE_ID` - Google OAuth client ID (required)
+- `AUTH_GOOGLE_SECRET` - Google OAuth client secret (required)
+- `AUTH_LINE_ID` - LINE Login client ID (optional, enables LINE authentication)
+- `AUTH_LINE_SECRET` - LINE Login client secret (optional, enables LINE authentication)
 - `DATABASE_URL` - PostgreSQL connection string
 - `NODE_ENV` - Environment (development/test/production)
 - `OPENAI_API_KEY` - OpenAI API Key for summary generation
@@ -632,6 +641,10 @@ Required environment variables (defined in `src/env.js`):
 AUTH_SECRET=your-secret-here
 AUTH_GOOGLE_ID=your-google-client-id
 AUTH_GOOGLE_SECRET=your-google-client-secret
+# Optional: LINE Login (for Japan market)
+# See OAUTH_SETUP.md for detailed setup instructions
+AUTH_LINE_ID=your-line-client-id
+AUTH_LINE_SECRET=your-line-client-secret
 DATABASE_URL=postgresql://user:password@localhost:5432/daycare
 NODE_ENV=development
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-api-key

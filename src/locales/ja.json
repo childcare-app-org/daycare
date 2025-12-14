@@ -32,7 +32,77 @@
         "name": "名前",
         "update": "更新",
         "language": "言語",
-        "profile": "プロフィール"
+        "profile": "プロフィール",
+        "signInWith": "{provider}でログイン",
+        "providers": {
+            "google": "Google",
+            "line": "LINE"
+        }
+    },
+    "auth": {
+        "signIn": {
+            "title": "サインイン",
+            "description": "デイケアアカウントにサインイン",
+            "subtitle": "おかえりなさい！続けるにはサインインしてください",
+            "email": "メールアドレス",
+            "emailPlaceholder": "your@email.com",
+            "password": "パスワード",
+            "passwordPlaceholder": "パスワードを入力",
+            "forgotPassword": "パスワードをお忘れですか？",
+            "submit": "サインイン",
+            "orContinueWith": "または、以下で続ける",
+            "noAccount": "アカウントをお持ちでないですか？",
+            "signUp": "新規登録",
+            "error": "メールアドレスまたはパスワードが正しくありません",
+            "registrationSuccess": "アカウントが作成されました！サインインしてください。",
+            "passwordResetSuccess": "パスワードがリセットされました！新しいパスワードでサインインしてください。"
+        },
+        "signUp": {
+            "title": "アカウント作成",
+            "description": "新しいデイケアアカウントを作成",
+            "subtitle": "アカウントを作成して始めましょう",
+            "name": "氏名",
+            "namePlaceholder": "山田 太郎",
+            "email": "メールアドレス",
+            "emailPlaceholder": "your@email.com",
+            "password": "パスワード",
+            "passwordPlaceholder": "6文字以上",
+            "confirmPassword": "パスワード確認",
+            "confirmPasswordPlaceholder": "パスワードを再入力",
+            "submit": "アカウント作成",
+            "haveAccount": "既にアカウントをお持ちですか？",
+            "signIn": "サインイン",
+            "error": "アカウントの作成に失敗しました。もう一度お試しください。"
+        },
+        "forgotPassword": {
+            "title": "パスワードをお忘れですか？",
+            "description": "パスワードをリセット",
+            "subtitle": "メールアドレスを入力すると、パスワードリセット用のリンクをお送りします",
+            "email": "メールアドレス",
+            "emailPlaceholder": "your@email.com",
+            "submit": "リセットリンクを送信",
+            "success": "このメールアドレスでアカウントが存在する場合、パスワードリセットリンクが送信されました。",
+            "devMode": "開発モード: 以下のリンクを使用してパスワードをリセットしてください",
+            "resetLink": "パスワードをリセット",
+            "backToSignIn": "サインインに戻る",
+            "error": "リセットリンクの送信に失敗しました。もう一度お試しください。"
+        },
+        "resetPassword": {
+            "title": "パスワードをリセット",
+            "description": "新しいパスワードを設定",
+            "subtitle": "新しいパスワードを入力してください",
+            "password": "新しいパスワード",
+            "passwordPlaceholder": "6文字以上",
+            "confirmPassword": "パスワード確認",
+            "confirmPasswordPlaceholder": "パスワードを再入力",
+            "submit": "パスワードをリセット",
+            "success": "パスワードが正常にリセットされました！サインインページにリダイレクトしています...",
+            "redirecting": "サインインページにリダイレクトしています...",
+            "backToSignIn": "サインインに戻る",
+            "backToForgotPassword": "パスワードをお忘れですか？に戻る",
+            "missingParams": "無効または欠落しているリセットトークンです。新しいパスワードリセットをリクエストしてください。",
+            "error": "パスワードのリセットに失敗しました。トークンが無効または期限切れの可能性があります。"
+        }
     },
     "home": {
         "title": "病児保育管理",

@@ -1,11 +1,12 @@
-import { hospitalRouter } from '~/server/api/routers/hospital';
-import { logsRouter } from '~/server/api/routers/logs';
-import { nurseRouter } from '~/server/api/routers/nurse';
-import { patientRouter } from '~/server/api/routers/patient';
-import { postRouter } from '~/server/api/routers/post';
-import { userRouter } from '~/server/api/routers/user';
-import { visitRouter } from '~/server/api/routers/visit';
-import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
+import { authRouter } from "~/server/api/routers/auth";
+import { hospitalRouter } from "~/server/api/routers/hospital";
+import { logsRouter } from "~/server/api/routers/logs";
+import { nurseRouter } from "~/server/api/routers/nurse";
+import { patientRouter } from "~/server/api/routers/patient";
+import { postRouter } from "~/server/api/routers/post";
+import { userRouter } from "~/server/api/routers/user";
+import { visitRouter } from "~/server/api/routers/visit";
+import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
  * This is the primary router for your server.
@@ -15,6 +16,7 @@ import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 export const appRouter = createTRPCRouter({
   post: postRouter,
   user: userRouter,
+  auth: authRouter,
   hospital: hospitalRouter,
   nurse: nurseRouter,
   patient: patientRouter,

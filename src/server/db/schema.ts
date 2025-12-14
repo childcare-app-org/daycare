@@ -47,6 +47,7 @@ export const users = createTable("user", (d) => ({
     })
     .default(sql`CURRENT_TIMESTAMP`),
   image: d.varchar({ length: 255 }),
+  password: d.varchar({ length: 255 }), // Hashed password for credentials provider (nullable for OAuth users)
   role: d.varchar({ length: 50 }).$type<"admin" | "nurse" | "parent">(), // null by default, set on first sign-in
 }));
 
@@ -107,6 +108,32 @@ export const verificationTokens = createTable(
     expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
+);
+
+export const passwordResetTokens = createTable(
+  "password_reset_token",
+  (d) => ({
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: d.varchar({ length: 255 }).notNull().unique(),
+    expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  }),
+  (t) => [
+    index("password_reset_token_user_idx").on(t.userId),
+    index("password_reset_token_token_idx").on(t.token),
+    index("password_reset_token_expires_idx").on(t.expires),
+  ],
 );
 
 // Hospital Daycare App Schema

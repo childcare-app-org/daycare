@@ -32,7 +32,77 @@
         "name": "Name",
         "update": "Update",
         "language": "Language",
-        "profile": "Profile"
+        "profile": "Profile",
+        "signInWith": "Sign in with {provider}",
+        "providers": {
+            "google": "Google",
+            "line": "LINE"
+        }
+    },
+    "auth": {
+        "signIn": {
+            "title": "Sign In",
+            "description": "Sign in to your daycare account",
+            "subtitle": "Welcome back! Please sign in to continue",
+            "email": "Email",
+            "emailPlaceholder": "your@email.com",
+            "password": "Password",
+            "passwordPlaceholder": "Enter your password",
+            "forgotPassword": "Forgot password?",
+            "submit": "Sign In",
+            "orContinueWith": "Or continue with",
+            "noAccount": "Don't have an account?",
+            "signUp": "Sign up",
+            "error": "Invalid email or password",
+            "registrationSuccess": "Account created successfully! Please sign in.",
+            "passwordResetSuccess": "Password reset successfully! Please sign in with your new password."
+        },
+        "signUp": {
+            "title": "Create Account",
+            "description": "Create a new daycare account",
+            "subtitle": "Get started by creating your account",
+            "name": "Full Name",
+            "namePlaceholder": "John Doe",
+            "email": "Email",
+            "emailPlaceholder": "your@email.com",
+            "password": "Password",
+            "passwordPlaceholder": "At least 6 characters",
+            "confirmPassword": "Confirm Password",
+            "confirmPasswordPlaceholder": "Re-enter your password",
+            "submit": "Create Account",
+            "haveAccount": "Already have an account?",
+            "signIn": "Sign in",
+            "error": "Failed to create account. Please try again."
+        },
+        "forgotPassword": {
+            "title": "Forgot Password",
+            "description": "Reset your password",
+            "subtitle": "Enter your email address and we'll send you a link to reset your password",
+            "email": "Email",
+            "emailPlaceholder": "your@email.com",
+            "submit": "Send Reset Link",
+            "success": "If an account exists with this email, a password reset link has been sent.",
+            "devMode": "Development mode: Use the link below to reset your password",
+            "resetLink": "Reset Password",
+            "backToSignIn": "Back to Sign In",
+            "error": "Failed to send reset link. Please try again."
+        },
+        "resetPassword": {
+            "title": "Reset Password",
+            "description": "Set a new password",
+            "subtitle": "Enter your new password below",
+            "password": "New Password",
+            "passwordPlaceholder": "At least 6 characters",
+            "confirmPassword": "Confirm Password",
+            "confirmPasswordPlaceholder": "Re-enter your password",
+            "submit": "Reset Password",
+            "success": "Password reset successfully! Redirecting to sign in...",
+            "redirecting": "Redirecting to sign in page...",
+            "backToSignIn": "Back to Sign In",
+            "backToForgotPassword": "Back to Forgot Password",
+            "missingParams": "Invalid or missing reset token. Please request a new password reset.",
+            "error": "Failed to reset password. The token may be invalid or expired."
+        }
     },
     "home": {
         "title": "Daycare Management",
