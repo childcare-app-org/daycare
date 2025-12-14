@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
 import { GoogleAddressAutocompleteNew } from '~/components/forms/GoogleAddressAutocompleteNew';
 import { VisitForm } from '~/components/forms/VisitForm';
+import { ImageModal } from '~/components/shared/ImageModal';
 import { SearchComponent } from '~/components/shared/SearchComponent';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
@@ -337,8 +338,8 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                     >
                                         <div className="flex items-center gap-3">
                                             {child.imageUrl ? (
-                                                <img
-                                                    src={child.imageUrl}
+                                                <ImageModal
+                                                    imageUrl={child.imageUrl}
                                                     alt={child.name}
                                                     className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-300 transition-colors"
                                                 />

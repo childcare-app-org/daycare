@@ -3,6 +3,7 @@ import { AlertTriangle, Info, Stethoscope, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { ActionMenu } from '~/components/shared/ActionMenu';
+import { ImageModal } from '~/components/shared/ImageModal';
 import { Button } from '~/components/ui/button';
 
 import { ChildVisitHistory } from './ChildVisitHistory';
@@ -69,8 +70,8 @@ export function ChildItem(props: ChildItemProps) {
                     {/* Name - Primary Hierarchy */}
                     <div className="flex items-start gap-3">
                         {child.imageUrl ? (
-                            <img
-                                src={child.imageUrl}
+                            <ImageModal
+                                imageUrl={child.imageUrl}
                                 alt={child.name || ''}
                                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
                             />

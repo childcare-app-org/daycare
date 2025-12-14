@@ -1,6 +1,7 @@
 import { Camera, Upload, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { ImageModal } from '~/components/shared/ImageModal';
 import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
 
@@ -167,8 +168,8 @@ export function ImageCapture({
             <div className="space-y-3">
                 {value ? (
                     <div className="relative inline-block">
-                        <img
-                            src={value}
+                        <ImageModal
+                            imageUrl={value}
                             alt={t('forms.imageCapture.imagePreview')}
                             className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
                         />

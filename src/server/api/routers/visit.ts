@@ -338,6 +338,7 @@ export const visitRouter = createTRPCRouter({
             preexistingConditions: children.preexistingConditions,
             familyDoctorName: children.familyDoctorName,
             familyDoctorPhone: children.familyDoctorPhone,
+            imageUrl: children.imageUrl,
           },
           hospital: {
             id: hospitals.id,
@@ -566,6 +567,7 @@ export const visitRouter = createTRPCRouter({
             preexistingConditions: children.preexistingConditions,
             familyDoctorName: children.familyDoctorName,
             familyDoctorPhone: children.familyDoctorPhone,
+            imageUrl: children.imageUrl,
           },
           hospital: {
             id: hospitals.id,
