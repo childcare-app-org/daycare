@@ -235,7 +235,7 @@ export function NurseDashboard() {
                                     name: editingVisit.child.name || '',
                                     pronunciation: editingVisit.child.pronunciation || '',
                                     gender: (editingVisit.child.gender as 'Male' | 'Female') || 'Male',
-                                    birthdate: editingVisit.child.birthdate || new Date(),
+                                    birthdate: editingVisit.child.birthdate,
                                     allergies: editingVisit.child.allergies || '',
                                     preexistingConditions: editingVisit.child.preexistingConditions || '',
                                     familyDoctorName: editingVisit.child.familyDoctorName || '',

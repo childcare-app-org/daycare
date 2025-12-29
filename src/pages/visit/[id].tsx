@@ -115,9 +115,10 @@ export default function VisitDetail() {
     };
 
     const handlePrint = () => {
-        // Open print view in a new window
+        // Open print view in a new window with locale preserved
         if (!id) return;
-        window.open(`/visit/${id}/print`, '_blank');
+        const locale = router.locale || 'en';
+        window.open(`/${locale}/visit/${id}/print`, '_blank');
     };
 
     // Auto-save handler for health check

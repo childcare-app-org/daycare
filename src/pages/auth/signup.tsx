@@ -22,21 +22,26 @@ export async function getServerSideProps(context: { locale: string }) {
   };
 }
 
-const signupSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Password confirmation is required'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
-
-type SignupFormData = z.infer<typeof signupSchema>;
+type SignupFormData = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
 export default function SignUp() {
   const router = useRouter();
   const t = useTranslations();
+
+  const signupSchema = z.object({
+    name: z.string().min(1, t('validation.nameRequired')),
+    email: z.string().email(t('validation.invalidEmail')),
+    password: z.string().min(6, t('validation.passwordMinLength')),
+    confirmPassword: z.string().min(6, t('validation.passwordConfirmationRequired')),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('validation.passwordsDontMatch'),
+    path: ['confirmPassword'],
+  });
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<{ email: string; password: string } | null>(null);

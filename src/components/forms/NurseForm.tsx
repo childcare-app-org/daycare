@@ -35,12 +35,32 @@ export function NurseForm({
     emailDisabledMessage,
 }: NurseFormProps) {
     const t = useTranslations();
+    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
         email: defaultValues?.email || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Validate required fields
+        if (!formData.name.trim()) {
+            setError(t('validation.nameRequired'));
+            return;
+        }
+        if (!formData.email.trim()) {
+            setError(t('validation.emailRequired'));
+            return;
+        }
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setError(t('validation.invalidEmail'));
+            return;
+        }
+
+        setError('');
         onSubmit({
             name: formData.name,
             email: formData.email,
@@ -58,6 +78,13 @@ export function NurseForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <p className="text-sm font-medium">{error}</p>
+                </div>
+            )}
+
             <div className="space-y-2">
                 <Label htmlFor="name">{t('forms.nurse.name')}</Label>
                 <Input
@@ -66,8 +93,10 @@ export function NurseForm({
                     type="text"
                     placeholder={t('forms.nurse.namePlaceholder')}
                     value={formData.name}
-                    onChange={handleInputChange}
-                    required
+                    onChange={(e) => {
+                        handleInputChange(e);
+                        if (error) setError('');
+                    }}
                 />
             </div>
 
@@ -79,8 +108,10 @@ export function NurseForm({
                     type="email"
                     placeholder={t('forms.nurse.emailPlaceholder')}
                     value={formData.email}
-                    onChange={handleInputChange}
-                    required
+                    onChange={(e) => {
+                        handleInputChange(e);
+                        if (error) setError('');
+                    }}
                     disabled={emailDisabled}
                 />
                 {emailDisabledMessage && (

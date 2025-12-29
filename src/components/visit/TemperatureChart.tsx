@@ -1,6 +1,7 @@
 "use client"
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 import * as React from 'react';
 import {
     Area, AreaChart, CartesianGrid, Dot, ResponsiveContainer, Tooltip, XAxis, YAxis
@@ -16,7 +17,9 @@ interface TemperatureChartProps {
 }
 
 export function TemperatureChart({ logs }: TemperatureChartProps) {
+    const router = useRouter();
     const t = useTranslations();
+    const locale = router.locale || 'en';
     // Extract temperature readings from logs
     const temperatureData = React.useMemo(() => {
         return logs
@@ -28,13 +31,13 @@ export function TemperatureChart({ logs }: TemperatureChartProps) {
                 const eventData = log.eventData as { temperature?: number }
                 const timestamp = new Date(log.timestamp)
                 return {
-                    time: timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    time: timestamp.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
                     temperature: eventData.temperature,
                     fullTime: timestamp,
                 }
             })
             .sort((a, b) => a.fullTime.getTime() - b.fullTime.getTime())
-    }, [logs])
+    }, [logs, locale])
 
     if (temperatureData.length === 0) {
         return (
@@ -63,7 +66,7 @@ export function TemperatureChart({ logs }: TemperatureChartProps) {
             return (
                 <div className="rounded-lg border bg-white/95 backdrop-blur-sm p-3 shadow-lg">
                     <p className="text-sm font-medium text-gray-900">
-                        {payload[0]?.payload?.fullTime?.toLocaleTimeString([], {
+                        {payload[0]?.payload?.fullTime?.toLocaleTimeString(locale, {
                             hour: '2-digit',
                             minute: '2-digit',
                         })}

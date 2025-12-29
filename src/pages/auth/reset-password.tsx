@@ -21,19 +21,22 @@ export async function getServerSideProps(context: { locale: string }) {
   };
 }
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Password confirmation is required'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
-
-type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormData = {
+  password: string;
+  confirmPassword: string;
+};
 
 export default function ResetPassword() {
   const router = useRouter();
   const t = useTranslations();
+
+  const resetPasswordSchema = z.object({
+    password: z.string().min(6, t('validation.passwordMinLength')),
+    confirmPassword: z.string().min(6, t('validation.passwordConfirmationRequired')),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('validation.passwordsDontMatch'),
+    path: ['confirmPassword'],
+  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [token, setToken] = useState<string | null>(null);

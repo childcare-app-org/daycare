@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 import { Button } from '~/components/ui/button';
 import {
     Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle
@@ -16,7 +17,9 @@ type VisitCareInfoModalProps = {
 };
 
 export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModalProps) {
+    const router = useRouter();
     const t = useTranslations();
+    const locale = router.locale || 'en';
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md">
@@ -49,7 +52,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                                 {t('visit.dropOffTime')}
                             </p>
                             <p className="text-base font-semibold">
-                                {new Date(visit.dropOffTime).toLocaleString([], {
+                                {new Date(visit.dropOffTime).toLocaleString(locale, {
                                     month: 'short',
                                     day: 'numeric',
                                     hour: '2-digit',
@@ -63,7 +66,7 @@ export function VisitCareInfoModal({ isOpen, onClose, visit }: VisitCareInfoModa
                                     {t('visit.pickUpTime')}
                                 </p>
                                 <p className="text-base font-semibold">
-                                    {new Date(visit.pickupTime).toLocaleString([], {
+                                    {new Date(visit.pickupTime).toLocaleString(locale, {
                                         month: 'short',
                                         day: 'numeric',
                                         hour: '2-digit',

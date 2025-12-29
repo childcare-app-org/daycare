@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 
 interface SIDSLog {
@@ -16,7 +17,9 @@ interface SIDSTimelineProps {
 }
 
 export function SIDSTimeline({ logs, showMinutesAgo = true }: SIDSTimelineProps) {
+    const router = useRouter();
     const t = useTranslations();
+    const locale = router.locale || 'en';
     const [isExpanded, setIsExpanded] = useState(false);
 
     // Don't render if no SIDS logs
@@ -33,7 +36,7 @@ export function SIDSTimeline({ logs, showMinutesAgo = true }: SIDSTimelineProps)
     const lastCheckTime = lastCheck ? new Date(lastCheck.timestamp) : null;
 
     const formatTime = (date: Date) => {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
     };
 
     const getMinutesAgo = (date: Date) => {

@@ -242,7 +242,7 @@
             "duration": "{hours}時間{minutes}分",
             "inProgress": "利用中",
             "gender": "性別",
-            "pronunciation": "読み方",
+            "pronunciation": "フリガナ",
             "activeVisitWarning": "お子さまは現在利用中です",
             "activeVisitWarningDescription": "情報を更新する必要がある場合は、病院にお問い合わせください。"
         }
@@ -320,8 +320,8 @@
         "child": {
             "name": "お子さまのお名前",
             "namePlaceholder": "フルネームを入力",
-            "pronunciation": "読み方",
-            "pronunciationPlaceholder": "読み方を入力（任意）",
+            "pronunciation": "フリガナ",
+            "pronunciationPlaceholder": "フリガナを入力",
             "gender": "性別",
             "genderMale": "男の子",
             "genderFemale": "女の子",
@@ -535,5 +535,25 @@
         "homeAddressHelper": "入力すると候補が表示されます",
         "nurseInformation": "看護師情報",
         "parentInformation": "保護者情報"
+    },
+    "validation": {
+        "invalidInput": "入力が正しくありません",
+        "invalidEmail": "メールアドレスが正しくありません",
+        "emailRequired": "メールアドレスは必須です",
+        "passwordMinLength": "パスワードは6文字以上で入力してください",
+        "passwordRequired": "パスワードは必須です",
+        "passwordConfirmationRequired": "パスワード確認は必須です",
+        "passwordsDontMatch": "パスワードが一致しません",
+        "nameRequired": "名前は必須です",
+        "tokenRequired": "トークンは必須です",
+        "currentPasswordRequired": "現在のパスワードは必須です",
+        "fillAllRequiredFields": "必須項目をすべて入力してください",
+        "unableToCreateVisit": "来院記録を作成できません：看護師の病院情報が見つかりません",
+        "pleaseFillOutThisField": "この項目を入力してください"
+    },
+    "googleAddress": {
+        "loading": "Googleマップを読み込み中...",
+        "errorLoading": "住所検索の読み込みエラー: {error}",
+        "errorLoadingGeneric": "住所検索の読み込みエラー"
     }
 }

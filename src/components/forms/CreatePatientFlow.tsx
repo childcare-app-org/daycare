@@ -1,6 +1,7 @@
 import { Calendar, Check, ChevronRight, User, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { ChildForm } from '~/components/forms/ChildForm';
 import { GoogleAddressAutocompleteNew } from '~/components/forms/GoogleAddressAutocompleteNew';
 import { VisitForm } from '~/components/forms/VisitForm';
@@ -40,6 +41,7 @@ interface ChildData {
 }
 
 export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowProps) {
+    const router = useRouter();
     const t = useTranslations();
     const [currentStep, setCurrentStep] = useState<CreatePatientStep>('search-parent');
     const [selectedParent, setSelectedParent] = useState<ParentData | null>(null);
@@ -110,8 +112,26 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
     };
 
     const handleParentCreate = () => {
-        if (!parentFormData.name || !parentFormData.email || !parentFormData.phoneNumber || !parentFormData.homeAddress) {
-            setError('Please fill in all required fields');
+        if (!parentFormData.name.trim()) {
+            setError(t('validation.nameRequired'));
+            return;
+        }
+        if (!parentFormData.email.trim()) {
+            setError(t('validation.emailRequired'));
+            return;
+        }
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(parentFormData.email)) {
+            setError(t('validation.invalidEmail'));
+            return;
+        }
+        if (!parentFormData.phoneNumber.trim()) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+        if (!parentFormData.homeAddress.trim()) {
+            setError(t('validation.pleaseFillOutThisField'));
             return;
         }
 
@@ -140,7 +160,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
 
     const handleVisitSubmit = (data: VisitFormData) => {
         if (!selectedChild || !nurseProfile?.hospitalId) {
-            setError('Unable to create visit: nurse hospital information not found');
+            setError(t('validation.unableToCreateVisit'));
             return;
         }
 
@@ -234,9 +254,11 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                     id="parent-name"
                                     type="text"
                                     value={parentFormData.name}
-                                    onChange={(e) => setParentFormData({ ...parentFormData, name: e.target.value })}
+                                    onChange={(e) => {
+                                        setParentFormData({ ...parentFormData, name: e.target.value });
+                                        if (error) setError('');
+                                    }}
                                     placeholder={t('forms.createPatientFlow.parentNamePlaceholder')}
-                                    required
                                 />
                             </div>
                             <div>
@@ -245,9 +267,11 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                     id="parent-email"
                                     type="email"
                                     value={parentFormData.email}
-                                    onChange={(e) => setParentFormData({ ...parentFormData, email: e.target.value })}
+                                    onChange={(e) => {
+                                        setParentFormData({ ...parentFormData, email: e.target.value });
+                                        if (error) setError('');
+                                    }}
                                     placeholder={t('forms.createPatientFlow.emailAddressPlaceholder')}
-                                    required
                                 />
                             </div>
                             <div>
@@ -277,9 +301,9 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                         }
 
                                         setParentFormData({ ...parentFormData, phoneNumber: formatted });
+                                        if (error) setError('');
                                     }}
                                     placeholder={t('forms.createPatientFlow.phoneNumberPlaceholder')}
-                                    required
                                 />
                             </div>
                             <div>
@@ -294,8 +318,8 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                             latitude: data.latitude,
                                             longitude: data.longitude,
                                         });
+                                        if (error) setError('');
                                     }}
-                                    required
                                     placeholder={t('forms.createPatientFlow.homeAddressPlaceholder')}
                                 />
                             </div>
@@ -351,7 +375,7 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                             <div>
                                                 <p className="font-medium text-gray-900">{child.name}</p>
                                                 <p className="text-sm text-gray-500">
-                                                    {t('forms.child.birthdate')}: {new Date(child.birthdate).toLocaleDateString()}
+                                                    {t('forms.child.birthdate')}: {new Date(child.birthdate).toLocaleDateString(router.locale || 'en')}
                                                 </p>
                                             </div>
                                         </div>
@@ -385,7 +409,6 @@ export function CreatePatientFlow({ onCancel, onComplete }: CreatePatientFlowPro
                                 name: '',
                                 pronunciation: '',
                                 gender: 'Male',
-                                birthdate: new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
                                 allergies: '',
                                 preexistingConditions: '',
                                 familyDoctorName: '',

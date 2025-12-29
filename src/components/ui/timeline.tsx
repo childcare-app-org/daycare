@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 import * as React from 'react';
 import { Card } from '~/components/ui/card';
 import { EVENT_TYPES, getEventEmoji } from '~/components/visit/eventTypes';
@@ -69,7 +70,9 @@ const TimelineItem = React.forwardRef<
     HTMLDivElement,
     TimelineItemProps & React.HTMLAttributes<HTMLDivElement>
 >(({ className, log, icon, ...props }, ref) => {
+    const router = useRouter();
     const t = useTranslations();
+    const locale = router.locale || 'en';
     const eventData = log.eventData as LogEventData | null | undefined;
     const tags = eventData?.tags ?? [];
     const temperature =
@@ -80,7 +83,7 @@ const TimelineItem = React.forwardRef<
     const timestamp = typeof log.timestamp === 'string'
         ? new Date(log.timestamp)
         : log.timestamp;
-    const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeString = timestamp.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 
     // Get event category for styling
     const eventDefinition = EVENT_TYPES.find((e) => e.label === log.eventType);

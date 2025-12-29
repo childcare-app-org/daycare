@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Clock, History, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { api } from '~/utils/api';
 
@@ -20,7 +21,9 @@ interface ChildVisitHistoryProps {
 }
 
 export function ChildVisitHistory({ childId, variant = 'parent' }: ChildVisitHistoryProps) {
+    const router = useRouter();
     const t = useTranslations();
+    const locale = router.locale || 'en';
     const [isExpanded, setIsExpanded] = useState(false);
     const [showMore, setShowMore] = useState(false);
     const limit = showMore ? 10 : 3;
@@ -86,7 +89,7 @@ export function ChildVisitHistory({ childId, variant = 'parent' }: ChildVisitHis
                                         </div>
                                         <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 flex-shrink-0">
                                             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                                                <span className="whitespace-nowrap">{dropOff.toLocaleDateString()}</span>
+                                                <span className="whitespace-nowrap">{dropOff.toLocaleDateString(locale)}</span>
                                                 {isActive ? (
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 whitespace-nowrap">
                                                         {t('dashboard.parent.inProgress')}

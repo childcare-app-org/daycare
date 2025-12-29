@@ -198,7 +198,7 @@ export function ParentDashboard() {
                         name: editingChild.name || '',
                         pronunciation: editingChild.pronunciation || '',
                         gender: (editingChild.gender as 'Male' | 'Female') || 'Male',
-                        birthdate: editingChild.birthdate || new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
+                        birthdate: editingChild.birthdate || undefined,
                         allergies: editingChild.allergies || '',
                         preexistingConditions: editingChild.preexistingConditions || '',
                         familyDoctorName: editingChild.familyDoctorName || '',

@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { Label } from '~/components/ui/label';
 import { env } from '~/env';
@@ -33,6 +35,11 @@ export function GoogleAddressAutocompleteNew({
     helperText,
     country = 'JP',
 }: GoogleAddressAutocompleteProps) {
+    const router = useRouter();
+    const t = useTranslations();
+    const locale = (router.locale || 'en') as 'en' | 'ja';
+    const googleMapsLanguage = locale === 'ja' ? 'ja' : 'en';
+
     const [inputValue, setInputValue] = useState(value);
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -41,11 +48,19 @@ export function GoogleAddressAutocompleteNew({
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Use the official SDK to load Google Maps
+    // Include language in the key to force reload when locale changes
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
         libraries,
-        language: 'en-US',
+        language: googleMapsLanguage,
+        region: country, // Set region to improve results for the country
     });
+
+    // Clear suggestions when locale changes to ensure fresh results in new language
+    useEffect(() => {
+        setSuggestions([]);
+        setShowSuggestions(false);
+    }, [locale]);
 
 
     // Search places using the new Places API
@@ -60,6 +75,8 @@ export function GoogleAddressAutocompleteNew({
 
         try {
             // Use the new Places API
+            // The language is set at the script loading level via useLoadScript
+            // This ensures all API responses are in the correct language
             const placesLibrary = await google.maps.importLibrary('places') as google.maps.PlacesLibrary;
             const request = {
                 textQuery: query,
@@ -151,7 +168,7 @@ export function GoogleAddressAutocompleteNew({
             <div className="relative space-y-2">
                 {label && <Label htmlFor={id}>{label} {required && '*'}</Label>}
                 <div className="flex h-10 w-full rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm">
-                    <p className="text-red-600">Error loading address search: {loadError.message}</p>
+                    <p className="text-red-600">{t('googleAddress.errorLoading', { error: loadError.message })}</p>
                 </div>
                 {helperText && <p className="text-sm text-red-500">{helperText}</p>}
             </div>
@@ -176,7 +193,6 @@ export function GoogleAddressAutocompleteNew({
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
                         placeholder={placeholder}
-                        required={required}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     />
 
@@ -212,7 +228,7 @@ export function GoogleAddressAutocompleteNew({
                 </div>
             ) : (
                 <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                    <p className="text-gray-400">Loading Google Maps...</p>
+                    <p className="text-gray-400">{t('googleAddress.loading')}</p>
                 </div>
             )}
 

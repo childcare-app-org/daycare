@@ -1,5 +1,6 @@
 import { Calendar } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { IntakeVisitDetails, REASON_OPTIONS } from '~/components/forms/IntakeVisitDetails';
 import { Button } from '~/components/ui/button';
@@ -73,7 +74,10 @@ export function VisitForm({
     isLoading = false,
     submitButtonText,
 }: VisitFormProps) {
+    const router = useRouter();
     const t = useTranslations();
+    const locale = router.locale || 'en';
+    const [error, setError] = useState('');
     // Extract just the time part (HH:mm) from a date string or Date object
     const getTimeString = (dateValue?: Date | string) => {
         if (!dateValue) return '';
@@ -101,6 +105,12 @@ export function VisitForm({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validate pickup time is required
+        if (!formData.pickupTimeOnly || !formData.pickupTimeOnly.trim()) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+
         // For drop-off, we use the existing date (from create or edit)
         const dropOffTime = formData.dropOffTime;
 
@@ -116,6 +126,7 @@ export function VisitForm({
         // Build reason string from selected reasons and custom reason
         const reason = buildReasonString(formData.selectedReasons, formData.customReason);
 
+        setError('');
         onSubmit({
             dropOffTime,
             pickupTime,
@@ -128,6 +139,13 @@ export function VisitForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <p className="text-sm font-medium">{error}</p>
+                </div>
+            )}
+
             {/* Visual Drop-off Time Display */}
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -137,13 +155,13 @@ export function VisitForm({
                     <div>
                         <p className="text-sm text-blue-600 font-medium">{t('visit.dropOffTime')}</p>
                         <p className="text-lg font-bold text-gray-900">
-                            {formData.dropOffTime.toLocaleTimeString(undefined, {
+                            {formData.dropOffTime.toLocaleTimeString(locale, {
                                 hour: '2-digit',
                                 minute: '2-digit'
                             })}
                         </p>
                         <p className="text-xs text-gray-500">
-                            {formData.dropOffTime.toLocaleDateString(undefined, {
+                            {formData.dropOffTime.toLocaleDateString(locale, {
                                 weekday: 'long',
                                 month: 'long',
                                 day: 'numeric'
@@ -155,7 +173,10 @@ export function VisitForm({
 
             <IntakeVisitDetails
                 pickupTimeOnly={formData.pickupTimeOnly}
-                onPickupTimeChange={(time) => setFormData(prev => ({ ...prev, pickupTimeOnly: time }))}
+                onPickupTimeChange={(time) => {
+                    setFormData(prev => ({ ...prev, pickupTimeOnly: time }));
+                    if (error) setError('');
+                }}
                 notes={formData.notes}
                 onNotesChange={(notes) => setFormData(prev => ({ ...prev, notes }))}
                 selectedReasons={formData.selectedReasons}

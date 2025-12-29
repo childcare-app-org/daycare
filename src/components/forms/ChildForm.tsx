@@ -36,6 +36,7 @@ export function ChildForm({
     disabled = false,
 }: ChildFormProps) {
     const t = useTranslations();
+    const [error, setError] = useState('');
     // Helper to format date for input (YYYY-MM-DD)
     const formatDateForInput = (date?: Date) => {
         if (!date) return '';
@@ -43,18 +44,11 @@ export function ChildForm({
         return d.toISOString().split('T')[0];
     };
 
-    // Default to 3 years ago if no birthdate provided
-    const getDefaultBirthdate = () => {
-        const date = new Date();
-        date.setFullYear(date.getFullYear() - 3);
-        return date;
-    };
-
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
         pronunciation: defaultValues?.pronunciation || '',
         gender: (defaultValues?.gender as 'Male' | 'Female') || 'Male',
-        birthdate: formatDateForInput(defaultValues?.birthdate) || formatDateForInput(getDefaultBirthdate()),
+        birthdate: formatDateForInput(defaultValues?.birthdate),
         allergies: defaultValues?.allergies || '',
         preexistingConditions: defaultValues?.preexistingConditions || '',
         familyDoctorName: defaultValues?.familyDoctorName || '',
@@ -65,9 +59,22 @@ export function ChildForm({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (disabled) return; // Prevent submission when disabled
-        if (!formData.birthdate) {
-            return; // Birthdate is required
+
+        // Validate required fields
+        if (!formData.name.trim()) {
+            setError(t('validation.nameRequired'));
+            return;
         }
+        if (!formData.birthdate) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+        if (!formData.gender) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+
+        setError('');
         onSubmit({
             name: formData.name,
             pronunciation: formData.pronunciation || undefined,
@@ -100,6 +107,13 @@ export function ChildForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <p className="text-sm font-medium">{error}</p>
+                </div>
+            )}
+
             {/* Top Section: Photo + Basic Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
                 {/* Left Column: Name & Pronunciation */}
@@ -112,8 +126,10 @@ export function ChildForm({
                             type="text"
                             placeholder={t('forms.child.namePlaceholder')}
                             value={formData.name}
-                            onChange={handleInputChange}
-                            required
+                            onChange={(e) => {
+                                handleInputChange(e);
+                                if (error) setError('');
+                            }}
                             disabled={disabled}
                         />
                     </div>
@@ -151,8 +167,10 @@ export function ChildForm({
                         name="birthdate"
                         type="date"
                         value={formData.birthdate}
-                        onChange={handleInputChange}
-                        required
+                        onChange={(e) => {
+                            handleInputChange(e);
+                            if (error) setError('');
+                        }}
                         max={new Date().toISOString().split('T')[0]}
                         disabled={disabled}
                     />
@@ -168,9 +186,11 @@ export function ChildForm({
                                 name="gender"
                                 value="Male"
                                 checked={formData.gender === 'Male'}
-                                onChange={handleRadioChange}
+                                onChange={(e) => {
+                                    handleRadioChange(e);
+                                    if (error) setError('');
+                                }}
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                required
                                 disabled={disabled}
                             />
                             <Label htmlFor="gender-male" className="font-normal cursor-pointer">
@@ -184,9 +204,11 @@ export function ChildForm({
                                 name="gender"
                                 value="Female"
                                 checked={formData.gender === 'Female'}
-                                onChange={handleRadioChange}
+                                onChange={(e) => {
+                                    handleRadioChange(e);
+                                    if (error) setError('');
+                                }}
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                required
                                 disabled={disabled}
                             />
                             <Label htmlFor="gender-female" className="font-normal cursor-pointer">

@@ -535,5 +535,25 @@
         "homeAddressHelper": "Suggestions will appear as you type the address",
         "nurseInformation": "Nurse Information",
         "parentInformation": "Parent Information"
+    },
+    "validation": {
+        "invalidInput": "Invalid input",
+        "invalidEmail": "Invalid email address",
+        "emailRequired": "Email is required",
+        "passwordMinLength": "Password must be at least 6 characters",
+        "passwordRequired": "Password is required",
+        "passwordConfirmationRequired": "Password confirmation is required",
+        "passwordsDontMatch": "Passwords don't match",
+        "nameRequired": "Name is required",
+        "tokenRequired": "Token is required",
+        "currentPasswordRequired": "Current password is required",
+        "fillAllRequiredFields": "Please fill in all required fields",
+        "unableToCreateVisit": "Unable to create visit: nurse hospital information not found",
+        "pleaseFillOutThisField": "Please fill out this field"
+    },
+    "googleAddress": {
+        "loading": "Loading Google Maps...",
+        "errorLoading": "Error loading address search: {error}",
+        "errorLoadingGeneric": "Error loading address search"
     }
 }

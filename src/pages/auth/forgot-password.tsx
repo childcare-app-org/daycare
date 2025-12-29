@@ -21,15 +21,17 @@ export async function getServerSideProps(context: { locale: string }) {
   };
 }
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-});
-
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+type ForgotPasswordFormData = {
+  email: string;
+};
 
 export default function ForgotPassword() {
   const router = useRouter();
   const t = useTranslations();
+
+  const forgotPasswordSchema = z.object({
+    email: z.string().email(t('validation.invalidEmail')),
+  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [resetUrl, setResetUrl] = useState<string | null>(null);

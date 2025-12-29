@@ -24,6 +24,7 @@ export default function VisitPrint() {
     const { id } = router.query;
     const { data: session, status } = useSession();
     const t = useTranslations();
+    const locale = router.locale || 'en';
 
     const { data: visit, isLoading: visitLoading } = api.visit.getById.useQuery(
         { id: id as string },
@@ -143,7 +144,7 @@ export default function VisitPrint() {
                                 <div>
                                     <span className="text-gray-500">{t('visit.dropOffTime')}:</span>{' '}
                                     <span className="font-medium">
-                                        {new Date(visit.dropOffTime).toLocaleString([], {
+                                        {new Date(visit.dropOffTime).toLocaleString(locale, {
                                             month: 'short',
                                             day: 'numeric',
                                             hour: '2-digit',
@@ -157,7 +158,7 @@ export default function VisitPrint() {
                                     <div>
                                         <span className="text-gray-500">{t('visit.pickUpTime')}:</span>{' '}
                                         <span className="font-medium">
-                                            {new Date(visit.pickupTime).toLocaleString([], {
+                                            {new Date(visit.pickupTime).toLocaleString(locale, {
                                                 month: 'short',
                                                 day: 'numeric',
                                                 hour: '2-digit',

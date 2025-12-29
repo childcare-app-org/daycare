@@ -114,7 +114,6 @@ export function IntakeVisitDetails({
                     value={pickupTimeOnly}
                     onChange={(e) => onPickupTimeChange(e.target.value)}
                     className="text-lg"
-                    required
                 />
                 <div className="flex flex-wrap gap-2">
                     {quickTimes.map((time) => (

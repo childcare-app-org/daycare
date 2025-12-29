@@ -34,6 +34,7 @@ export function HospitalForm({
     isLoading = false,
 }: HospitalFormProps) {
     const t = useTranslations();
+    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
         name: defaultValues?.name || '',
         address: defaultValues?.address || '',
@@ -46,6 +47,30 @@ export function HospitalForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate required fields
+        if (!formData.name.trim()) {
+            setError(t('validation.nameRequired'));
+            return;
+        }
+        if (!formData.address.trim()) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+        if (!formData.phoneNumber.trim()) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+        if (!formData.capacity || parseInt(formData.capacity) < 1) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+        if (!formData.pricing || parseFloat(formData.pricing) < 0) {
+            setError(t('validation.pleaseFillOutThisField'));
+            return;
+        }
+
+        setError('');
         onSubmit({
             name: formData.name,
             address: formData.address,
@@ -76,6 +101,13 @@ export function HospitalForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <p className="text-sm font-medium">{error}</p>
+                </div>
+            )}
+
             <div className="space-y-2">
                 <Label htmlFor="name">{t('forms.hospital.name')}</Label>
                 <Input
@@ -84,8 +116,10 @@ export function HospitalForm({
                     type="text"
                     placeholder={t('forms.hospital.namePlaceholder')}
                     value={formData.name}
-                    onChange={handleInputChange}
-                    required
+                    onChange={(e) => {
+                        handleInputChange(e);
+                        if (error) setError('');
+                    }}
                 />
             </div>
 
@@ -93,8 +127,10 @@ export function HospitalForm({
                 id="address"
                 label={t('forms.hospital.address')}
                 value={formData.address}
-                onChange={handleAddressChange}
-                required
+                onChange={(data) => {
+                    handleAddressChange(data);
+                    if (error) setError('');
+                }}
                 placeholder={t('forms.hospital.addressPlaceholder')}
                 helperText={t('forms.hospital.addressHelperText')}
                 country="JP"
@@ -108,8 +144,10 @@ export function HospitalForm({
                     type="tel"
                     placeholder={t('forms.hospital.phoneNumberPlaceholder')}
                     value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    required
+                    onChange={(e) => {
+                        handleInputChange(e);
+                        if (error) setError('');
+                    }}
                 />
             </div>
 
@@ -122,8 +160,10 @@ export function HospitalForm({
                         type="number"
                         placeholder={t('forms.hospital.capacityPlaceholder')}
                         value={formData.capacity}
-                        onChange={handleInputChange}
-                        required
+                        onChange={(e) => {
+                            handleInputChange(e);
+                            if (error) setError('');
+                        }}
                         min="1"
                     />
                     <p className="text-sm text-gray-500">{t('forms.hospital.capacityHelperText')}</p>
@@ -138,8 +178,10 @@ export function HospitalForm({
                         step="0.01"
                         placeholder={t('forms.hospital.pricingPlaceholder')}
                         value={formData.pricing}
-                        onChange={handleInputChange}
-                        required
+                        onChange={(e) => {
+                            handleInputChange(e);
+                            if (error) setError('');
+                        }}
                         min="0"
                     />
                     <p className="text-sm text-gray-500">{t('forms.hospital.pricingHelperText')}</p>
